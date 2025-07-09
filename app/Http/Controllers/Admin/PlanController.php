@@ -13,7 +13,8 @@ class PlanController extends Controller
 {
     public function index()
     {
-        $plans = Plan::orderBy('price')->get();
+        $plans = Plan::with('permissions')->orderBy('price')->get();
+        $permissions = \Spatie\Permission\Models\Permission::orderBy('name')->get();
 
         return view('back.admin.plans.index', compact('plans'));
     }
@@ -50,7 +51,9 @@ class PlanController extends Controller
     public function edit($id)
     {
         $plan = Plan::findOrFail($id);
-        return view('back.admin.plans.edit', compact('plan'));
+        $permissions = \Spatie\Permission\Models\Permission::orderBy('name')->get();
+
+        return view('back.admin.plans.edit', compact('plan', 'permissions'));
     }
 
     public function update(Request $request, $id)
@@ -70,9 +73,12 @@ class PlanController extends Controller
             'max_storage_mb' => 'nullable|integer|min:1',
             'description' => 'nullable|string|max:1000',
             'is_active' => 'boolean',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $plan->update($validated);
+        $plan->permissions()->sync($request->permissions ?? []);
 
         return redirect()->route('admin.plans.index')->with('success', 'Plan modifié avec succès.');
     }

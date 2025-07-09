@@ -1,7 +1,7 @@
 @extends('back.layouts.admin')
 
 @section('content')
-<!-- Page Heading -->
+<!-- En-tête de page -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">📦 Plans d’abonnement</h1>
     <a href="{{ route('admin.plans.create') }}" class="btn btn-primary shadow-sm">
@@ -9,7 +9,7 @@
     </a>
 </div>
 
-<!-- Table -->
+<!-- Liste des plans -->
 <div class="card shadow border-left-primary">
     <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold">Liste des plans disponibles</h6>
@@ -28,6 +28,7 @@
                             <th>Utilisateurs</th>
                             <th>Stockage</th>
                             <th>Statut</th>
+                            <th>Permissions</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -36,8 +37,8 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
-                                    <strong>{{ $plan->name }}</strong>
-                                    <br><small class="text-muted">{{ $plan->slug }}</small>
+                                    <strong>{{ $plan->name }}</strong><br>
+                                    <small class="text-muted">{{ $plan->slug }}</small>
                                 </td>
                                 <td>
                                     <span class="badge badge-pill badge-info">
@@ -46,7 +47,7 @@
                                 </td>
                                 <td>{{ $plan->duration_days }} jours</td>
                                 <td>
-                                    {{ $plan->max_users ? $plan->max_users : '∞' }}
+                                    {{ $plan->max_users ?? '∞' }}
                                     <i class="fas fa-user-friends text-muted"></i>
                                 </td>
                                 <td>
@@ -60,11 +61,45 @@
                                         <span class="badge badge-danger">Inactif</span>
                                     @endif
                                 </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#permissionsModal{{ $plan->id }}">
+                                        Voir
+                                    </button>
+
+                                    <!-- Modal Permissions -->
+                                    <div class="modal fade" id="permissionsModal{{ $plan->id }}" tabindex="-1" aria-labelledby="permissionsModalLabel{{ $plan->id }}" aria-hidden="true">
+                                      <div class="modal-dialog modal-dialog-scrollable">
+                                        <div class="modal-content">
+                                          <div class="modal-header">
+                                            <h5 class="modal-title" id="permissionsModalLabel{{ $plan->id }}">
+                                                Permissions du plan "{{ $plan->name }}"
+                                            </h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                              <span aria-hidden="true">&times;</span>
+                                            </button>
+                                          </div>
+                                          <div class="modal-body">
+                                            @if($plan->permissions->count() > 0)
+                                                <ul class="mb-0">
+                                                    @foreach($plan->permissions as $permission)
+                                                        <li>{{ $permission->description ?? $permission->name }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <p class="text-muted">Aucune permission associée à ce plan.</p>
+                                            @endif
+                                          </div>
+                                          <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                </td>
                                 <td class="text-center">
                                     <a href="{{ route('admin.plans.edit', $plan->id) }}" class="btn btn-sm btn-warning" title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>
-
                                     <form action="{{ route('admin.plans.destroy', $plan->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Confirmer la suppression de ce plan ?')">
                                         @csrf
                                         @method('DELETE')

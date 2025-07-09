@@ -23,4 +23,9 @@ class Plan extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function permissions()
+    {
+        return $this->belongsToMany(\Spatie\Permission\Models\Permission::class, 'plan_permission');
+    }
 }

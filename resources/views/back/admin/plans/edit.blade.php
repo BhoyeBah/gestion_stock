@@ -63,6 +63,25 @@
                 <textarea class="form-control" id="description" name="description" rows="3">{{ old('description', $plan->description) }}</textarea>
             </div>
 
+            <div class="form-group">
+                <label>Permissions associées au plan</label>
+                <div class="row">
+                    @foreach($permissions as $permission)
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
+                                    class="form-check-input"
+                                    id="perm_{{ $permission->id }}"
+                                    {{ $plan->permissions->contains($permission->id) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="perm_{{ $permission->id }}">
+                                    {{ $permission->description ?? $permission->name }}
+                                </label>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
             <div class="form-group form-check">
                 <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
                        {{ old('is_active', $plan->is_active) ? 'checked' : '' }}>
@@ -75,6 +94,7 @@
                 <i class="fas fa-save"></i> Enregistrer les modifications
             </button>
         </form>
+        
     </div>
 </div>
 @endsection

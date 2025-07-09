@@ -10,4 +10,10 @@ class Permission extends SpatiePermission
         'guard_name',
         'description',
     ];
+
+    public function plans()
+    {
+        return $this->belongsToMany(\App\Models\Plan::class, 'plan_permission');
+    }
+
 }
