@@ -19,11 +19,21 @@
         </a>
     </li>
 
+   
+
     <!-- Nav Item - Plans -->
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('admin.permissions.index') }}">
+            <i class="fas fa-fw fa-list-alt"></i>
+            <span>Permissions</span>
+        </a>
+    </li>
+
+     <!-- Nav Item - Plans -->
     <li class="nav-item">
         <a class="nav-link" href="{{ route('admin.plans.index') }}">
             <i class="fas fa-fw fa-list-alt"></i>
-            <span>Plans d’abonnement</span>
+            <span>Plans</span>
         </a>
     </li>
 
