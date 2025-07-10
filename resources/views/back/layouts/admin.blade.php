@@ -80,9 +80,8 @@
     </div>
 
    @include('back.partials.js')
-   <script>
-        @stack('scripts')
-   </script>
+   
+    @stack('scripts')
 </body>
 
 </html>

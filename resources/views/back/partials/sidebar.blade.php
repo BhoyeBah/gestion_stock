@@ -37,6 +37,14 @@
         </a>
     </li>
 
+    <!-- Nav Item - Plans -->
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('admin.tenants.index') }}">
+            <i class="fas fa-fw fa-list-alt"></i>
+            <span>Tenants</span>
+        </a>
+    </li>
+
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 
