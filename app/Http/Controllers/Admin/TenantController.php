@@ -132,7 +132,9 @@ class TenantController extends Controller
         try {
             // Mise à jour des champs
             $tenant->name = $request->name;
-            $tenant->slug = $request->slug;
+            if ($tenant->slug !== "platform"){
+                $tenant->slug = $request->slug;
+            }
             $tenant->email = $request->email ?? null;
             $tenant->phone = $request->phone ?? null;
             $tenant->is_active = $request->boolean('is_active');
@@ -161,6 +163,10 @@ class TenantController extends Controller
 
     public function destroy(Tenant $tenant)
     {
+        if ($tenant->slug === 'plateform') {
+            return redirect()->back()->with('error', 'Ce tenant ne peut pas être supprimé car il est réservé à la plateforme.');
+        }
+
         try {
             $tenant->delete();
 
