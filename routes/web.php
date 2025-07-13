@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\TenantController;
+use App\Http\Controllers\Admin\SubscriptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,4 +26,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('plans', PlanController::class);
     Route::resource('permissions', PermissionController::class);
     Route::resource('tenants', TenantController::class);
+
+    Route::resource('subscriptions', SubscriptionController::class);
+    Route::patch('admin/subscriptions/{subscription}/toggle', [SubscriptionController::class, 'toggleActive'])
+    ->name('subscriptions.toggle');
+
 });

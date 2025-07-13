@@ -5,9 +5,9 @@
 
    @include('back.partials.head')
 
-   <style>
+   
         @stack('styles')
-   </style>
+   
 </head>
 
 <body id="page-top">

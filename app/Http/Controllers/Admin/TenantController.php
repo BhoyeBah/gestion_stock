@@ -75,6 +75,9 @@ class TenantController extends Controller
                 'tenant_id' => $tenant->id,
             ]);
 
+            $adminRole->givePermissionTo('manage_roles');
+
+
             // 4. Création du premier utilisateur
             $userData = $request->input('user');
 
