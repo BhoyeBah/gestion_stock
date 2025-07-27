@@ -70,12 +70,12 @@ class TenantController extends Controller
 
             // 3. Création du rôle admin lié au tenant
             $adminRole = Role::create([
-                'name' => 'Admin',
+                'name' =>  $roleName = $tenant->slug . "_Admin",
                 'guard_name' => 'web',
                 'tenant_id' => $tenant->id,
             ]);
 
-            $adminRole->givePermissionTo('manage_roles');
+            $adminRole->givePermissionTo(['manage_roles', 'manage_users']);
 
 
             // 4. Création du premier utilisateur

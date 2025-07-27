@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,5 +22,12 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         Paginator::useBootstrapFive();
+
+        Gate::before(function ($user, $ability) {
+            // Si c'est toi (par ID ou email), tu bypass toutes les permissions
+            if ($user && $user->is_owner && $user->is_platform_user()) {
+                return true;
+            }
+        });
     }
 }

@@ -14,9 +14,6 @@
     </div>
 
     <div class="card-body">
-        
-        
-
         @if($subscriptions->count() > 0)
             <div class="table-responsive">
                 <table class="table table-bordered table-hover table-sm align-middle">
@@ -62,10 +59,17 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex flex-wrap justify-content-center gap-1">
-                                        {{-- Voir & imprimer --}}
-                                        <a href="{{ route('admin.subscriptions.show', $subscription) }}" class="btn btn-sm btn-info" title="Voir et imprimer">
+                                        {{-- Voir --}}
+                                        <a href="{{ route('admin.subscriptions.show', $subscription) }}" class="btn btn-sm btn-info" title="Voir">
                                             <i class="fas fa-eye"></i>
                                         </a>
+
+                                        {{-- Télécharger Facture (PDF) --}}
+                                        <form action="{{ route('tenant.subscriptions.pdf', $subscription) }}" method="GET" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-secondary" title="Télécharger Facture">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </button>
+                                        </form>
 
                                         @if($subscription->ends_at >= now())
                                             {{-- Modifier --}}
@@ -74,16 +78,18 @@
                                             </a>
 
                                             {{-- Activer/Désactiver --}}
-                                            <form action="{{ route('admin.subscriptions.toggle', $subscription) }}" method="POST">
+                                            <form action="{{ route('admin.subscriptions.toggle', $subscription) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="btn btn-sm {{ $subscription->is_active ? 'btn-secondary' : 'btn-success' }}" title="{{ $subscription->is_active ? 'Désactiver' : 'Activer' }}">
+                                                <button type="submit" class="btn btn-sm {{ $subscription->is_active ? 'btn-secondary' : 'btn-success' }}" 
+                                                    title="{{ $subscription->is_active ? 'Désactiver' : 'Activer' }}">
                                                     <i class="fas fa-toggle-{{ $subscription->is_active ? 'off' : 'on' }}"></i>
                                                 </button>
                                             </form>
 
                                             {{-- Supprimer --}}
-                                            <form action="{{ route('admin.subscriptions.destroy', $subscription) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?')">
+                                            <form action="{{ route('admin.subscriptions.destroy', $subscription) }}" method="POST" 
+                                                  onsubmit="return confirm('Confirmer la suppression ?')" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">

@@ -50,4 +50,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function tenant(){
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function is_platform_user(){
+        return $this->tenant->slug === "platform";
+    }
 }
