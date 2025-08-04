@@ -12,9 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('plan_permission', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('plan_id')->constrained()->onDelete('cascade');
-            $table->foreignId('permission_id')->constrained()->onDelete('cascade');
+            $table->uuid('plan_id');
+            $table->uuid('permission_id');
+
+            $table->foreign('plan_id')->references('id')->on('plans')->onDelete('cascade');
+            $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('cascade');
+
+            $table->primary(['plan_id', 'permission_id']);
+
             $table->timestamps();
         });
     }

@@ -7,11 +7,14 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::table('roles', function (Blueprint $table) {
-            $table->foreignId('tenant_id')
+            $table->uuid('tenant_id') // Utilise UUID ici
                 ->nullable()
-                ->after('id') // juste après id, pour la lisibilité
-                ->constrained('tenants')
-                ->onDelete('cascade'); // si on supprime un tenant, ses rôles sautent
+                ->after('id');
+
+            $table->foreign('tenant_id')
+                ->references('id')
+                ->on('tenants')
+                ->onDelete('cascade');
         });
     }
 

@@ -59,7 +59,7 @@
                                        value="{{ $permission->id }}"
                                        {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}>
                                 <label class="custom-control-label" for="perm_{{ $permission->id }}">
-                                    {{ ucfirst(str_replace('_', ' ', $permission->name)) }}
+                                    {{ ucfirst(str_replace('_', ' ', $permission->description)) }}
                                 </label>
                             </div>
                         </div>

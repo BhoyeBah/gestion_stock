@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -75,7 +75,7 @@ class TenantController extends Controller
                 'tenant_id' => $tenant->id,
             ]);
 
-            $adminRole->givePermissionTo(['manage_roles', 'manage_users']);
+            $adminRole->givePermissionTo(['manage_roles']);
 
 
             // 4. Création du premier utilisateur

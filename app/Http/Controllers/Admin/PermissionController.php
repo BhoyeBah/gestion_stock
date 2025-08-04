@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
+use App\Traits\LogsActivity;
 
 class PermissionController extends Controller
 {
+    use LogsActivity;
+
     public function index()
     {
         $permissions = Permission::orderBy('name')->paginate(10);
@@ -29,7 +32,7 @@ class PermissionController extends Controller
         $validated['guard_name'] = 'web';
 
         Permission::create($validated);
-
+        $this->saveActivity("Ajout d'une permission", "Permission {$request->name}.");
         return redirect()->route('admin.permissions.index')->with('success', 'Permission créée avec succès.');
     }
 
@@ -46,6 +49,7 @@ class PermissionController extends Controller
         ]);
 
         $permission->update($validated);
+        $this->saveActivity("Mise à jour de la permission", "Permission {$request->name}.");
 
         return redirect()->route('admin.permissions.index')->with('success', 'Permission modifiée avec succès.');
     }
@@ -53,6 +57,7 @@ class PermissionController extends Controller
     public function destroy(Permission $permission)
     {
         $permission->delete();
+        $this->saveActivity("Suppression d'une permission", "Permission {$permission->name}.");
 
         return redirect()->route('admin.permissions.index')->with('success', 'Permission supprimée.');
     }

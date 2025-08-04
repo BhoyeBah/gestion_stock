@@ -72,7 +72,7 @@
                 <select name="role" id="role" class="form-control @error('role') is-invalid @enderror" required>
                     <option value="" disabled selected>-- Sélectionnez un rôle --</option>
                     @foreach($roles as $role)
-                        <option value="{{ $role->name }}" {{ old('role') == $role->name ? 'selected' : '' }}>
+                        <option value="{{ $role->id }}" {{ old('role') == $role->name ? 'selected' : '' }}>
                             {{ ucfirst(str_replace('_', ' ', $role->name)) }}
                         </option>
                     @endforeach

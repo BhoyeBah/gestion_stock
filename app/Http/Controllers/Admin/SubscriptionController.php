@@ -8,9 +8,12 @@ use App\Models\Tenant;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Traits\LogsActivity;
+
 
 class SubscriptionController extends Controller
 {
+    use LogsActivity;
     public function index()
     {
         $subscriptions = Subscription::with('tenant', 'plan')->latest()->paginate(50);
@@ -42,7 +45,7 @@ class SubscriptionController extends Controller
         ]);
 
         try {
-            Subscription::create([
+            $subscription = Subscription::create([
                 'tenant_id' => $request->tenant_id,
                 'plan_id' => $request->plan_id,
                 'amount_paid' => $request->amount_paid,
@@ -51,6 +54,9 @@ class SubscriptionController extends Controller
                 'ends_at' => $request->ends_at,
                 
             ]);
+
+            
+            $this->saveActivity("Ajout d'une souscription", "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}  ");
 
             return redirect()->route('admin.subscriptions.index')->with('success', 'Souscription enregistrée avec succès.');
         } catch (\Throwable $e) {
@@ -97,7 +103,7 @@ class SubscriptionController extends Controller
                 'ends_at' => $request->ends_at,
                 'is_active' => $request->is_active,
             ]);
-
+            $this->saveActivity("Modification de la souscription", "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}.");
             return redirect()->route('admin.subscriptions.index')->with('success', 'Souscription mise à jour avec succès.');
         } catch (\Throwable $e) {
             report($e);
@@ -130,12 +136,14 @@ class SubscriptionController extends Controller
 
             $subscription->is_active = !$subscription->is_active;
             $subscription->save();
-
             DB::commit();
+            
 
+            $this->saveActivity("Modification du statut de la souscription", "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}");
             return redirect()->route('admin.subscriptions.index')
                 ->with('success', 'Statut de la souscription mis à jour avec succès.');
         } catch (\Throwable $e) {
+            
             DB::rollBack();
             report($e);
             return back()->with('error', 'Erreur lors de l’activation/désactivation de la souscription.');
@@ -156,6 +164,7 @@ class SubscriptionController extends Controller
 
         try {
             $subscription->delete();
+            $this->saveActivity("suppression de la souscription", "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}");
             return redirect()->route('admin.subscriptions.index')->with('success', 'Souscription supprimée.');
         } catch (\Throwable $e) {
             report($e);

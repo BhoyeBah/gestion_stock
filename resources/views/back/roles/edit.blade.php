@@ -53,6 +53,7 @@
                 <label class="font-weight-bold">Permissions associées</label>
                 <div class="row">
                     @foreach($permissions as $permission)
+                       
                         <div class="col-md-4 col-sm-6 mb-2">
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox"

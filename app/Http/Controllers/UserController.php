@@ -61,7 +61,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|string|exists:roles,name', // Spatie utilise le nom
+            'role' => 'required|string|exists:roles,id', // Spatie utilise le nom
             'is_active' => 'nullable',
         ]);
 
@@ -78,14 +78,16 @@ class UserController extends Controller
                 'is_active' => $validated['is_active'],
                 'password' => Hash::make($validated['password']),
             ]);
+            $role = Role::findOrFail($validated['role']);
 
-            $newUser->syncRoles([$validated['role']]);
+            $newUser->syncRoles([$role]);
 
             DB::commit();
 
             return redirect()->route('users.index')->with('success', '✅ Utilisateur créé avec succès.');
         } catch (\Throwable $e) {
             DB::rollBack();
+            dd($e);
             report($e);
             return back()->with('error', '❌ Une erreur est survenue lors de la création de l’utilisateur.')->withInput();
         }
@@ -97,8 +99,12 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $current = Auth::user();
-
         if (!$current->is_platform_user() && $user->tenant_id != $current->tenant_id) {
+            abort(403, "Vous n'avez pas l'autorisation de modifier cet utilisateur.");
+        }
+
+        if ($current->is_platform_user() && !$current->is_owner && $user->id != $current->id){
+            
             abort(403, "Vous n'avez pas l'autorisation de modifier cet utilisateur.");
         }
 
@@ -127,6 +133,8 @@ class UserController extends Controller
             'is_active' => 'nullable',
         ]);
 
+        
+
         $validated['is_active'] = $request->has('is_active');
 
         $isActive = $validated['is_active'] ?? true;
@@ -147,8 +155,9 @@ class UserController extends Controller
                 'password' => !empty($validated['password']) ? Hash::make($validated['password']) : $user->password,
             ]);
 
-            $user->syncRoles([$validated['role']]);
-
+            $role = Role::where('name', $validated['role'])->firstOrFail();
+            $user->syncRoles([$role]);
+        
             DB::commit();
 
             return redirect()->route('users.index')->with('success', '✅ Utilisateur mis à jour avec succès.');

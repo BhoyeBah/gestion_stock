@@ -72,7 +72,7 @@
                                 <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
                                     class="form-check-input"
                                     id="perm_{{ $permission->id }}"
-                                    {{ $plan->permissions->contains($permission->id) ? 'checked' : '' }}>
+                                    {{ $plan->permissions->pluck('name')->contains($permission->name) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="perm_{{ $permission->id }}">
                                     {{ $permission->description ?? $permission->name }}
                                 </label>
@@ -94,7 +94,6 @@
                 <i class="fas fa-save"></i> Enregistrer les modifications
             </button>
         </form>
-        
     </div>
 </div>
 @endsection

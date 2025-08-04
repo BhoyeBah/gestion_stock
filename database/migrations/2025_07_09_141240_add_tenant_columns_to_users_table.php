@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
+            $table->uuid('tenant_id')->nullable();
+            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+
             $table->boolean('is_owner')->default(false);
             $table->boolean('is_active')->default(true);
             $table->string('phone')->nullable();

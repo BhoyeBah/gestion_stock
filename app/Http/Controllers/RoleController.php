@@ -59,7 +59,7 @@ class RoleController extends Controller
             'name' => 'required|string|max:255',
             'tenant_id' => 'required|exists:tenants,id',
             'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id',
+            'permissions.*' => 'exists:permissions,id'
         ]);
 
         $user = Auth::user();
@@ -117,9 +117,19 @@ class RoleController extends Controller
             ? Tenant::where('is_active', true)->get()
             : [$user->tenant];
 
-        $permissions = $user->is_platform_user()
-            ? Permission::all()
-            : Subscription::where('tenant_id', $role->tenant_id)->where('is_active', true)->first()?->plan?->permissions ?? collect();
+        if ($user->is_platform_user()) {
+            // L'utilisateur appartient à la plateforme => il peut accéder à toutes les permissions
+            $permissions = Permission::all();
+        } else {
+            // L'utilisateur appartient à un tenant, on récupère les permissions via l'abonnement actif du rôle sélectionné
+            $tenantId = $user->roles()->first()?->tenant_id ?? $user->tenant_id;
+
+            $planPermissions = Subscription::where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->first()?->plan?->permissions;
+
+            $permissions = $planPermissions ?? collect();
+        }
 
         return view('back.roles.edit', compact('role', 'tenants', 'permissions'));
     }

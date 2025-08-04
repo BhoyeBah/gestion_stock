@@ -12,6 +12,7 @@ use App\Http\Controllers\Tenant\SubscriptionController as TenantSubscriptionCont
 
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ActivityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,10 +49,12 @@ Route::patch('/users/{id}/toggle', [UserController::class, "toggle"])->middlewar
 
 
 Route::middleware(['auth', 'subscription.permission:manage_invoices'])->prefix('tenant')->name('tenant.')->group(function () {
-    Route::get('subscriptions', [TenantSubscriptionController::class, 'index'])->name('subscriptions.index');
-    Route::get('subscriptions/{subscription}', [TenantSubscriptionController::class, 'show'])->name('subscriptions.show');
-    Route::get('subscriptions/{subscription}/pdf', [TenantSubscriptionController::class, 'pdf'])->name('subscriptions.pdf');
+    Route::get('/subscriptions', [TenantSubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::get('/subscriptions/{subscription}', [TenantSubscriptionController::class, 'show'])->name('subscriptions.show');
+    Route::get('/subscriptions/{subscription}/pdf', [TenantSubscriptionController::class, 'pdf'])->name('subscriptions.pdf');
 });
+
+Route::resource('/activities', ActivityController::class)->middleware('auth')->names('user.activity');
 
 
 
