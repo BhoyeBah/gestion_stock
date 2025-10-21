@@ -14,6 +14,7 @@ use App\Http\Controllers\Tenant\SubscriptionController as TenantSubscriptionCont
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\Admin\UnitsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +57,7 @@ Route::middleware(['auth', 'subscription.permission:manage_invoices'])->prefix('
 });
 
 Route::resource('/activities', ActivityController::class)->middleware('auth')->names('user.activity');
+Route::resource('/units', UnitsController::class)->names('admin.units');
 
 
 Route::middleware(['auth', 'can:manage_notifications'])->prefix('admin')->group(function () {
