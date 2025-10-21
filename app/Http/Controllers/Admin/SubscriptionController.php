@@ -10,10 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\LogsActivity;
 
-
 class SubscriptionController extends Controller
 {
     use LogsActivity;
+
     public function index()
     {
         $subscriptions = Subscription::with('tenant', 'plan')->latest()->paginate(50);
@@ -52,11 +52,14 @@ class SubscriptionController extends Controller
                 'payment_method' => $request->payment_method,
                 'starts_at' => $request->starts_at,
                 'ends_at' => $request->ends_at,
-                
             ]);
 
-            
-            $this->saveActivity("Ajout d'une souscription", "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}  ");
+            // 🔹 Sauvegarde activité
+            $this->saveActivity(
+                "Ajout d'une souscription",
+                "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}",
+                ['subscription_id' => $subscription->id]
+            );
 
             return redirect()->route('admin.subscriptions.index')->with('success', 'Souscription enregistrée avec succès.');
         } catch (\Throwable $e) {
@@ -90,7 +93,6 @@ class SubscriptionController extends Controller
             'payment_method' => 'nullable|string|max:255',
             'starts_at' => 'required|date',
             'ends_at' => 'required|date|after_or_equal:starts_at',
-            
         ]);
 
         try {
@@ -103,7 +105,14 @@ class SubscriptionController extends Controller
                 'ends_at' => $request->ends_at,
                 'is_active' => $request->is_active,
             ]);
-            $this->saveActivity("Modification de la souscription", "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}.");
+
+            // 🔹 Sauvegarde activité
+            $this->saveActivity(
+                "Modification de la souscription",
+                "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}",
+                ['subscription_id' => $subscription->id]
+            );
+
             return redirect()->route('admin.subscriptions.index')->with('success', 'Souscription mise à jour avec succès.');
         } catch (\Throwable $e) {
             report($e);
@@ -137,13 +146,18 @@ class SubscriptionController extends Controller
             $subscription->is_active = !$subscription->is_active;
             $subscription->save();
             DB::commit();
-            
 
-            $this->saveActivity("Modification du statut de la souscription", "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}");
+            // 🔹 Sauvegarde activité
+            $status = $subscription->is_active ? 'activée' : 'désactivée';
+            $this->saveActivity(
+                "Modification du statut de la souscription",
+                "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name} ($status)",
+                ['subscription_id' => $subscription->id, 'status' => $status]
+            );
+
             return redirect()->route('admin.subscriptions.index')
                 ->with('success', 'Statut de la souscription mis à jour avec succès.');
         } catch (\Throwable $e) {
-            
             DB::rollBack();
             report($e);
             return back()->with('error', 'Erreur lors de l’activation/désactivation de la souscription.');
@@ -155,7 +169,6 @@ class SubscriptionController extends Controller
         return view('back.admin.subscriptions.show', compact('subscription'));
     }
 
-
     public function destroy(Subscription $subscription)
     {
         if ($subscription->ends_at < now()) {
@@ -164,7 +177,14 @@ class SubscriptionController extends Controller
 
         try {
             $subscription->delete();
-            $this->saveActivity("suppression de la souscription", "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}");
+
+            // 🔹 Sauvegarde activité
+            $this->saveActivity(
+                "Suppression de la souscription",
+                "Entreprise: {$subscription->tenant->name} - {$subscription->plan->name}",
+                ['subscription_id' => $subscription->id]
+            );
+
             return redirect()->route('admin.subscriptions.index')->with('success', 'Souscription supprimée.');
         } catch (\Throwable $e) {
             report($e);

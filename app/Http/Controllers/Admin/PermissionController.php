@@ -31,8 +31,15 @@ class PermissionController extends Controller
 
         $validated['guard_name'] = 'web';
 
-        Permission::create($validated);
-        $this->saveActivity("Ajout d'une permission", "Permission {$request->name}.");
+        $permission = Permission::create($validated);
+
+        // 🔹 Sauvegarde activité
+        $this->saveActivity(
+            "Ajout d'une permission",
+            "Permission: {$permission->name}",
+            ['permission_id' => $permission->id]
+        );
+
         return redirect()->route('admin.permissions.index')->with('success', 'Permission créée avec succès.');
     }
 
@@ -49,15 +56,29 @@ class PermissionController extends Controller
         ]);
 
         $permission->update($validated);
-        $this->saveActivity("Mise à jour de la permission", "Permission {$request->name}.");
+
+        // 🔹 Sauvegarde activité
+        $this->saveActivity(
+            "Mise à jour de la permission",
+            "Permission: {$permission->name}",
+            ['permission_id' => $permission->id]
+        );
 
         return redirect()->route('admin.permissions.index')->with('success', 'Permission modifiée avec succès.');
     }
 
     public function destroy(Permission $permission)
     {
+        $permissionName = $permission->name;
+        $permissionId = $permission->id;
         $permission->delete();
-        $this->saveActivity("Suppression d'une permission", "Permission {$permission->name}.");
+
+        // 🔹 Sauvegarde activité
+        $this->saveActivity(
+            "Suppression d'une permission",
+            "Permission: {$permissionName}",
+            ['permission_id' => $permissionId]
+        );
 
         return redirect()->route('admin.permissions.index')->with('success', 'Permission supprimée.');
     }

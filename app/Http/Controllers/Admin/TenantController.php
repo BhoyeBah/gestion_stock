@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -11,30 +10,23 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Role;
 use Illuminate\Support\Facades\Storage;
-
+use App\Traits\LogsActivity;
 
 class TenantController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    use LogsActivity;
+
     public function index()
     {
         $tenants = Tenant::latest()->paginate(100);
         return view('back.admin.tenants.index', compact('tenants'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('back.admin.tenants.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -52,7 +44,6 @@ class TenantController extends Controller
         DB::beginTransaction();
 
         try {
-            // 1. Création du tenant
             $tenantData = $request->input('tenant');
             $tenant = new Tenant([
                 'name' => $tenantData['name'],
@@ -61,14 +52,12 @@ class TenantController extends Controller
                 'phone' => $tenantData['phone'] ?? null,
             ]);
 
-            // 2. Upload du logo
             if ($request->hasFile('tenant.logo')) {
                 $tenant->logo = $request->file('tenant.logo')->store('logos', 'public');
             }
 
             $tenant->save();
 
-            // 3. Création du rôle admin lié au tenant
             $adminRole = Role::create([
                 'name' =>  $roleName = $tenant->slug . "_Admin",
                 'guard_name' => 'web',
@@ -77,8 +66,6 @@ class TenantController extends Controller
 
             $adminRole->givePermissionTo(['manage_roles']);
 
-
-            // 4. Création du premier utilisateur
             $userData = $request->input('user');
 
             $user = new User([
@@ -89,17 +76,21 @@ class TenantController extends Controller
                 'tenant_id' => $tenant->id,
                 'is_owner' => true,
                 'is_active' => true,
-            
             ]);
             $user->save();
 
-            // 5. Assignation du rôle
             $user->assignRole($adminRole);
 
             DB::commit();
 
-            return redirect()->route('admin.tenants.index')->with('success', 'Entreprise créée avec succès.');
+            // 🔹 Sauvegarde activité
+            $this->saveActivity(
+                "Création d'une entreprise",
+                "Entreprise: {$tenant->name}",
+                ['tenant_id' => $tenant->id]
+            );
 
+            return redirect()->route('admin.tenants.index')->with('success', 'Entreprise créée avec succès.');
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
@@ -122,7 +113,7 @@ class TenantController extends Controller
         $request->merge([
             'is_active' => $request->has('is_active'),
         ]);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|alpha_dash|unique:tenants,slug,' . $tenant->id,
@@ -133,35 +124,35 @@ class TenantController extends Controller
         ]);
 
         try {
-            // Mise à jour des champs
             $tenant->name = $request->name;
-            if ($tenant->slug !== "platform"){
+            if ($tenant->slug !== "platform") {
                 $tenant->slug = $request->slug;
             }
             $tenant->email = $request->email ?? null;
             $tenant->phone = $request->phone ?? null;
             $tenant->is_active = $request->boolean('is_active');
 
-
-            // Nouveau logo
             if ($request->hasFile('logo')) {
-                // Supprimer l'ancien logo si présent
                 if ($tenant->logo && Storage::disk('public')->exists($tenant->logo)) {
                     Storage::disk('public')->delete($tenant->logo);
                 }
-
                 $tenant->logo = $request->file('logo')->store('logos', 'public');
             }
 
             $tenant->save();
 
+            // 🔹 Sauvegarde activité
+            $this->saveActivity(
+                "Mise à jour d'une entreprise",
+                "Entreprise: {$tenant->name}",
+                ['tenant_id' => $tenant->id]
+            );
+
             return redirect()->route('admin.tenants.index')->with('success', 'Entreprise mise à jour avec succès.');
         } catch (\Throwable $e) {
-
             report($e);
             return back()->with('error', 'Une erreur est survenue lors de la mise à jour.')->withInput();
         }
-    
     }
 
     public function destroy(Tenant $tenant)
@@ -171,14 +162,22 @@ class TenantController extends Controller
         }
 
         try {
+            $tenantName = $tenant->name;
+            $tenantId = $tenant->id;
             $tenant->delete();
+
+            // 🔹 Sauvegarde activité
+            $this->saveActivity(
+                "Suppression d'une entreprise",
+                "Entreprise: {$tenantName}",
+                ['tenant_id' => $tenantId]
+            );
 
             return redirect()
                 ->route('admin.tenants.index')
                 ->with('success', 'Entreprise supprimée avec succès.');
         } catch (\Throwable $e) {
             report($e);
-
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }
     }

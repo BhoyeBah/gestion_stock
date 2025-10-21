@@ -8,8 +8,6 @@ use App\Models\Plan;
 use App\Models\Permission;
 use App\Traits\LogsActivity;
 
-
-
 class PlanController extends Controller
 {
     use LogsActivity;
@@ -42,13 +40,19 @@ class PlanController extends Controller
             'description' => 'nullable|string|max:1000',
             'is_active' => 'nullable|boolean',
             'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id', // PAS de "uuid"
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $plan = Plan::create($validated);
         $plan->permissions()->sync($request->permissions ?? []);
 
-        $this->saveActivity("Ajout d'un plan", "Plan: {$plan->name}.");
+        // 🔹 Sauvegarde activité
+        $this->saveActivity(
+            "Ajout d'un plan",
+            "Plan: {$plan->name}",
+            ['plan_id' => $plan->id]
+        );
+
         return redirect()->route('admin.plans.index')->with('success', 'Plan ajouté avec succès.');
     }
 
@@ -78,13 +82,18 @@ class PlanController extends Controller
             'description' => 'nullable|string|max:1000',
             'is_active' => 'boolean',
             'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id', // PAS de "uuid"
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $plan->update($validated);
         $plan->permissions()->sync($request->permissions ?? []);
 
-        $this->saveActivity("Mise à jour du plan", "Plan: {$plan->name}.");
+        // 🔹 Sauvegarde activité
+        $this->saveActivity(
+            "Mise à jour du plan",
+            "Plan: {$plan->name}",
+            ['plan_id' => $plan->id]
+        );
 
         return redirect()->route('admin.plans.index')->with('success', 'Plan modifié avec succès.');
     }
@@ -92,8 +101,16 @@ class PlanController extends Controller
     public function destroy($id)
     {
         $plan = Plan::findOrFail($id);
+        $planName = $plan->name;
+        $planId = $plan->id;
         $plan->delete();
-        $this->saveActivity("Suppression du plan", "Plan: {$plan->name}.");
+
+        // 🔹 Sauvegarde activité
+        $this->saveActivity(
+            "Suppression du plan",
+            "Plan: {$planName}",
+            ['plan_id' => $planId]
+        );
 
         return redirect()->route('admin.plans.index')->with('success', 'Plan supprimé avec succès.');
     }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\SubscriptionController;
+use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Tenant\SubscriptionController as TenantSubscriptionController;
 
 
@@ -56,6 +57,17 @@ Route::middleware(['auth', 'subscription.permission:manage_invoices'])->prefix('
 
 Route::resource('/activities', ActivityController::class)->middleware('auth')->names('user.activity');
 
+
+Route::middleware(['auth', 'can:manage_notifications'])->prefix('admin')->group(function () {
+    Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('admin.notifications.index');
+    Route::get('/notifications/create', [AdminNotificationController::class, 'create'])->name('admin.notifications.create');
+    Route::post('/notifications', [AdminNotificationController::class, 'store'])->name('admin.notifications.store');
+});
+
+Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function () {
+    Route::get('/',[ProfileController::class, 'edit'])->name('edit');
+    Route::put('/',[ProfileController::class, 'update'])->name('update');
+});
 
 
 require __DIR__.'/auth.php';

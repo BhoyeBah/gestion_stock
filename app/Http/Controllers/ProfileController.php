@@ -2,59 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use App\Traits\LogsActivity;
 
 class ProfileController extends Controller
 {
+    use LogsActivity;
     /**
-     * Display the user's profile form.
+     * Affiche le profil de l'utilisateur connecté
      */
-    public function edit(Request $request): View
+    public function edit()
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $user = Auth::user();
+        return view('back.profile.edit', compact('user'));
     }
 
     /**
-     * Update the user's profile information.
+     * Met à jour le profil de l'utilisateur connecté
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request)
     {
-        $request->user()->fill($request->validated());
+        $user = Auth::user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email,' . $user->id,
+            'phone'    => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:6|confirmed',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $user->update([
+                'name'     => $validated['name'],
+                'email'    => $validated['email'],
+                'phone'    => $validated['phone'] ?? null,
+                'password' => !empty($validated['password']) 
+                                ? Hash::make($validated['password']) 
+                                : $user->password,
+            ]);
+            $this->saveActivity(
+                'update_profile',                       // action
+                'Mise à jour des informations de profil', // description
+                ['profile_id' => auth()->id()]            // données extra optionnelles
+            );
+            DB::commit();
+            
+            return back()->with('success', '✅ Profil mis à jour avec succès.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+            return back()->with('error', '❌ Une erreur est survenue.')->withInput();
         }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
-    }
-
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
     }
 }

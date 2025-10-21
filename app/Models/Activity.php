@@ -11,7 +11,7 @@ class Activity extends Model
 {
     use HasFactory, HasUuid;
 
-    protected $fillable = ["user_id", "action", "description"];
+    protected $fillable = ["id", "user_id", "action", "description", "meta"];
 
     public function user()
     {
