@@ -42,13 +42,22 @@
         </a>
     </li>
 
+    @if($current_user->can('manage_categories'))
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('categories.index') }}">
+            <i class="fas fa-receipt"></i>
+            <span>Catégories</span>
+        </a>
+    </li>
+    @endif
+
     {{-- Section visible uniquement pour l'admin plateforme --}}
     @if($current_user->is_platform_user())
         <hr class="sidebar-divider">
         <div class="sidebar-heading">
             Administration
         </div>
-        
+
         @if($current_user->can('manage_permissions'))
         <!-- Permissions -->
         <li class="nav-item">
@@ -87,7 +96,7 @@
                 <span>Souscriptions</span>
             </a>
         </li>
-        @endif 
+        @endif
     @endif
 
     <!-- Divider -->
@@ -127,7 +136,8 @@
     </li>
     @endif
 
-    
+
+
 
 
 

@@ -15,6 +15,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Admin\UnitsController;
+use App\Http\Controllers\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +59,8 @@ Route::middleware(['auth', 'subscription.permission:manage_invoices'])->prefix('
 
 Route::resource('/activities', ActivityController::class)->middleware('auth')->names('user.activity');
 Route::resource('/units', UnitsController::class)->names('admin.units');
+Route::resource('/categories', CategoryController::class)->middleware(['auth', 'subscription.permission:manage_categories'])->names('categories');
+
 
 
 Route::middleware(['auth', 'can:manage_notifications'])->prefix('admin')->group(function () {
