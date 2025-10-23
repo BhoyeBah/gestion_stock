@@ -54,8 +54,17 @@
     @if($current_user->can('read_products'))
     <li class="nav-item">
         <a class="nav-link" href="{{ route('products.index') }}">
-            <i class="fas fa-receipt"></i>
+            <i class="fas fa-tags"></i>
             <span>Produits</span>
+        </a>
+    </li>
+    @endif
+
+    @if($current_user->can('read_suppliers'))
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('suppliers.index') }}">
+            <i class="fas fa-users"></i>
+            <span>Fournisseurs</span>
         </a>
     </li>
     @endif
