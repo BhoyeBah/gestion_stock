@@ -16,6 +16,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Admin\UnitsController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,6 +62,8 @@ Route::resource('/activities', ActivityController::class)->middleware('auth')->n
 Route::resource('/units', UnitsController::class)->names('admin.units');
 Route::resource('/categories', CategoryController::class)->middleware(['auth', 'subscription.permission:manage_categories'])->names('categories');
 
+Route::patch("/products/{id}", [ProductController::class, 'toggleActive'])->name("products.toggle");
+Route::resource('/products', ProductController::class)->middleware(['auth', 'subscription.permission:read_products'])->names('products');
 
 
 Route::middleware(['auth', 'can:manage_notifications'])->prefix('admin')->group(function () {
