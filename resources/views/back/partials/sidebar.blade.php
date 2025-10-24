@@ -69,6 +69,15 @@
     </li>
     @endif
 
+    @if($current_user->can('manage_warehouses'))
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('warehouses.index') }}">
+            <i class="fas fa-warehouse"></i>
+            <span>Entrêpots</span>
+        </a>
+    </li>
+    @endif
+
     {{-- Section visible uniquement pour l'admin plateforme --}}
     @if($current_user->is_platform_user())
         <hr class="sidebar-divider">
