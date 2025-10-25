@@ -17,6 +17,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Admin\UnitsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WarehouseController;
@@ -76,6 +77,8 @@ Route::resource("/clients", ClientController::class)->names("clients");
 
 Route::patch("/warehouses/{id}", [WarehouseController::class, 'toggleActive'])->name("warehouses.toggle");
 Route::resource('/warehouses', WarehouseController::class)->middleware(['auth', 'subscription.permission:manage_warehouses'])->names("warehouses");
+
+Route::resource("/invoices", InvoiceController::class)->middleware(['auth'])->names("invoice_suppliers");
 
 Route::middleware(['auth', 'can:manage_notifications'])->prefix('admin')->group(function () {
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('admin.notifications.index');
