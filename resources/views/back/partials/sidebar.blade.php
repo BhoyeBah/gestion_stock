@@ -14,7 +14,7 @@
 
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
-    @if(isset($current_user->tenant) && isset($current_user->tenant->subscriptions))
+    @if (isset($current_user->tenant) && isset($current_user->tenant->subscriptions))
         @php
             $active_subscription = $current_user->tenant->subscriptions
                 ->where('is_active', true)
@@ -23,7 +23,7 @@
                 ->first();
         @endphp
 
-        @if($active_subscription)
+        @if ($active_subscription)
             <li class="nav-item px-3 m-2">
                 <span class="badge badge-success text-center">
                     {{ $active_subscription->plan->name }}
@@ -42,87 +42,94 @@
         </a>
     </li>
 
-    @if($current_user->can('manage_categories'))
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('categories.index') }}">
-            <i class="fas fa-receipt"></i>
-            <span>Catégories</span>
-        </a>
-    </li>
+    @if ($current_user->can('manage_categories'))
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('categories.index') }}">
+                <i class="fas fa-receipt"></i>
+                <span>Catégories</span>
+            </a>
+        </li>
     @endif
 
-    @if($current_user->can('read_products'))
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('products.index') }}">
-            <i class="fas fa-tags"></i>
-            <span>Produits</span>
-        </a>
-    </li>
+    @if ($current_user->can('read_products'))
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('products.index') }}">
+                <i class="fas fa-tags"></i>
+                <span>Produits</span>
+            </a>
+        </li>
     @endif
 
-    @if($current_user->can('read_suppliers'))
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('suppliers.index') }}">
-            <i class="fas fa-users"></i>
-            <span>Fournisseurs</span>
-        </a>
-    </li>
+    @if ($current_user->can('read_suppliers'))
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('suppliers.index') }}">
+                <i class="fas fa-users"></i>
+                <span>Fournisseurs</span>
+            </a>
+        </li>
     @endif
 
-    @if($current_user->can('manage_warehouses'))
+    @if ($current_user->can('manage_warehouses'))
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('warehouses.index') }}">
+                <i class="fas fa-warehouse"></i>
+                <span>Entrêpots</span>
+            </a>
+        </li>
+    @endif
+
     <li class="nav-item">
-        <a class="nav-link" href="{{ route('warehouses.index') }}">
-            <i class="fas fa-warehouse"></i>
-            <span>Entrêpots</span>
+        <a class="nav-link" href="{{ route('invoice_suppliers.index') }}">
+            <i class="fas fa-fw fa-file-invoice"></i>
+            <span>Factures Fournisseurs</span>
         </a>
     </li>
-    @endif
 
     {{-- Section visible uniquement pour l'admin plateforme --}}
-    @if($current_user->is_platform_user())
+    @if ($current_user->is_platform_user())
         <hr class="sidebar-divider">
         <div class="sidebar-heading">
             Administration
         </div>
 
-        @if($current_user->can('manage_permissions'))
-        <!-- Permissions -->
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('admin.permissions.index') }}">
-                <i class="fas fa-fw fa-key"></i>
-                <span>Permissions</span>
-            </a>
-        </li>
+        @if ($current_user->can('manage_permissions'))
+            <!-- Permissions -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin.permissions.index') }}">
+                    <i class="fas fa-fw fa-key"></i>
+                    <span>Permissions</span>
+                </a>
+            </li>
         @endif
 
-        @if($current_user->can('manage_plans'))
-        <!-- Plans -->
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('admin.plans.index') }}">
-                <i class="fas fa-fw fa-tags"></i>
-                <span>Plans</span>
-            </a>
-        </li>
+        @if ($current_user->can('manage_plans'))
+            <!-- Plans -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin.plans.index') }}">
+                    <i class="fas fa-fw fa-tags"></i>
+                    <span>Plans</span>
+                </a>
+            </li>
         @endif
 
-        @if($current_user->can('manage_tenants'))
-        <!-- Tenants -->
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('admin.tenants.index') }}">
-                <i class="fas fa-fw fa-building"></i>
-                <span>Entreprises</span>
-            </a>
-        </li>
+        @if ($current_user->can('manage_tenants'))
+            <!-- Tenants -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin.tenants.index') }}">
+                    <i class="fas fa-fw fa-building"></i>
+                    <span>Entreprises</span>
+                </a>
+            </li>
         @endif
 
-        @if($current_user->can('manage_subscriptions'))
-        <!-- Subscriptions -->
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('admin.subscriptions.index') }}">
-                <i class="fas fa-fw fa-receipt"></i>
-                <span>Souscriptions</span>
-            </a>
-        </li>
+        @if ($current_user->can('manage_subscriptions'))
+            <!-- Subscriptions -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin.subscriptions.index') }}">
+                    <i class="fas fa-fw fa-receipt"></i>
+                    <span>Souscriptions</span>
+                </a>
+            </li>
         @endif
     @endif
 
@@ -133,34 +140,34 @@
         Gestion
     </div>
 
-    @if($current_user->can('manage_roles'))
-    <!-- Rôles -->
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('roles.index') }}">
-            <i class="fas fa-fw fa-user-shield"></i>
-            <span>Rôles</span>
-        </a>
-    </li>
+    @if ($current_user->can('manage_roles'))
+        <!-- Rôles -->
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('roles.index') }}">
+                <i class="fas fa-fw fa-user-shield"></i>
+                <span>Rôles</span>
+            </a>
+        </li>
     @endif
 
 
-    @if($current_user->can('manage_users'))
-    <!-- Utilisateurs -->
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('users.index') }}">
-            <i class="fas fa-fw fa-users"></i>
-            <span>Utilisateurs</span>
-        </a>
-    </li>
+    @if ($current_user->can('manage_users'))
+        <!-- Utilisateurs -->
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('users.index') }}">
+                <i class="fas fa-fw fa-users"></i>
+                <span>Utilisateurs</span>
+            </a>
+        </li>
     @endif
 
-    @if($current_user->can('manage_invoices'))
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('tenant.subscriptions.index') }}">
-            <i class="fas fa-receipt"></i>
-            <span>Mes souscriptions</span>
-        </a>
-    </li>
+    @if ($current_user->can('manage_invoices'))
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('tenant.subscriptions.index') }}">
+                <i class="fas fa-receipt"></i>
+                <span>Mes souscriptions</span>
+            </a>
+        </li>
     @endif
 
 
