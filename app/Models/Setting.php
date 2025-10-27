@@ -7,13 +7,12 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Supplier extends Model
+class Setting extends Model
 {
     use HasFactory, HasTenant, HasUuid;
-     protected $fillable = [
-        'full_name',
-        'email',
-        'phone_number',
-        'address'
+    protected $fillable = [
+        'tenant_id',
+        'currency',
+        'tva',
     ];
 }

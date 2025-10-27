@@ -1,17 +1,14 @@
 <?php
 
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\HasUuid;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Tenant extends Model
 {
     use HasFactory, HasUuid;
-    
 
     protected $fillable = [
         'name',
@@ -55,5 +52,10 @@ class Tenant extends Model
     public function currentSubscription()
     {
         return $this->hasOne(Subscription::class)->latestOfMany();
+    }
+
+    public function settings()
+    {
+        return $this->belongsTo(Setting::class);
     }
 }

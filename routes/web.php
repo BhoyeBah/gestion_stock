@@ -1,26 +1,25 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PlanController;
-use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\SubscriptionController;
-use App\Http\Controllers\Admin\AdminNotificationController;
-use App\Http\Controllers\Tenant\SubscriptionController as TenantSubscriptionController;
-
-
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\UnitsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\Tenant\SubscriptionController as TenantSubscriptionController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,20 +40,17 @@ Route::get('/dashboard', function () {
     return view('back.layouts.admin');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-
-
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function(){
+Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('/permissions', PermissionController::class)->middleware('subscription.permission:manage_permissions');
     Route::resource('/plans', PlanController::class)->middleware('subscription.permission:manage_plans');
     Route::resource('/tenants', TenantController::class)->middleware('subscription.permission:manage_tenants');
     Route::resource('/subscriptions', SubscriptionController::class)->middleware('subscription.permission:manage_subscriptions');
-    Route::patch('/subscriptions/toggle/{subscription}', [SubscriptionController::class, "toggleActive"])->name('subscriptions.toggle');
+    Route::patch('/subscriptions/toggle/{subscription}', [SubscriptionController::class, 'toggleActive'])->name('subscriptions.toggle');
 });
 
 Route::middleware(['auth', 'subscription.permission:manage_roles'])->resource('/roles', RoleController::class);
 Route::middleware(['auth', 'subscription.permission:manage_users'])->resource('/users', UserController::class);
-Route::patch('/users/{id}/toggle', [UserController::class, "toggle"])->middleware(['auth', 'subscription.permission:manage_users'])->name('users.toggle');
-
+Route::patch('/users/{id}/toggle', [UserController::class, 'toggle'])->middleware(['auth', 'subscription.permission:manage_users'])->name('users.toggle');
 
 Route::middleware(['auth', 'subscription.permission:manage_invoices'])->prefix('tenant')->name('tenant.')->group(function () {
     Route::get('/subscriptions', [TenantSubscriptionController::class, 'index'])->name('subscriptions.index');
@@ -66,19 +62,17 @@ Route::resource('/activities', ActivityController::class)->middleware('auth')->n
 Route::resource('/units', UnitsController::class)->names('admin.units');
 Route::resource('/categories', CategoryController::class)->middleware(['auth', 'subscription.permission:manage_categories'])->names('categories');
 
-Route::patch("/products/{id}", [ProductController::class, 'toggleActive'])->name("products.toggle");
+Route::patch('/products/{id}', [ProductController::class, 'toggleActive'])->name('products.toggle');
 Route::resource('/products', ProductController::class)->middleware(['auth', 'subscription.permission:read_products'])->names('products');
 
-Route::patch("/suppliers/{id}", [SupplierController::class, 'toggleActive'])->name("suppliers.toggle");
-Route::resource("/suppliers", SupplierController::class)->names("suppliers");
+Route::patch('/warehouses/{id}', [WarehouseController::class, 'toggleActive'])->name('warehouses.toggle');
+Route::resource('/warehouses', WarehouseController::class)->middleware(['auth', 'subscription.permission:manage_warehouses'])->names('warehouses');
 
-Route::patch("/clients/{id}", [ClientController::class, 'toggleActive'])->name("clients.toggle");
-Route::resource("/clients", ClientController::class)->names("clients");
+Route::resource('/invoices', InvoiceController::class)->middleware(['auth'])->names('invoice_suppliers');
 
-Route::patch("/warehouses/{id}", [WarehouseController::class, 'toggleActive'])->name("warehouses.toggle");
-Route::resource('/warehouses', WarehouseController::class)->middleware(['auth', 'subscription.permission:manage_warehouses'])->names("warehouses");
-
-Route::resource("/invoices", InvoiceController::class)->middleware(['auth'])->names("invoice_suppliers");
+Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
+Route::put('/settings/{setting}', [SettingController::class, 'update'])->name('settings.update');
 
 Route::middleware(['auth', 'can:manage_notifications'])->prefix('admin')->group(function () {
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('admin.notifications.index');
@@ -87,9 +81,34 @@ Route::middleware(['auth', 'can:manage_notifications'])->prefix('admin')->group(
 });
 
 Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function () {
-    Route::get('/',[ProfileController::class, 'edit'])->name('edit');
-    Route::put('/',[ProfileController::class, 'update'])->name('update');
+    Route::get('/', [ProfileController::class, 'edit'])->name('edit');
+    Route::put('/', [ProfileController::class, 'update'])->name('update');
 });
 
+
+
+Route::prefix('clients')->name('clients.')->group(function () {
+    Route::get('/', [ContactController::class, 'index'])->name('index')->defaults('type', 'clients');
+    Route::get('/create', [ContactController::class, 'create'])->name('create')->defaults('type', 'clients');
+    Route::post('/', [ContactController::class, 'store'])->name('store')->defaults('type', 'clients');
+    Route::get('/{contact}', [ContactController::class, 'show'])->name('show')->defaults('type', 'clients');
+    Route::get('/{contact}/edit', [ContactController::class, 'edit'])->name('edit')->defaults('type', 'clients');
+    Route::put('/{contact}', [ContactController::class, 'update'])->name('update')->defaults('type', 'clients');
+    Route::delete('/{contact}', [ContactController::class, 'destroy'])->name('destroy')->defaults('type', 'clients');
+    Route::patch('/{id}', [ContactController::class, 'toggleActive'])->name('toggle')->defaults('type', 'clients');
+
+});
+
+Route::prefix('suppliers')->name('suppliers.')->group(function () {
+    Route::get('/', [ContactController::class, 'index'])->name('index')->defaults('type', 'suppliers');
+    Route::get('/create', [ContactController::class, 'create'])->name('create')->defaults('type', 'suppliers');
+    Route::post('/', [ContactController::class, 'store'])->name('store')->defaults('type', 'suppliers');
+    Route::get('/{contact}', [ContactController::class, 'show'])->name('show')->defaults('type', 'suppliers');
+    Route::get('/{contact}/edit', [ContactController::class, 'edit'])->name('edit')->defaults('type', 'suppliers');
+    Route::put('/{contact}', [ContactController::class, 'update'])->name('update')->defaults('type', 'suppliers');
+    Route::delete('/{contact}', [ContactController::class, 'destroy'])->name('destroy')->defaults('type', 'suppliers');
+    Route::patch('/{id}', [ContactController::class, 'toggleActive'])->name('toggle')->defaults('type', 'suppliers');
+
+});
 
 require __DIR__.'/auth.php';
