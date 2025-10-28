@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreInvoiceSupplierRequest;
+use App\Http\Requests\StoreInvoiceRequest;
+use App\Models\Contact;
 use App\Models\Invoice;
 use App\Models\Product;
-use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
 {
-    protected $service;
+    public InvoiceService $service;
 
     public function __construct(InvoiceService $service)
     {
@@ -22,29 +22,43 @@ class InvoiceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, string $type)
     {
-        $query = Invoice::with(['supplier', 'warehouse', 'items.product'])->latest();
+        $this->validateType($type);
 
-        $perPage = 10;
-        $perPageRequest = $request->perPage;
+        $status_list = ['draft', 'validated', 'partial', 'paid', 'cancelled'];
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        $status = $request->input('status');
+
+        $query = in_array($status, $status_list) ? Invoice::type(rtrim($type, 's'))->where('status', $status) : Invoice::type(rtrim($type, 's'));
+
+        $search_number = $request->input('search_number');
+        $search_contact = $request->input('search_contact');
+
+        $status = in_array($status, $status_list) ? $status : 'draft';
+
+        if (! empty($search_contact)) {
+            $query = $query->whereHas('contact', function ($query) use ($search_contact) {
+                $query->where('fullname', 'like', "%$search_contact%")
+                    ->orWhere('phone_number', 'like', "%$search_contact%");
+            });
         }
 
-        if ($perPageRequest && $perPageRequest > 0 && $perPageRequest < 50) {
-            $perPage = $perPageRequest;
+        if (! empty($search_number)) {
+            $query = $query->where('invoice_number', 'like',  "%$search_number%");
+
         }
 
-        // Pagination
-        $invoices = $query->paginate($perPage);
+        $invoiceType = $type === 'clients' ? 'Clients' : 'Fournisseurs';
 
-        $suppliers = Supplier::all();
-        $warehouses = Warehouse::all();
+        $invoices = $query->paginate(10);
         $products = Product::all();
+        $contacts = Contact::type(rtrim($type, 's'))->get();
 
-        return view('back.invoices.index', compact('invoices', 'products', 'suppliers', 'warehouses'));
+        $warehouses = Warehouse::all();
+
+        return view('back.invoices.index', compact('invoices', 'invoiceType', 'type', 'products', 'contacts', 'warehouses'));
+
     }
 
     /**
@@ -58,55 +72,108 @@ class InvoiceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreInvoiceSupplierRequest $request)
+    public function store(StoreInvoiceRequest $request)
     {
         //
+        $path = $request->path();
+        $type = $request->type;
 
-        $data = $request->all();
+        // Vérifie que le type est bien dans le path
+        if (! str_contains($path, $type)) {
+            abort(403, "Action non autorisée : le type ne correspond pas à l'URL.");
+        }
 
-        $this->service->createInvoice($data);
+        $this->validateType($type.'s');
+        $this->service->createInvoice($request->validated());
 
-        return back()->with('success', 'La facture a bien été enregistré');
+        return back()->with('success', 'Facture enregistré avec succés');
 
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Invoice $invoice)
+    public function show(string $type, Invoice $invoice)
     {
         //
+        $this->validateType($type);
+
+        $this->checkAuthorization($invoice, $type);
+
         return view('back.invoices.show', compact('invoice'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Invoice $invoice)
+    public function edit(string $type, Invoice $invoice)
     {
-        //
+
+        $this->validateType($type);
+        $this->checkAuthorization($invoice, $type);
+
+        $products = Product::all();
+        $contacts = Contact::type(rtrim($type, 's'))->get();
+        $warehouses = Warehouse::all();
+        // dd($products, $contacts, $warehouses);
+
+        return view('back.invoices.edit', compact('invoice', 'products', 'warehouses', 'contacts', 'type'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Invoice $invoice)
+    public function update(StoreInvoiceRequest $request, string $type, Invoice $invoice)
     {
         //
+
+        $this->validateType($type);
+        $this->checkAuthorization($invoice, $type);
+
+        $new_invoice = $this->service->createInvoice($request->validated());
+        $invoice->delete();
+
+        return redirect()->route('invoices.edit', [$type, $new_invoice->id])->with('success', 'Facture modifier avec succès');
+
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Invoice $invoice)
+    public function destroy(string $type, Invoice $invoice)
     {
-        if ($invoice->status !== 'DRAFT') {
-            return back()->with('error', 'Seules les factures en brouillon peuvent être supprimées.');
+        $current_user = auth()->user();
+
+        $error_message = "Vous n'avez pas le droit du supprimer cette facture";
+        //
+        if ($invoice->status !== 'draft') {
+            abort(403, 'Seule les factures en brouillon sont modifiables');
         }
 
+        if ($invoice->type.'s' !== $type) {
+            abort(403, $error_message);
+        }
+
+        if ($current_user->tenant_id !== $invoice->tenant_id) {
+            abort(403, $error_message);
+        }
         $invoice->delete();
 
-        return back()->with('success', 'Facture supprimée avec succès.');
+        return back()->with('success', 'Facture supprimée avec succès');
     }
-    
+
+    protected function validateType(string $type): void
+    {
+        if (! in_array($type, ['clients', 'suppliers'])) {
+            abort(404, 'Page inexistante');
+        }
+    }
+
+    protected function checkAuthorization(Invoice $invoice, string $type)
+    {
+        if ($invoice->type !== rtrim($type, 's')) {
+            abort(403, "Vous n'êtes pas autorisé à effectuer cette opération.");
+        }
+
+    }
 }

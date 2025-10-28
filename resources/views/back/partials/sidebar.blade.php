@@ -79,11 +79,19 @@
     @endif
 
     <li class="nav-item">
-        <a class="nav-link" href="{{ route('invoice_suppliers.index') }}">
+        <a class="nav-link" href="{{ route('invoices.index', ['type' => 'suppliers']) }}">
             <i class="fas fa-fw fa-file-invoice"></i>
             <span>Factures Fournisseurs</span>
         </a>
     </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('invoices.index', ['type' => 'clients']) }}">
+            <i class="fas fa-fw fa-file-invoice"></i>
+            <span>Factures Clients</span>
+        </a>
+    </li>
+
 
     {{-- Section visible uniquement pour l'admin plateforme --}}
     @if ($current_user->is_platform_user())

@@ -12,45 +12,64 @@ class Invoice extends Model
     use HasFactory, HasTenant, HasUuid;
 
     protected $fillable = [
-        'id',
-        'tenant_id',
-        'invoice_number',
-        'due_date',
-        'invoice_date',
-        'status',
-        'supplier_id',
         'warehouse_id',
+        'contact_id',
+        'invoice_number',
+        'invoice_date',
+        'due_date',
+        'type',
+        'total_invoice',
+        'balance',
+        'created_at',
+        'updated_at',
     ];
 
-    /**
-     * 🔗 Relation : une facture appartient à un fournisseur.
-     */
-    public function supplier()
+    // Types disponibles
+    public const TYPE_CLIENT = 'client';
+    public const TYPE_SUPPLIER = 'supplier';
+
+    /* =====================
+       SCOPES
+       ===================== */
+    public function scopeType($query, string $type)
     {
-        return $this->belongsTo(Supplier::class);
+        return $query->where('type', $type);
     }
 
-    /**
-     * 🔗 Relation : une facture appartient à un entrepôt.
-     */
+    public function scopeClients($query)
+    {
+        return $this->scopeType($query, self::TYPE_CLIENT);
+    }
+
+    public function scopeSuppliers($query)
+    {
+        return $this->scopeType($query, self::TYPE_SUPPLIER);
+    }
+
+    public function scopeStatus($query, string $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /* =====================
+       RELATIONS
+       ===================== */
+
+    // Lien avec le contact (client ou fournisseur)
+    public function contact()
+    {
+        return $this->belongsTo(Contact::class);
+    }
+
+    // Lien avec l'entrepôt
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
     }
 
-    /**
-     * 🔗 Relation : une facture contient plusieurs lignes (InvoiceItems).
-     */
+    // Lignes de facture
     public function items()
     {
         return $this->hasMany(InvoiceItem::class);
-    }
-
-    /**
-     * 🔗 Relation : une facture appartient à un tenant (multi-entreprise).
-     */
-    public function tenant()
-    {
-        return $this->belongsTo(Tenant::class);
     }
 }

@@ -15,39 +15,49 @@
     </thead>
     <tbody>
         @forelse($invoiceItems as $index => $item)
-        <tr>
-            <td>
-                <select name="items[{{ $index }}][product_id]" class="form-control productSelect" required>
-                    <option value="">Sélectionnez un produit</option>
-                    @foreach($products as $product)
-                        <option value="{{ $product->id }}" data-price="{{ $product->price }}" {{ $item->product_id == $product->id ? 'selected disabled' : '' }}>
-                            {{ $product->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </td>
-            <td><input type="number" name="items[{{ $index }}][quantity]" class="form-control quantity" value="{{ $item->quantity }}" min="1" required></td>
-            <td><input type="number" name="items[{{ $index }}][price]" class="form-control price" value="{{ $item->price ?? 0 }}" min="0" required></td>
-            <td><input type="number" name="items[{{ $index }}][discount]" class="form-control discount" value="{{ $item->discount ?? 0 }}" min="0"></td>
-            <td class="total_line">{{ $item->quantity * $item->price - ($item->discount ?? 0) }}</td>
-            <td class="text-center"><button type="button" class="btn btn-sm btn-danger removeLineBtn"><i class="fas fa-trash"></i></button></td>
-        </tr>
+            <tr>
+                <td>
+                    <select name="items[{{ $index }}][product_id]" class="form-control productSelect" required>
+                        <option value="">Sélectionnez un produit</option>
+                        @foreach ($products as $product)
+                            <option value="{{ $product->id }}" data-price="{{ $product->price }}"
+                                {{ $item->product_id == $product->id ? 'selected disabled' : '' }}>
+                                {{ $product->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </td>
+                <td><input type="number" name="items[{{ $index }}][quantity]" class="form-control quantity"
+                        value="{{ $item->quantity }}" min="1" required></td>
+                <td><input type="number" name="items[{{ $index }}][unit_price]" class="form-control unit_price"
+                        value="{{ $item->unit_price ?? 0 }}" min="0" required></td>
+                <td><input type="number" name="items[{{ $index }}][discount]" class="form-control discount"
+                        value="{{ $item->discount ?? 0 }}" min="0"></td>
+                <td class="total_line">{{ $item->quantity * ($item->unit_price ?? 0) - ($item->discount ?? 0) }}</td>
+                <td class="text-center"><button type="button" class="btn btn-sm btn-danger removeLineBtn"><i
+                            class="fas fa-trash"></i></button></td>
+            </tr>
         @empty
-        <tr>
-            <td>
-                <select name="items[0][product_id]" class="form-control productSelect" required>
-                    <option value="">Sélectionnez un produit</option>
-                    @foreach($products as $product)
-                        <option value="{{ $product->id }}" data-price="{{ $product->price }}">{{ $product->name }}</option>
-                    @endforeach
-                </select>
-            </td>
-            <td><input type="number" name="items[0][quantity]" class="form-control quantity" value="1" min="1" required></td>
-            <td><input type="number" name="items[0][price]" class="form-control price" value="0" min="0" required></td>
-            <td><input type="number" name="items[0][discount]" class="form-control discount" value="0" min="0"></td>
-            <td class="total_line">0</td>
-            <td class="text-center"><button type="button" class="btn btn-sm btn-danger removeLineBtn"><i class="fas fa-trash"></i></button></td>
-        </tr>
+            <tr>
+                <td>
+                    <select name="items[0][product_id]" class="form-control productSelect" required>
+                        <option value="">Sélectionnez un produit</option>
+                        @foreach ($products as $product)
+                            <option value="{{ $product->id }}" data-price="{{ $product->price }}">
+                                {{ $product->name }}</option>
+                        @endforeach
+                    </select>
+                </td>
+                <td><input type="number" name="items[0][quantity]" class="form-control quantity" value="1"
+                        min="1" required></td>
+                <td><input type="number" name="items[0][unit_price]" class="form-control unit_price" value="0"
+                        min="0" required></td>
+                <td><input type="number" name="items[0][discount]" class="form-control discount" value="0"
+                        min="0"></td>
+                <td class="total_line">0</td>
+                <td class="text-center"><button type="button" class="btn btn-sm btn-danger removeLineBtn"><i
+                            class="fas fa-trash"></i></button></td>
+            </tr>
         @endforelse
     </tbody>
 </table>
@@ -61,129 +71,119 @@
     <strong>Total Facture : </strong> <span id="invoiceTotal">0</span> FCFA
 </div>
 
-
-
-
-
-
 @push('scripts')
-<script>
-let lineIndex = document.querySelectorAll('#invoiceLinesTable tbody tr').length;
+    <script>
+        let lineIndex = document.querySelectorAll('#invoiceLinesTable tbody tr').length;
 
-function toNumber(v){
-    const n = Number(String(v).replace(/\s+/g,'')); // retire espaces
-    return isFinite(n) ? n : 0;
-}
+        function toNumber(v) {
+            const n = Number(String(v).replace(/\s+/g, ''));
+            return isFinite(n) ? n : 0;
+        }
 
-function updateLineTotal(row) {
-    const qty = toNumber(row.querySelector('.quantity').value);
-    const price = toNumber(row.querySelector('.price').value);
-    const discount = toNumber(row.querySelector('.discount').value);
-    const total = Math.max(0, qty * price - discount);
-    row.querySelector('.total_line').textContent = total;
-    updateInvoiceTotals();
-}
+        function updateLineTotal(row) {
+            const qty = toNumber(row.querySelector('.quantity').value);
+            const price = toNumber(row.querySelector('.unit_price').value);
+            const discount = toNumber(row.querySelector('.discount').value);
+            const total = Math.max(0, qty * price - discount);
+            row.querySelector('.total_line').textContent = total;
+            updateInvoiceTotals();
+        }
 
-function updateInvoiceTotals() {
-    let total = 0, discountTotal = 0;
-    document.querySelectorAll('#invoiceLinesTable tbody tr').forEach(row => {
-        total += toNumber(row.querySelector('.total_line').textContent);
-        discountTotal += toNumber(row.querySelector('.discount').value);
-    });
-    document.getElementById('invoiceTotal').textContent = total;
-    document.getElementById('invoiceDiscountTotal').textContent = discountTotal;
-}
+        function updateInvoiceTotals() {
+            let total = 0,
+                discountTotal = 0;
+            document.querySelectorAll('#invoiceLinesTable tbody tr').forEach(row => {
+                total += toNumber(row.querySelector('.total_line').textContent);
+                discountTotal += toNumber(row.querySelector('.discount').value);
+            });
+            document.getElementById('invoiceTotal').textContent = total;
+            document.getElementById('invoiceDiscountTotal').textContent = discountTotal;
+        }
 
-// Désactive les produits déjà choisis (garantit unicité visuelle)
-function updateProductOptions() {
-    const selectedValues = Array.from(document.querySelectorAll('.productSelect'))
-        .map(s => s.value)
-        .filter(v => v !== "");
-    document.querySelectorAll('.productSelect').forEach(select => {
-        Array.from(select.options).forEach(option => {
-            // on laisse toujours l'option correspondant à la valeur courante du select
-            if(option.value === "" || select.value === option.value) option.disabled = false;
-            else option.disabled = selectedValues.includes(option.value);
+        function updateProductOptions() {
+            const selectedValues = Array.from(document.querySelectorAll('.productSelect'))
+                .map(s => s.value)
+                .filter(v => v !== "");
+            document.querySelectorAll('.productSelect').forEach(select => {
+                Array.from(select.options).forEach(option => {
+                    if (option.value === "" || select.value === option.value) option.disabled = false;
+                    else option.disabled = selectedValues.includes(option.value);
+                });
+            });
+        }
+
+        function reindexRows() {
+            const rows = document.querySelectorAll('#invoiceLinesTable tbody tr');
+            rows.forEach((row, i) => {
+                const sel = row.querySelector('.productSelect');
+                const qty = row.querySelector('.quantity');
+                const price = row.querySelector('.unit_price');
+                const disc = row.querySelector('.discount');
+                if (sel) sel.setAttribute('name', `items[${i}][product_id]`);
+                if (qty) qty.setAttribute('name', `items[${i}][quantity]`);
+                if (price) price.setAttribute('name', `items[${i}][unit_price]`);
+                if (disc) disc.setAttribute('name', `items[${i}][discount]`);
+            });
+            lineIndex = rows.length;
+        }
+
+        document.querySelector('#invoiceLinesTable tbody').addEventListener('change', function(e) {
+            if (e.target.classList.contains('productSelect')) {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                const price = selectedOption ? selectedOption.dataset.price || 0 : 0;
+                const row = e.target.closest('tr');
+                row.querySelector('.unit_price').value = price;
+                updateLineTotal(row);
+                updateProductOptions();
+            }
         });
-    });
-}
 
-// Réindexe les names des inputs (items[0]..., items[1]..., ...)
-function reindexRows() {
-    const rows = document.querySelectorAll('#invoiceLinesTable tbody tr');
-    rows.forEach((row, i) => {
-        const sel = row.querySelector('.productSelect');
-        const qty = row.querySelector('.quantity');
-        const price = row.querySelector('.price');
-        const disc = row.querySelector('.discount');
-        if(sel) sel.setAttribute('name', `items[${i}][product_id]`);
-        if(qty) qty.setAttribute('name', `items[${i}][quantity]`);
-        if(price) price.setAttribute('name', `items[${i}][price]`);
-        if(disc) disc.setAttribute('name', `items[${i}][discount]`);
-    });
-    lineIndex = rows.length;
-}
-
-// Délégué : sélection produit -> met à jour le prix et le total de la ligne
-document.querySelector('#invoiceLinesTable tbody').addEventListener('change', function(e){
-    if(e.target.classList.contains('productSelect')){
-        const selectedOption = e.target.options[e.target.selectedIndex];
-        const price = selectedOption ? selectedOption.dataset.price || 0 : 0;
-        const row = e.target.closest('tr');
-        row.querySelector('.price').value = price;
-        updateLineTotal(row);
-        updateProductOptions();
-    }
-});
-
-document.getElementById('addLineBtn').addEventListener('click', () => {
-    const tbody = document.querySelector('#invoiceLinesTable tbody');
-    const rowHtml = `
+        document.getElementById('addLineBtn').addEventListener('click', () => {
+            const tbody = document.querySelector('#invoiceLinesTable tbody');
+            const rowHtml = `
     <tr>
         <td>
             <select name="items[${lineIndex}][product_id]" class="form-control productSelect" required>
                 <option value="">Sélectionnez un produit</option>
-                @foreach($products as $product)
+                @foreach ($products as $product)
                     <option value="{{ $product->id }}" data-price="{{ $product->price }}">{{ $product->name }}</option>
                 @endforeach
             </select>
         </td>
         <td><input type="number" name="items[${lineIndex}][quantity]" class="form-control quantity" value="1" min="1" required></td>
-        <td><input type="number" name="items[${lineIndex}][price]" class="form-control price" value="0" min="0" required></td>
+        <td><input type="number" name="items[${lineIndex}][unit_price]" class="form-control unit_price" value="0" min="0" required></td>
         <td><input type="number" name="items[${lineIndex}][discount]" class="form-control discount" value="0" min="0"></td>
         <td class="total_line">0</td>
         <td class="text-center"><button type="button" class="btn btn-sm btn-danger removeLineBtn"><i class="fas fa-trash"></i></button></td>
     </tr>`;
-    tbody.insertAdjacentHTML('beforeend', rowHtml);
+            tbody.insertAdjacentHTML('beforeend', rowHtml);
+            const newRow = tbody.querySelector('tr:last-child');
+            updateLineTotal(newRow);
+            reindexRows();
+            updateProductOptions();
+            updateInvoiceTotals();
+        });
 
-    // On récupère la nouvelle ligne, on la calcule et on réindexe
-    const newRow = tbody.querySelector('tr:last-child');
-    updateLineTotal(newRow);
-    reindexRows();
-    updateProductOptions();
-    updateInvoiceTotals();
-});
+        document.querySelector('#invoiceLinesTable tbody').addEventListener('input', function(e) {
+            if (e.target.classList.contains('quantity') || e.target.classList.contains('unit_price') || e.target
+                .classList.contains('discount')) {
+                updateLineTotal(e.target.closest('tr'));
+            }
+        });
 
-document.querySelector('#invoiceLinesTable tbody').addEventListener('input', function(e){
-    if(e.target.classList.contains('quantity') || e.target.classList.contains('price') || e.target.classList.contains('discount')){
-        updateLineTotal(e.target.closest('tr'));
-    }
-});
+        document.querySelector('#invoiceLinesTable tbody').addEventListener('click', function(e) {
+            const btn = e.target.closest('.removeLineBtn');
+            if (btn) {
+                const tr = btn.closest('tr');
+                if (tr) tr.remove();
+                reindexRows();
+                updateProductOptions();
+                updateInvoiceTotals();
+            }
+        });
 
-document.querySelector('#invoiceLinesTable tbody').addEventListener('click', function(e){
-    const btn = e.target.closest('.removeLineBtn');
-    if(btn){
-        const tr = btn.closest('tr');
-        if(tr) tr.remove();
+        document.querySelectorAll('#invoiceLinesTable tbody tr').forEach(row => updateLineTotal(row));
         reindexRows();
         updateProductOptions();
-        updateInvoiceTotals();
-    }
-});
-
-// initial calculation & disable used products
-document.querySelectorAll('#invoiceLinesTable tbody tr').forEach(row => updateLineTotal(row));
-reindexRows();
-updateProductOptions();
-</script>
+    </script>
 @endpush

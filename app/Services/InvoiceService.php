@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\Invoice;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class InvoiceService
 {
@@ -17,17 +17,20 @@ class InvoiceService
             DB::beginTransaction();
 
             $invoiceData = $this->getInvoiceData($data);
+            $invoiceData['total_invoice'] = $this->getTotalInvoice($data['items']);
+            $invoiceData['balance'] = $invoiceData['total_invoice'];
+            $invoiceData['type'] = $data['type'];
 
             $invoice = Invoice::create($invoiceData);
 
-            $lines = $this->getFormatedInvoiceLines($data['items'], $invoice->id);
+            $lines = $this->getFormatedInvoiceLines($data['items'], $invoice->id)['rows'];
 
-            if (! empty($lines)) {
+            if (!empty($lines)) {
                 DB::table('invoice_items')->insert($lines);
             }
 
             DB::commit();
-
+            return $invoice;
 
         } catch (\Exception $e) {
             // throw $th;
@@ -40,7 +43,7 @@ class InvoiceService
     private function getInvoiceData(array $data)
     {
         return [
-            'supplier_id' => $data['supplier_id'],
+            'contact_id' => $data['contact_id'],
             'warehouse_id' => $data['warehouse_id'],
             'due_date' => $data['due_date'],
             'invoice_date' => $data['invoice_date'],
@@ -50,27 +53,47 @@ class InvoiceService
     private function getFormatedInvoiceLines(array $items, string $invoice_id)
     {
         $rows = [];
+        $total_invoice = 0;
         foreach ($items as $item) {
 
             $quantity = (int) $item['quantity'];
             $discount = (int) $item['discount'];
-            $price = (int) $item['price'];
+            $price = (int) $item['unit_price'];
             $total_line = $price * $quantity - $discount;
             $rows[] = [
                 'quantity' => $quantity,
                 'discount' => $discount,
-                'purchase_price' => $price,
+                'unit_price' => $price,
                 'total_line' => $total_line,
                 'product_id' => $item['product_id'],
                 'invoice_id' => $invoice_id,
-                'id' => (String) Str::uuid(),
+                'id' => (string) Str::uuid(),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ];
+            $total_invoice += $total_line;
 
         }
 
-        return $rows;
+        return [
+            'rows' => $rows,
+            'total_invoice' => $total_invoice,
+        ];
 
+    }
+
+    public function getTotalInvoice(array $items)
+    {
+        $total_invoice = 0;
+
+        foreach ($items as $item) {
+            $quantity = (int) $item['quantity'];
+            $discount = (int) $item['discount'];
+            $price = (int) $item['unit_price'];
+            $total_line = $price * $quantity - $discount;
+            $total_invoice += $total_line;
+        }
+
+        return $total_invoice;
     }
 }

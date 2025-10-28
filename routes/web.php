@@ -8,14 +8,12 @@ use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\UnitsController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\Tenant\SubscriptionController as TenantSubscriptionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
@@ -68,8 +66,6 @@ Route::resource('/products', ProductController::class)->middleware(['auth', 'sub
 Route::patch('/warehouses/{id}', [WarehouseController::class, 'toggleActive'])->name('warehouses.toggle');
 Route::resource('/warehouses', WarehouseController::class)->middleware(['auth', 'subscription.permission:manage_warehouses'])->names('warehouses');
 
-Route::resource('/invoices', InvoiceController::class)->middleware(['auth'])->names('invoice_suppliers');
-
 Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
 Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
 Route::put('/settings/{setting}', [SettingController::class, 'update'])->name('settings.update');
@@ -85,30 +81,39 @@ Route::middleware(['auth'])->prefix('profile')->name('profile.')->group(function
     Route::put('/', [ProfileController::class, 'update'])->name('update');
 });
 
-
-
-Route::prefix('clients')->name('clients.')->group(function () {
-    Route::get('/', [ContactController::class, 'index'])->name('index')->defaults('type', 'clients');
-    Route::get('/create', [ContactController::class, 'create'])->name('create')->defaults('type', 'clients');
-    Route::post('/', [ContactController::class, 'store'])->name('store')->defaults('type', 'clients');
-    Route::get('/{contact}', [ContactController::class, 'show'])->name('show')->defaults('type', 'clients');
-    Route::get('/{contact}/edit', [ContactController::class, 'edit'])->name('edit')->defaults('type', 'clients');
-    Route::put('/{contact}', [ContactController::class, 'update'])->name('update')->defaults('type', 'clients');
-    Route::delete('/{contact}', [ContactController::class, 'destroy'])->name('destroy')->defaults('type', 'clients');
-    Route::patch('/{id}', [ContactController::class, 'toggleActive'])->name('toggle')->defaults('type', 'clients');
+Route::prefix('clients')->controller(ContactController::class)->name('clients.')->group(function () {
+    Route::get('/', 'index')->name('index')->defaults('type', 'clients');
+    Route::get('/create', 'create')->name('create')->defaults('type', 'clients');
+    Route::post('/', 'store')->name('store')->defaults('type', 'clients');
+    Route::get('/{contact}', 'show')->name('show')->defaults('type', 'clients');
+    Route::get('/{contact}/edit', 'edit')->name('edit')->defaults('type', 'clients');
+    Route::put('/{contact}', 'update')->name('update')->defaults('type', 'clients');
+    Route::delete('/{contact}', 'destroy')->name('destroy')->defaults('type', 'clients');
+    Route::patch('/{id}', 'toggleActive')->name('toggle')->defaults('type', 'clients');
 
 });
 
-Route::prefix('suppliers')->name('suppliers.')->group(function () {
-    Route::get('/', [ContactController::class, 'index'])->name('index')->defaults('type', 'suppliers');
-    Route::get('/create', [ContactController::class, 'create'])->name('create')->defaults('type', 'suppliers');
-    Route::post('/', [ContactController::class, 'store'])->name('store')->defaults('type', 'suppliers');
-    Route::get('/{contact}', [ContactController::class, 'show'])->name('show')->defaults('type', 'suppliers');
-    Route::get('/{contact}/edit', [ContactController::class, 'edit'])->name('edit')->defaults('type', 'suppliers');
-    Route::put('/{contact}', [ContactController::class, 'update'])->name('update')->defaults('type', 'suppliers');
-    Route::delete('/{contact}', [ContactController::class, 'destroy'])->name('destroy')->defaults('type', 'suppliers');
-    Route::patch('/{id}', [ContactController::class, 'toggleActive'])->name('toggle')->defaults('type', 'suppliers');
+Route::prefix('suppliers')->controller(ContactController::class)->name('suppliers.')->group(function () {
+    Route::get('/', 'index')->name('index')->defaults('type', 'suppliers');
+    Route::get('/create', 'create')->name('create')->defaults('type', 'suppliers');
+    Route::post('/', 'store')->name('store')->defaults('type', 'suppliers');
+    Route::get('/{contact}', 'show')->name('show')->defaults('type', 'suppliers');
+    Route::get('/{contact}/edit', 'edit')->name('edit')->defaults('type', 'suppliers');
+    Route::put('/{contact}', 'update')->name('update')->defaults('type', 'suppliers');
+    Route::delete('/{contact}', 'destroy')->name('destroy')->defaults('type', 'suppliers');
+    Route::patch('/{id}', 'toggleActive')->name('toggle')->defaults('type', 'suppliers');
 
 });
+
+Route::prefix('invoices/{type}')->controller(InvoiceController::class)->name('invoices.')->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::post('/', 'store')->name('store');
+    Route::get('/{invoice}/edit', 'edit')->name('edit');
+    Route::put('/{invoice}', 'update')->name('update');
+    Route::delete('/{invoice}', 'destroy')->name('destroy');
+    Route::get('/{invoice}', 'show')
+            ->where('invoice', '[0-9a-fA-F\-]{36}')
+            ->name('show');
+})->where('type', 'client|supplier');
 
 require __DIR__.'/auth.php';

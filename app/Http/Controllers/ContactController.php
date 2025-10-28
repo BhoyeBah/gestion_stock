@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
+use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
@@ -37,6 +38,14 @@ class ContactController extends Controller
     public function store(ContactRequest $request)
     {
         //
+        $path = $request->path();
+        $type = $request->type;
+
+        // Vérifie que le type est bien dans le path
+        if (! str_contains($path, $type)) {
+            abort(403, "Action non autorisée : le type ne correspond pas à l'URL.");
+        }
+
         Contact::create($request->validated());
         $contactType = $request->type === 'client' ? 'Client' : 'Fournisseur';
 
@@ -51,7 +60,8 @@ class ContactController extends Controller
     {
         //
         $this->checkAuthorization($contact, $type);
-        return view("back.contacts.show", compact("contact", "type"));
+
+        return view('back.contacts.show', compact('contact', 'type'));
     }
 
     /**
@@ -89,11 +99,12 @@ class ContactController extends Controller
         //
         $this->checkAuthorization($contact, $type);
 
-         if ($contact->is_active) {
+        if ($contact->is_active) {
             return back()->with('error', 'Impossible de supprimer un contact actif. Veuillez le désactiver d’abord.');
         }
         $contact->delete();
-        return back()->with("success", "Contact supprimé avec succès");
+
+        return back()->with('success', 'Contact supprimé avec succès');
     }
 
     public function validateType(string $type): void
@@ -123,6 +134,7 @@ class ContactController extends Controller
 
     public function checkAuthorization(Contact $contact, string $type)
     {
+
         if ($contact->type !== rtrim($type, 's')) {
             abort(403, "Vous n'êtes pas autorisé à effectuer cette opération.");
         }

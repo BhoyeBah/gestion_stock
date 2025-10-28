@@ -7,14 +7,13 @@
             <h1 class="h3 mb-0 text-gray-800">
                 <i class="fas fa-file-invoice"></i> Détails de la facture
             </h1>
-            <a href="{{ route('invoice_suppliers.index') }}" class="btn btn-outline-primary">
+            <a href="{{ route('invoices.index', $invoice->type.'s') }}" class="btn btn-outline-primary">
                 <i class="fas fa-arrow-left"></i> Retour à la liste
             </a>
         </div>
 
-        {{-- Row Fournisseur + Facture --}}
+        {{-- Row Facture + Contact --}}
         <div class="row d-flex align-items-stretch">
-
             {{-- Bloc facture --}}
             <div class="col-md-6 mb-4 d-flex">
                 <div class="card shadow border-left-info w-100">
@@ -30,7 +29,7 @@
                                 </tr>
                                 <tr>
                                     <th>Entrepôt</th>
-                                    <td>{{ $invoice->warehouse->name ?? '-' }}</td>
+                                    <td>{{ optional($invoice->warehouse)->name ?? '-' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Date de facture</th>
@@ -48,13 +47,14 @@
                                         @php
                                             $statusColor =
                                                 [
-                                                    'DRAFT' => 'secondary',
-                                                    'PARTIALLY_PAID' => 'warning',
-                                                    'PAID' => 'success',
-                                                    'CANCELLED' => 'danger',
+                                                    'draft' => 'secondary',
+                                                    'partial' => 'warning',
+                                                    'paid' => 'success',
+                                                    'validated' => 'info',
+                                                    'cancelled' => 'danger',
                                                 ][$invoice->status] ?? 'secondary';
                                         @endphp
-                                        <span class="badge badge-{{ $statusColor }}">{{ $invoice->status }}</span>
+                                        <span class="badge badge-{{ $statusColor }}">{{ ucfirst($invoice->status) }}</span>
                                     </td>
                                 </tr>
                                 <tr>
@@ -67,41 +67,41 @@
                 </div>
             </div>
 
-            {{-- Bloc fournisseur --}}
+            {{-- Bloc contact (client ou fournisseur selon type) --}}
             <div class="col-md-6 mb-4 d-flex">
                 <div class="card shadow border-left-primary w-100">
                     <div class="card-header bg-primary text-white">
-                        <h6 class="m-0 font-weight-bold">Informations du fournisseur</h6>
+                        <h6 class="m-0 font-weight-bold">
+                             Information du {{ ucfirst($invoice->type == 'client' ? 'client' : 'fournisseur') }}
+                        </h6>
                     </div>
                     <div class="card-body">
                         <table class="table table-bordered table-striped mb-0">
                             <tbody>
                                 <tr>
                                     <th>Nom complet</th>
-                                    <td>{{ $invoice->supplier->full_name ?? '-' }}</td>
+                                    <td>{{ optional($invoice->contact)->fullname ?? '-' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Téléphone</th>
-                                    <td>{{ $invoice->supplier->phone_number ?? '-' }}</td>
+                                    <td>{{ optional($invoice->contact)->phone_number ?? '-' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Email</th>
-                                    <td>{{ $invoice->supplier->email ?? '-' }}</td>
+                                    <td>{{ optional($invoice->contact)->email ?? '-' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Adresse</th>
-                                    <td>{{ $invoice->supplier->address ?? '-' }}</td>
+                                    <td>{{ optional($invoice->contact)->address ?? '-' }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
         </div>
 
-        {{-- Ligne des produits --}}
-        {{-- Ligne des produits --}}
+        {{-- Lignes de la facture --}}
         <div class="card shadow border-left-primary mb-4">
             <div class="card-header bg-primary text-white">
                 <h6 class="m-0 font-weight-bold">Lignes de la facture</h6>
@@ -124,9 +124,9 @@
                                 @foreach ($invoice->items as $item)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item->product->name ?? '-' }}</td>
+                                        <td>{{ optional($item->product)->name ?? '-' }}</td>
                                         <td>{{ $item->quantity }}</td>
-                                        <td>{{ number_format($item->purchase_price, 0, ',', ' ') }}</td>
+                                        <td>{{ number_format($item->unit_price, 0, ',', ' ') }}</td>
                                         <td>{{ number_format($item->discount ?? 0, 0, ',', ' ') }}</td>
                                         <td>{{ number_format($item->total_line, 0, ',', ' ') }}</td>
                                     </tr>
@@ -154,6 +154,5 @@
                 @endif
             </div>
         </div>
-
     </div>
 @endsection

@@ -1,39 +1,53 @@
+@php
+    $isCreate = $method === 'POST';
+    $isSupplier = $type === 'suppliers';
+    $entityLabel = $isSupplier ? 'fournisseur' : 'client';
+@endphp
+
 <form action="{{ $route }}" method="{{ $method === 'PUT' ? 'POST' : $method }}">
     @csrf
-    @if(in_array($method, ['PUT','PATCH','DELETE']))
+    @if (in_array($method, ['PUT', 'PATCH', 'DELETE']))
         @method($method)
     @endif
 
-    <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title">
-            <i class="fas {{ $method === 'POST' ? 'fa-plus-circle' : 'fa-edit' }}"></i>
-            {{ $method === 'POST' ? 'Nouvelle facture fournisseur' : 'Modifier la facture' }}
-        </h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fermer">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
+    <input type="hidden" name="type" value="{{ $type === 'clients' ? 'client' : 'supplier' }}">
+    @if ($method == 'POST')
+        <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">
+                <i class="fas {{ $isCreate ? 'fa-plus-circle' : 'fa-edit' }}"></i>
+                {{ $isCreate ? "Nouvelle facture $entityLabel" : "Modifier la facture $entityLabel" }}
+            </h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fermer">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
 
     <div class="modal-body">
         <div class="row mb-3">
             <div class="col-md-4">
-                <label for="supplier_id">Fournisseur <span class="text-danger">*</span></label>
-                <select name="supplier_id" id="supplier_id" class="form-control" required>
-                    <option value="">Sélectionnez un fournisseur</option>
-                    @foreach($suppliers as $supplier)
-                        <option value="{{ $supplier->id }}" {{ (old('supplier_id', $invoice->supplier_id) == $supplier->id) ? 'selected' : '' }}>
-                            {{ $supplier->full_name }}
+                <label for="contact_id" class="font-weight-bold text-capitalize">
+                    {{ ucfirst($entityLabel) }} <span class="text-danger">*</span>
+                </label>
+                <select name="contact_id" id="contact_id" class="form-control" required>
+                    <option value="">Sélectionnez un {{ $entityLabel }}</option>
+                    @foreach ($contacts as $contact)
+                        <option value="{{ $contact->id }}"
+                            {{ old('contact_id', $invoice->contact_id) == $contact->id ? 'selected' : '' }}>
+                            {{ $contact->fullname }}
                         </option>
                     @endforeach
                 </select>
             </div>
 
             <div class="col-md-4">
-                <label for="warehouse_id">Entrepôt <span class="text-danger">*</span></label>
+                <label for="warehouse_id" class="font-weight-bold">Entrepôt <span class="text-danger">*</span></label>
                 <select name="warehouse_id" id="warehouse_id" class="form-control" required>
                     <option value="">Sélectionnez un entrepôt</option>
-                    @foreach($warehouses as $warehouse)
-                        <option value="{{ $warehouse->id }}" {{ (old('warehouse_id', $invoice->warehouse_id) == $warehouse->id) ? 'selected' : '' }}>
+                    @foreach ($warehouses as $warehouse)
+                        <option value="{{ $warehouse->id }}"
+                            {{ old('warehouse_id', $invoice->warehouse_id) == $warehouse->id ? 'selected' : '' }}>
                             {{ $warehouse->name }}
                         </option>
                     @endforeach
@@ -41,15 +55,16 @@
             </div>
 
             <div class="col-md-2">
-                <label for="invoice_date">Date facture <span class="text-danger">*</span></label>
+                <label for="invoice_date" class="font-weight-bold">Date facture <span
+                        class="text-danger">*</span></label>
                 <input type="date" name="invoice_date" class="form-control"
-                    value="{{ old('invoice_date', $invoice->invoice_date?->format('Y-m-d')) }}" required>
+                    value="{{ old('invoice_date', $invoice->invoice_date) }}" required>
             </div>
 
             <div class="col-md-2">
-                <label for="due_date">Date d’échéance</label>
+                <label for="due_date" class="font-weight-bold">Date d’échéance</label>
                 <input type="date" name="due_date" class="form-control"
-                    value="{{ old('due_date', $invoice->due_date?->format('Y-m-d')) }}">
+                    value="{{ old('due_date', $invoice->due_date) }}">
             </div>
         </div>
 
@@ -62,8 +77,9 @@
             <i class="fas fa-times"></i> Annuler
         </button>
         <button type="submit" class="btn btn-primary">
-            <i class="fas {{ $method === 'POST' ? 'fa-save' : 'fa-check' }}"></i>
-            {{ $method === 'POST' ? 'Créer' : 'Enregistrer les modifications' }}
+            <i class="fas {{ $isCreate ? 'fa-save' : 'fa-check' }}"></i>
+            {{ $isCreate ? 'Créer la facture' : 'Enregistrer les modifications' }}
         </button>
     </div>
+
 </form>
