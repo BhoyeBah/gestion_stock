@@ -16,8 +16,8 @@
 
 
     <!-- =========================
-                                 SECTION 1 : RECHERCHE ET FILTRES
-                            ========================= -->
+                                         SECTION 1 : RECHERCHE ET FILTRES
+                                    ========================= -->
     <section id="invoice-filters">
         <div class="card shadow border-left-info mb-4">
             <div class="card-header bg-info text-white py-3 d-flex justify-content-between align-items-center">
@@ -75,8 +75,8 @@
 
 
     <!-- =========================
-                                 SECTION 2 : LISTE DES FACTURES
-                            ========================= -->
+                                         SECTION 2 : LISTE DES FACTURES
+                                    ========================= -->
     <section id="invoice-list">
         <div class="card shadow border-left-primary">
             <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
@@ -94,7 +94,6 @@
                                     <th>#</th>
                                     <th>Numéro</th>
                                     <th>{{ $invoiceType === 'Clients' ? 'Client' : 'Fournisseur' }}</th>
-                                    <th>Entrepôt</th>
                                     <th>Date</th>
                                     <th>Statut</th>
                                     <th>Total (FCFA)</th>
@@ -111,7 +110,6 @@
                                             <a
                                                 href="{{ route("$type.show", $invoice->contact->id) }}">{{ $invoice->contact->fullname ?? '-' }}</a>
                                         </td>
-                                        <td>{{ $invoice->warehouse->name ?? '-' }}</td>
                                         <td>{{ $invoice->invoice_date ? Carbon::parse($invoice->invoice_date)->format('d/m/Y') : '-' }}
                                         </td>
                                         <td>
@@ -131,10 +129,21 @@
                                         <td>{{ number_format($invoice->total_invoice, 0, ',', ' ') }}</td>
 
                                         <td class="text-center">
+                                            <form action="{{ route('invoices.validate', [$type, $invoice->id]) }}"
+                                                method="POST" class="d-inline"
+                                                onsubmit="return confirm('Confirmez-vous la validation de cette facture ?')">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-success" title="valider">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+
                                             <a href="{{ route('invoices.show', [$type, $invoice->id]) }}"
                                                 class="btn btn-sm btn-info" title="Voir">
                                                 <i class="fas fa-eye"></i>
                                             </a>
+
                                             @if ($invoice->status === 'draft')
                                                 <a href="{{ route('invoices.edit', [$type, $invoice->id]) }}"
                                                     class="btn btn-sm btn-warning" title="Modifier">

@@ -11,6 +11,7 @@
     @endif
 
     <input type="hidden" name="type" value="{{ $type === 'clients' ? 'client' : 'supplier' }}">
+
     @if ($method == 'POST')
         <div class="modal-header bg-primary text-white">
             <h5 class="modal-title">
@@ -23,9 +24,14 @@
         </div>
     @endif
 
-
     <div class="modal-body">
         <div class="row mb-3">
+            <div class="col-md-3">
+                <label for="invoice_number" class="font-weight-bold">Numéro facture (optionnel)</label>
+                <input type="text" name="invoice_number" id="invoice_number" class="form-control"
+                    value="{{ old('invoice_number', $invoice->invoice_number ?? '') }}" placeholder="Ex: FAC-2025-001">
+            </div>
+
             <div class="col-md-4">
                 <label for="contact_id" class="font-weight-bold text-capitalize">
                     {{ ucfirst($entityLabel) }} <span class="text-danger">*</span>
@@ -41,20 +47,7 @@
                 </select>
             </div>
 
-            <div class="col-md-4">
-                <label for="warehouse_id" class="font-weight-bold">Entrepôt <span class="text-danger">*</span></label>
-                <select name="warehouse_id" id="warehouse_id" class="form-control" required>
-                    <option value="">Sélectionnez un entrepôt</option>
-                    @foreach ($warehouses as $warehouse)
-                        <option value="{{ $warehouse->id }}"
-                            {{ old('warehouse_id', $invoice->warehouse_id) == $warehouse->id ? 'selected' : '' }}>
-                            {{ $warehouse->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label for="invoice_date" class="font-weight-bold">Date facture <span
                         class="text-danger">*</span></label>
                 <input type="date" name="invoice_date" class="form-control"

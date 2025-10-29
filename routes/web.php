@@ -111,9 +111,8 @@ Route::prefix('invoices/{type}')->controller(InvoiceController::class)->name('in
     Route::get('/{invoice}/edit', 'edit')->name('edit');
     Route::put('/{invoice}', 'update')->name('update');
     Route::delete('/{invoice}', 'destroy')->name('destroy');
-    Route::get('/{invoice}', 'show')
-            ->where('invoice', '[0-9a-fA-F\-]{36}')
-            ->name('show');
+    Route::get('/{invoice}', 'show')->where('invoice', '[0-9a-fA-F\-]{36}')->name('show');
+    Route::patch('/{invoice}/validate', 'validateInvoice')->where('invoice', '[0-9a-fA-F\-]{36}')->name('validate');
 })->where('type', 'client|supplier');
 
 require __DIR__.'/auth.php';

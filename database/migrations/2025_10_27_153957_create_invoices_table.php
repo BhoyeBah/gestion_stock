@@ -15,7 +15,6 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
-            $table->uuid('warehouse_id')->index();
             $table->uuid('contact_id')->index();
             $table->string('invoice_number')->nullable();
             $table->date('invoice_date');
@@ -29,7 +28,6 @@ return new class extends Migration
 
             // Foreign keys
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
-            $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('restrict');
             $table->foreign('contact_id')->references('id')->on('contacts')->onDelete('restrict');
 
             $table->unique(['tenant_id', 'invoice_number']);
@@ -39,6 +37,7 @@ return new class extends Migration
         Schema::create('invoice_items', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('invoice_id')->index();
+            $table->uuid('warehouse_id')->index();
             $table->uuid('product_id')->index();
             $table->integer('quantity');
             $table->enum('type', ['in', 'out'])->index();
@@ -48,8 +47,10 @@ return new class extends Migration
             $table->timestamps();
 
             // Foreign keys
+            $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('restrict');
             $table->foreign('invoice_id')->references('id')->on('invoices')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('restrict');
+            $table->unique(['invoice_id', 'warehouse_id', 'product_id'], 'unique_invoice_warehouse_product');
         });
     }
 

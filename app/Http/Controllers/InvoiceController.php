@@ -45,7 +45,7 @@ class InvoiceController extends Controller
         }
 
         if (! empty($search_number)) {
-            $query = $query->where('invoice_number', 'like',  "%$search_number%");
+            $query = $query->where('invoice_number', 'like', "%$search_number%");
 
         }
 
@@ -82,7 +82,6 @@ class InvoiceController extends Controller
         if (! str_contains($path, $type)) {
             abort(403, "Action non autorisée : le type ne correspond pas à l'URL.");
         }
-
         $this->validateType($type.'s');
         $this->service->createInvoice($request->validated());
 
@@ -93,10 +92,11 @@ class InvoiceController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $type, Invoice $invoice)
+    public function show(string $type, string $id)
     {
         //
         $this->validateType($type);
+        $invoice = Invoice::with('items')->findOrFail($id);
 
         $this->checkAuthorization($invoice, $type);
 
@@ -160,6 +160,12 @@ class InvoiceController extends Controller
         $invoice->delete();
 
         return back()->with('success', 'Facture supprimée avec succès');
+    }
+
+    public function validateInvoice(string $type, Invoice $invoice)
+    {
+        
+        dd($type, $invoice);
     }
 
     protected function validateType(string $type): void

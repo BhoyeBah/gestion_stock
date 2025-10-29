@@ -12,7 +12,6 @@ class Invoice extends Model
     use HasFactory, HasTenant, HasUuid;
 
     protected $fillable = [
-        'warehouse_id',
         'contact_id',
         'invoice_number',
         'invoice_date',
@@ -59,12 +58,6 @@ class Invoice extends Model
     public function contact()
     {
         return $this->belongsTo(Contact::class);
-    }
-
-    // Lien avec l'entrepôt
-    public function warehouse()
-    {
-        return $this->belongsTo(Warehouse::class);
     }
 
     // Lignes de facture

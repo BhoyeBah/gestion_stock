@@ -44,7 +44,7 @@ class InvoiceService
     {
         return [
             'contact_id' => $data['contact_id'],
-            'warehouse_id' => $data['warehouse_id'],
+            'invoice_number' => $data['invoice_number'],
             'due_date' => $data['due_date'],
             'invoice_date' => $data['invoice_date'],
         ];
@@ -66,6 +66,7 @@ class InvoiceService
                 'unit_price' => $price,
                 'total_line' => $total_line,
                 'product_id' => $item['product_id'],
+                'warehouse_id' => $item['warehouse_id'],
                 'invoice_id' => $invoice_id,
                 'id' => (string) Str::uuid(),
                 'created_at' => Carbon::now(),

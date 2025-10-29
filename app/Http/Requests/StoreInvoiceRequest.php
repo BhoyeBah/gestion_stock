@@ -27,7 +27,6 @@ class StoreInvoiceRequest extends FormRequest
         $invoiceId = $this->route('invoice')?->id;
 
         return [
-            'warehouse_id' => ['required', 'uuid', 'exists:warehouses,id'],
             'contact_id' => ['required', 'uuid', 'exists:contacts,id'],
             'invoice_number' => [
                 'nullable',
@@ -41,6 +40,7 @@ class StoreInvoiceRequest extends FormRequest
 
             // Validation des lignes de facture
             'items' => ['required', 'array', 'min:1'],
+            'items.*.warehouse_id' => ['required', 'uuid', 'exists:warehouses,id'],
             'items.*.product_id' => ['required', 'uuid', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.unit_price' => ['required', 'integer', 'min:0'],
@@ -55,10 +55,10 @@ class StoreInvoiceRequest extends FormRequest
     {
         return [
             'invoice_number.unique' => 'Ce numéro de facture existe déjà pour ce tenant.',
-            'warehouse_id.required' => 'L\'entrepôt est requis.',
             'contact_id.required' => 'Le contact est requis.',
             'invoice_date.required' => 'La date de facture est obligatoire.',
             'items.required' => 'La facture doit contenir au moins une ligne.',
+            'items.*.warehouse_id.required' => 'Chaque ligne doit avoir un entrepôt.',
             'items.*.product_id.required' => 'Chaque ligne doit avoir un produit.',
             'items.*.quantity.required' => 'Chaque ligne doit avoir une quantité.',
             'items.*.unit_price.required' => 'Chaque ligne doit avoir un prix unitaire.',

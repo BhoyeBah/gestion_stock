@@ -11,6 +11,7 @@ class InvoiceItem extends Model
     use HasFactory, HasUuid;
 
     protected $fillable = [
+        'warehouse_id',
         'product_id',
         'invoice_id',
         'quantity',
@@ -33,5 +34,11 @@ class InvoiceItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    // Lien avec l'entrepôt
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 }
