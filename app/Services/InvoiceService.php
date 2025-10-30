@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Batch;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -23,13 +26,14 @@ class InvoiceService
 
             $invoice = Invoice::create($invoiceData);
 
-            $lines = $this->getFormatedInvoiceLines($data['items'], $invoice->id)['rows'];
+            $lines = $this->getFormatedInvoiceLines($data['items'], $invoice->id, $invoiceData['type'])['rows'];
 
-            if (!empty($lines)) {
+            if (! empty($lines)) {
                 DB::table('invoice_items')->insert($lines);
             }
 
             DB::commit();
+
             return $invoice;
 
         } catch (\Exception $e) {
@@ -50,10 +54,12 @@ class InvoiceService
         ];
     }
 
-    private function getFormatedInvoiceLines(array $items, string $invoice_id)
+    private function getFormatedInvoiceLines(array $items, string $invoice_id, string $type)
     {
         $rows = [];
         $total_invoice = 0;
+        $type = $type == 'client' ? 'out' : 'in';
+
         foreach ($items as $item) {
 
             $quantity = (int) $item['quantity'];
@@ -61,6 +67,7 @@ class InvoiceService
             $price = (int) $item['unit_price'];
             $total_line = $price * $quantity - $discount;
             $rows[] = [
+                'type' => $type,
                 'quantity' => $quantity,
                 'discount' => $discount,
                 'unit_price' => $price,
@@ -96,5 +103,164 @@ class InvoiceService
         }
 
         return $total_invoice;
+    }
+
+    public function validateInvoice(Invoice $invoice)
+    {
+
+        if ($invoice->type == 'supplier') {
+
+            try {
+
+                DB::beginTransaction();
+
+                $lines = $this->batchLines($invoice->items, $invoice->tenant_id);
+
+                if (! empty($lines)) {
+                    DB::table('batches')->insert($lines);
+                }
+
+                $invoice->status = 'validated';
+
+                $invoice->save();
+
+                DB::commit();
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } else {
+
+            DB::transaction(function () use ($invoice) {
+
+                foreach ($invoice->items as $item) {
+
+                    $this->applyFifo($item);
+                }
+
+                $invoice->status = 'validated';
+                $invoice->save();
+            });
+        }
+
+    }
+
+    public function batchLines(Collection $items, string $tenant_id)
+    {
+
+        $rows = [];
+
+        foreach ($items as $item) {
+
+            $batch = Batch::where('warehouse_id', $item->warehouse_id)
+                ->where('product_id', $item->product_id)
+                ->where('unit_price', $item->unit_price)
+                ->lockForUpdate()
+                ->first();
+
+            if (! empty($batch)) {
+                $batch->quantity += $item->quantity;
+                $batch->remaining += $item->quantity;
+
+                DB::table('inventory_movements')->insert([
+                    'id' => (string) Str::uuid(),
+                    'invoice_item_id' => $item->id,
+                    'invoice_id' => $item->invoice_id,
+                    'batch_id' => $batch->id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'reason' => 'Ajustement de stock',
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+
+                $batch->save();
+
+            } else {
+                $rows[] = [
+                    'invoice_id' => $item['invoice_id'],
+                    'tenant_id' => $tenant_id,
+                    'warehouse_id' => $item['warehouse_id'],
+                    'product_id' => $item['product_id'],
+                    'unit_price' => $item['unit_price'],
+                    'quantity' => $item['quantity'],
+                    'remaining' => $item['quantity'],
+                    'id' => (string) Str::uuid(),
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ];
+            }
+
+        }
+
+        return $rows;
+
+    }
+
+    public function applyFifo(InvoiceItem $invoiceItem)
+    {
+        $productId = $invoiceItem->product_id;
+        $warehouseId = $invoiceItem->warehouse_id;
+        $quantityToRemove = $invoiceItem->quantity;
+        $invoiceId = $invoiceItem->invoice_id;
+
+        // Récupérer les lots disponibles (FIFO) et les verrouiller
+        $batches = DB::table('batches')
+            ->where('product_id', $productId)
+            ->where('warehouse_id', $warehouseId)
+            ->where('remaining', '>', 0)
+            ->orderBy('created_at', 'asc')
+            ->lockForUpdate()
+            ->get();
+
+        $movements = [];
+
+        foreach ($batches as $batch) {
+            if ($quantityToRemove <= 0) {
+                break;
+            }
+
+            $available = $batch->remaining;
+            if ($available <= 0) {
+                continue;
+            }
+
+            $used = min($available, $quantityToRemove);
+
+            // Mise à jour du lot
+            DB::table('batches')
+                ->where('id', $batch->id)
+                ->update([
+                    'remaining' => $available - $used,
+                    'updated_at' => now(),
+                ]);
+
+            $movement = DB::table('inventory_movements')->insert([
+                'id' => (string) Str::uuid(),
+                'invoice_item_id' => $invoiceItem->id,
+                'invoice_id' => $invoiceId,
+                'batch_id' => $batch->id,
+                'product_id' => $productId,
+                'quantity' => $used,
+                'reason' => 'vente', // ou 'sale' selon ta convention
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+            $movements[] = $movement;
+            $quantityToRemove -= $used;
+        }
+
+        if ($quantityToRemove > 0) {
+            throw new \Exception(
+                "Impossible de retirer {$invoiceItem->quantity} unités du stock. "
+                .'Il ne reste que '.($invoiceItem->quantity - $quantityToRemove)." unités disponibles pour le produit « {$invoiceItem->product->name} »."
+            );
+        }
+
+        // Retourner tous les mouvements générés dans la transaction
+        return $movements;
     }
 }

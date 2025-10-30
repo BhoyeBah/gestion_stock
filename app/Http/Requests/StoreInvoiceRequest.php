@@ -32,7 +32,8 @@ class StoreInvoiceRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('invoices')->ignore($invoiceId)->where(fn ($query) => $query->where('tenant_id', $tenantId)),
+                Rule::unique('invoices')->ignore($invoiceId)->where(fn ($query) => $query->where('tenant_id', $tenantId)
+                    ->where('type', $this->input('type'))),
             ],
             'invoice_date' => ['required', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],

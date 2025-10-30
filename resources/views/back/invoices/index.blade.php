@@ -134,7 +134,7 @@
                                                 onsubmit="return confirm('Confirmez-vous la validation de cette facture ?')">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="btn btn-sm btn-success" title="valider">
+                                                <button type="submit" class="btn btn-sm btn-success" title="valider" @if($invoice->status !='draft') disabled @endif >
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                             </form>

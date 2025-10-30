@@ -30,7 +30,7 @@ return new class extends Migration
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
             $table->foreign('contact_id')->references('id')->on('contacts')->onDelete('restrict');
 
-            $table->unique(['tenant_id', 'invoice_number']);
+            $table->unique(['tenant_id', 'type', 'invoice_number']);
         });
 
         // Table invoice_items

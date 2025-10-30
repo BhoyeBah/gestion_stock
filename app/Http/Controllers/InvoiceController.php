@@ -129,9 +129,8 @@ class InvoiceController extends Controller
 
         $this->validateType($type);
         $this->checkAuthorization($invoice, $type);
-
-        $new_invoice = $this->service->createInvoice($request->validated());
         $invoice->delete();
+        $new_invoice = $this->service->createInvoice($request->validated());
 
         return redirect()->route('invoices.edit', [$type, $new_invoice->id])->with('success', 'Facture modifier avec succès');
 
@@ -162,10 +161,26 @@ class InvoiceController extends Controller
         return back()->with('success', 'Facture supprimée avec succès');
     }
 
-    public function validateInvoice(string $type, Invoice $invoice)
+    public function validateInvoice(string $type, string $id)
     {
-        
-        dd($type, $invoice);
+
+        $this->validateType($type);
+
+        $invoice = Invoice::with('items')->findOrFail($id);
+
+        if ($invoice->status !== 'draft') {
+            return back()->with('error', 'Cette facture est déjà validée');
+        }
+
+        $this->checkAuthorization($invoice, $type);
+
+        try {
+            $this->service->validateInvoice($invoice);
+            return back()->with('success', 'Facture validée avec succès');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
     }
 
     protected function validateType(string $type): void
