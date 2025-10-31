@@ -116,12 +116,18 @@ class InvoiceService
 
                 DB::beginTransaction();
 
-                $lines = $this->batchLines($invoice->items, $invoice->tenant_id);
+                $result = $this->batchLines($invoice->items, $invoice->tenant_id);
+                $lines = $result['batchRows'];
+                $inventoryMovements = $result['inventoryMovements'];
 
+                // dd($lines, $inventoryMovements);
                 if (! empty($lines)) {
                     DB::table('batches')->insert($lines);
                 }
 
+                if (! empty($inventoryMovements)) {
+                    DB::table('inventory_movements')->insert($inventoryMovements);
+                }
                 $invoice->status = 'validated';
 
                 $invoice->save();
@@ -151,10 +157,11 @@ class InvoiceService
 
     public function batchLines(Collection $items, string $tenant_id)
     {
-
-        $rows = [];
+        $batchRows = [];
+        $inventoryMovements = [];
 
         foreach ($items as $item) {
+            $batchId = (string) Str::uuid();
 
             $batch = Batch::where('warehouse_id', $item->warehouse_id)
                 ->where('product_id', $item->product_id)
@@ -163,10 +170,13 @@ class InvoiceService
                 ->first();
 
             if (! empty($batch)) {
+                // On met à jour le batch existant
                 $batch->quantity += $item->quantity;
                 $batch->remaining += $item->quantity;
+                $batch->save();
 
-                DB::table('inventory_movements')->insert([
+                // Préparer le mouvement
+                $inventoryMovements[] = [
                     'id' => (string) Str::uuid(),
                     'invoice_item_id' => $item->id,
                     'invoice_id' => $item->invoice_id,
@@ -174,32 +184,45 @@ class InvoiceService
                     'product_id' => $item->product_id,
                     'quantity' => $item->quantity,
                     'reason' => 'Ajustement de stock',
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now(),
-                ]);
-
-                $batch->save();
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
 
             } else {
-                $rows[] = [
-                    'invoice_id' => $item['invoice_id'],
+                // Créer un nouveau batch
+                $batchRows[] = [
+                    'id' => $batchId,
+                    'invoice_id' => $item->invoice_id,
                     'tenant_id' => $tenant_id,
-                    'warehouse_id' => $item['warehouse_id'],
-                    'product_id' => $item['product_id'],
-                    'unit_price' => $item['unit_price'],
-                    'quantity' => $item['quantity'],
-                    'remaining' => $item['quantity'],
-                    'expiration_date' => $item['expiration_date'],
+                    'warehouse_id' => $item->warehouse_id,
+                    'product_id' => $item->product_id,
+                    'unit_price' => $item->unit_price,
+                    'quantity' => $item->quantity,
+                    'remaining' => $item->quantity,
+                    'expiration_date' => $item->expiration_date,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+
+                // Préparer le mouvement lié à ce batch
+                $inventoryMovements[] = [
                     'id' => (string) Str::uuid(),
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now(),
+                    'invoice_item_id' => $item->id,
+                    'invoice_id' => $item->invoice_id,
+                    'batch_id' => $batchId,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'reason' => 'Entrée de stock',
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
             }
-
         }
 
-        return $rows;
-
+        return [
+            'batchRows' => $batchRows,
+            'inventoryMovements' => $inventoryMovements,
+        ];
     }
 
     public function applyFifo(InvoiceItem $invoiceItem)

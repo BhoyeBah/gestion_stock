@@ -49,6 +49,8 @@ class InvoiceController extends Controller
 
         }
 
+        $query = $query->orderBy('created_at', 'desc');
+
         $invoiceType = $type === 'clients' ? 'Clients' : 'Fournisseurs';
 
         $invoices = $query->paginate(10);
