@@ -44,6 +44,7 @@ return new class extends Migration
             $table->integer('unit_price');
             $table->integer('discount')->default(0);
             $table->integer('total_line');
+            $table->date("expiration_date")->nullable()->index();
             $table->timestamps();
 
             // Foreign keys

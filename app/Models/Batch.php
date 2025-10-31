@@ -19,7 +19,8 @@ class Batch extends Model
         'product_id',
         'unit_price',
         'quantity',
-        'remaining'
+        'remaining',
+        'expiration_date',
     ];
 
     /* =====================
@@ -48,5 +49,14 @@ class Batch extends Model
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function isExpired()
+    {
+        if (! empty($this->expiration_date)) {
+            return $this->expiration_date < now();
+        }
+
+        return false;
     }
 }

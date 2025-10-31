@@ -1,5 +1,7 @@
 @php
     $invoiceItems = isset($invoice) && $invoice->items ? $invoice->items : collect([]);
+    $type = request()->route('type') ?? ($invoice->type ?? 'clients');
+    $isSupplier = in_array($type, ['fournisseur', 'fournisseurs', 'supplier', 'suppliers']);
 @endphp
 
 <table class="table table-bordered" id="invoiceLinesTable">
@@ -10,14 +12,19 @@
             <th>Quantité</th>
             <th>Prix d'achat</th>
             <th>Remise</th>
+
+            @if ($isSupplier)
+                <th>Date d'expiration</th>
+            @endif
+
             <th>Total</th>
             <th class="text-center">Actions</th>
         </tr>
     </thead>
+
     <tbody>
         @forelse($invoiceItems as $index => $item)
             <tr>
-                {{-- Entrêpot --}}
                 <td>
                     <select name="items[{{ $index }}][warehouse_id]" class="form-control warehouseSelect" required>
                         <option value="">Sélectionnez un entrepôt</option>
@@ -30,12 +37,12 @@
                     </select>
                 </td>
 
-                {{-- Produit --}}
                 <td>
                     <select name="items[{{ $index }}][product_id]" class="form-control productSelect" required>
                         <option value="">Sélectionnez un produit</option>
                         @foreach ($products as $product)
                             <option value="{{ $product->id }}" data-price="{{ $product->price }}"
+                                data-is-perishable="{{ $product->is_perishable }}"
                                 {{ $item->product_id == $product->id ? 'selected' : '' }}>
                                 {{ $product->name }}
                             </option>
@@ -43,13 +50,20 @@
                     </select>
                 </td>
 
-                {{-- Quantité / Prix / Remise --}}
                 <td><input type="number" name="items[{{ $index }}][quantity]" class="form-control quantity"
                         value="{{ $item->quantity }}" min="1" required></td>
                 <td><input type="number" name="items[{{ $index }}][unit_price]" class="form-control unit_price"
                         value="{{ $item->unit_price ?? 0 }}" min="0" required></td>
                 <td><input type="number" name="items[{{ $index }}][discount]" class="form-control discount"
                         value="{{ $item->discount ?? 0 }}" min="0"></td>
+
+                @if ($isSupplier)
+                    <td>
+                        <input type="date" name="items[{{ $index }}][expiration_date]"
+                            class="form-control expiration_date" value="{{ $item->expiration_date ?? '' }}">
+                    </td>
+                @endif
+
                 <td class="total_line">{{ $item->quantity * ($item->unit_price ?? 0) - ($item->discount ?? 0) }}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-danger removeLineBtn"><i
@@ -70,18 +84,26 @@
                     <select name="items[0][product_id]" class="form-control productSelect" required>
                         <option value="">Sélectionnez un produit</option>
                         @foreach ($products as $product)
-                            <option value="{{ $product->id }}" data-price="{{ $product->price }}">
+                            <option value="{{ $product->id }}" data-price="{{ $product->price }}"
+                                data-is-perishable="{{ $product->is_perishable }}">
                                 {{ $product->name }}
                             </option>
                         @endforeach
                     </select>
                 </td>
+
                 <td><input type="number" name="items[0][quantity]" class="form-control quantity" value="1"
                         min="1" required></td>
                 <td><input type="number" name="items[0][unit_price]" class="form-control unit_price" value="0"
                         min="0" required></td>
                 <td><input type="number" name="items[0][discount]" class="form-control discount" value="0"
                         min="0"></td>
+
+                @if ($isSupplier)
+                    <td><input type="date" name="items[0][expiration_date]" class="form-control expiration_date"
+                            disabled></td>
+                @endif
+
                 <td class="total_line">0</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-danger removeLineBtn"><i
@@ -103,10 +125,11 @@
 
 @push('scripts')
     <script>
+        const isSupplier = @json($isSupplier);
         let lineIndex = document.querySelectorAll('#invoiceLinesTable tbody tr').length;
 
         function toNumber(v) {
-            const n = Number(String(v).replace(/\s+/g, ''));
+            const n = Number(v);
             return isFinite(n) ? n : 0;
         }
 
@@ -114,8 +137,7 @@
             const qty = toNumber(row.querySelector('.quantity').value);
             const price = toNumber(row.querySelector('.unit_price').value);
             const discount = toNumber(row.querySelector('.discount').value);
-            const total = Math.max(0, qty * price - discount);
-            row.querySelector('.total_line').textContent = total;
+            row.querySelector('.total_line').textContent = Math.max(0, qty * price - discount);
             updateInvoiceTotals();
         }
 
@@ -130,102 +152,38 @@
             document.getElementById('invoiceDiscountTotal').textContent = discountTotal;
         }
 
-        // ✅ Empêcher le même produit dans le même entrepôt uniquement
-        function checkDuplicateWarehouseProduct() {
-            const rows = document.querySelectorAll('#invoiceLinesTable tbody tr');
-            const combinations = new Set();
-            let hasDuplicate = false;
+        function updateExpirationInput(row) {
+            if (!isSupplier) return;
+            const productSelect = row.querySelector('.productSelect');
+            const expirationInput = row.querySelector('.expiration_date');
+            if (!expirationInput) return;
 
-            rows.forEach(row => {
-                const warehouse = row.querySelector('.warehouseSelect')?.value;
-                const product = row.querySelector('.productSelect')?.value;
-                const combo = `${warehouse}-${product}`;
-
-                if (warehouse && product) {
-                    if (combinations.has(combo)) {
-                        row.classList.add('table-danger');
-                        hasDuplicate = true;
-                    } else {
-                        combinations.add(combo);
-                        row.classList.remove('table-danger');
-                    }
-                } else {
-                    row.classList.remove('table-danger');
-                }
-            });
-
-            if (hasDuplicate) {
-                alert('Le même produit ne peut pas être sélectionné deux fois dans le même entrepôt.');
-                return false;
+            const isPerishable = productSelect.selectedOptions[0]?.dataset.isPerishable == "1";
+            if (isPerishable) expirationInput.removeAttribute('disabled');
+            else {
+                expirationInput.value = "";
+                expirationInput.setAttribute('disabled', true);
             }
-            return true;
-        }
-
-        // ✅ Corrigée : ne bloque pas le même produit dans un entrepôt différent
-        function updateProductOptions() {
-            const rows = document.querySelectorAll('#invoiceLinesTable tbody tr');
-
-            rows.forEach(row => {
-                const currentWarehouse = row.querySelector('.warehouseSelect')?.value;
-                const currentProductSelect = row.querySelector('.productSelect');
-
-                Array.from(currentProductSelect.options).forEach(option => {
-                    if (option.value === "") {
-                        option.disabled = false;
-                        return;
-                    }
-
-                    let disable = false;
-                    rows.forEach(otherRow => {
-                        if (otherRow === row) return; // ignorer soi-même
-                        const otherWarehouse = otherRow.querySelector('.warehouseSelect')?.value;
-                        const otherProduct = otherRow.querySelector('.productSelect')?.value;
-                        if (currentWarehouse && otherWarehouse && currentWarehouse ===
-                            otherWarehouse && otherProduct === option.value) {
-                            disable = true;
-                        }
-                    });
-
-                    option.disabled = disable;
-                });
-            });
         }
 
         function reindexRows() {
-            const rows = document.querySelectorAll('#invoiceLinesTable tbody tr');
-            rows.forEach((row, i) => {
-                const wh = row.querySelector('.warehouseSelect');
-                const sel = row.querySelector('.productSelect');
-                const qty = row.querySelector('.quantity');
-                const price = row.querySelector('.unit_price');
-                const disc = row.querySelector('.discount');
-                if (wh) wh.setAttribute('name', `items[${i}][warehouse_id]`);
-                if (sel) sel.setAttribute('name', `items[${i}][product_id]`);
-                if (qty) qty.setAttribute('name', `items[${i}][quantity]`);
-                if (price) price.setAttribute('name', `items[${i}][unit_price]`);
-                if (disc) disc.setAttribute('name', `items[${i}][discount]`);
+            document.querySelectorAll('#invoiceLinesTable tbody tr').forEach((row, i) => {
+                row.querySelectorAll('select, input').forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name) input.setAttribute('name', name.replace(/\[\d+\]/, `[${i}]`));
+                });
             });
-            lineIndex = rows.length;
+            lineIndex = document.querySelectorAll('#invoiceLinesTable tbody tr').length;
         }
-
-        document.querySelector('#invoiceLinesTable tbody').addEventListener('change', function(e) {
-            if (e.target.classList.contains('warehouseSelect') || e.target.classList.contains('productSelect')) {
-                checkDuplicateWarehouseProduct();
-                updateProductOptions(); // ✅ à chaque changement
-            }
-
-            if (e.target.classList.contains('productSelect')) {
-                const selectedOption = e.target.options[e.target.selectedIndex];
-                const price = selectedOption ? selectedOption.dataset.price || 0 : 0;
-                const row = e.target.closest('tr');
-                row.querySelector('.unit_price').value = price;
-                updateLineTotal(row);
-            }
-        });
 
         document.getElementById('addLineBtn').addEventListener('click', () => {
             const tbody = document.querySelector('#invoiceLinesTable tbody');
-            const rowHtml = `
+
+            let expirationCell = isSupplier ?
+                `<td><input type="date" name="items[${lineIndex}][expiration_date]" class="form-control expiration_date" disabled></td>` :
+                '';
+
+            tbody.insertAdjacentHTML('beforeend', `
 <tr>
     <td>
         <select name="items[${lineIndex}][warehouse_id]" class="form-control warehouseSelect" required>
@@ -235,27 +193,49 @@
             @endforeach
         </select>
     </td>
+
     <td>
         <select name="items[${lineIndex}][product_id]" class="form-control productSelect" required>
             <option value="">Sélectionnez un produit</option>
             @foreach ($products as $product)
-                <option value="{{ $product->id }}" data-price="{{ $product->price }}">{{ $product->name }}</option>
+                <option value="{{ $product->id }}" data-price="{{ $product->price }}" data-is-perishable="{{ $product->is_perishable }}">
+                    {{ $product->name }}
+                </option>
             @endforeach
         </select>
     </td>
+
     <td><input type="number" name="items[${lineIndex}][quantity]" class="form-control quantity" value="1" min="1" required></td>
     <td><input type="number" name="items[${lineIndex}][unit_price]" class="form-control unit_price" value="0" min="0" required></td>
     <td><input type="number" name="items[${lineIndex}][discount]" class="form-control discount" value="0" min="0"></td>
+    ${expirationCell}
     <td class="total_line">0</td>
     <td class="text-center"><button type="button" class="btn btn-sm btn-danger removeLineBtn"><i class="fas fa-trash"></i></button></td>
-</tr>`;
-            tbody.insertAdjacentHTML('beforeend', rowHtml);
+</tr>`);
+
             const newRow = tbody.querySelector('tr:last-child');
             updateLineTotal(newRow);
+            updateExpirationInput(newRow);
             reindexRows();
-            updateProductOptions();
             updateInvoiceTotals();
-            checkDuplicateWarehouseProduct();
+        });
+
+        document.querySelector('#invoiceLinesTable tbody').addEventListener('change', function(e) {
+            const row = e.target.closest('tr');
+            if (e.target.classList.contains('productSelect')) {
+                const price = e.target.selectedOptions[0]?.dataset.price || 0;
+                row.querySelector('.unit_price').value = price;
+                updateLineTotal(row);
+                updateExpirationInput(row);
+            }
+        });
+
+        document.querySelector('#invoiceLinesTable tbody').addEventListener('click', e => {
+            if (e.target.closest('.removeLineBtn')) {
+                e.target.closest('tr').remove();
+                reindexRows();
+                updateInvoiceTotals();
+            }
         });
 
         document.querySelector('#invoiceLinesTable tbody').addEventListener('input', function(e) {
@@ -265,20 +245,9 @@
             }
         });
 
-        document.querySelector('#invoiceLinesTable tbody').addEventListener('click', function(e) {
-            const btn = e.target.closest('.removeLineBtn');
-            if (btn) {
-                const tr = btn.closest('tr');
-                if (tr) tr.remove();
-                reindexRows();
-                updateProductOptions();
-                updateInvoiceTotals();
-                checkDuplicateWarehouseProduct();
-            }
+        document.querySelectorAll('#invoiceLinesTable tbody tr').forEach(row => {
+            updateLineTotal(row);
+            updateExpirationInput(row);
         });
-
-        document.querySelectorAll('#invoiceLinesTable tbody tr').forEach(row => updateLineTotal(row));
-        reindexRows();
-        updateProductOptions();
     </script>
 @endpush

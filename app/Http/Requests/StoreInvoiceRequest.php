@@ -12,7 +12,6 @@ class StoreInvoiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // Autoriser tous les tenants pour l'instant
         return true;
     }
 
@@ -22,24 +21,27 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         $tenantId = auth()->user()->tenant_id;
-
-        // Pour update, récupérer l'ID de la facture à ignorer pour la règle unique
         $invoiceId = $this->route('invoice')?->id;
 
-        return [
+        // Détection du type (client ou fournisseur)
+        $type = $this->input('type');
+
+        $rules = [
             'contact_id' => ['required', 'uuid', 'exists:contacts,id'],
             'invoice_number' => [
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('invoices')->ignore($invoiceId)->where(fn ($query) => $query->where('tenant_id', $tenantId)
-                    ->where('type', $this->input('type'))),
+                Rule::unique('invoices')
+                    ->ignore($invoiceId)
+                    ->where(fn($query) => $query->where('tenant_id', $tenantId)
+                        ->where('type', $this->input('type'))),
             ],
             'invoice_date' => ['required', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],
             'type' => ['required', Rule::in(['client', 'supplier'])],
 
-            // Validation des lignes de facture
+            // Lignes de facture
             'items' => ['required', 'array', 'min:1'],
             'items.*.warehouse_id' => ['required', 'uuid', 'exists:warehouses,id'],
             'items.*.product_id' => ['required', 'uuid', 'exists:products,id'],
@@ -47,6 +49,20 @@ class StoreInvoiceRequest extends FormRequest
             'items.*.unit_price' => ['required', 'integer', 'min:0'],
             'items.*.discount' => ['nullable', 'integer', 'min:0'],
         ];
+
+        // ✅ Si la facture est de type fournisseur, on exige expiration_date
+        if ($type === 'supplier') {
+            $rules['items.*.expiration_date'] = [
+                'nullable',
+                'date',
+                'after_or_equal:today', // la date d’expiration ne peut pas être passée
+            ];
+        } else {
+            // ✅ Si c’est un client, la date d’expiration peut être absente mais doit être valide si présente
+            $rules['items.*.expiration_date'] = ['nullable', 'date', 'after_or_equal:today'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -63,6 +79,8 @@ class StoreInvoiceRequest extends FormRequest
             'items.*.product_id.required' => 'Chaque ligne doit avoir un produit.',
             'items.*.quantity.required' => 'Chaque ligne doit avoir une quantité.',
             'items.*.unit_price.required' => 'Chaque ligne doit avoir un prix unitaire.',
+            'items.*.expiration_date.required' => 'Chaque ligne doit avoir une date d’expiration (pour les fournisseurs).',
+            'items.*.expiration_date.after_or_equal' => 'La date d’expiration doit être aujourd’hui ou ultérieure.',
         ];
     }
 }

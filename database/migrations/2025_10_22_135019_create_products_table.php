@@ -24,6 +24,7 @@ return new class extends Migration
             $table->integer('seuil_alert')->default(10);
             $table->boolean('is_active')->default(true);
             $table->string('image')->nullable();
+            $table->boolean('is_perishable')->default(false);
 
             $table->timestamps();
             // $table->softDeletes(); // à activer si besoin

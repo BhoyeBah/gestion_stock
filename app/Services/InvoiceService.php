@@ -14,7 +14,6 @@ class InvoiceService
 {
     public function createInvoice(array $data)
     {
-
         try {
 
             DB::beginTransaction();
@@ -61,7 +60,9 @@ class InvoiceService
         $type = $type == 'client' ? 'out' : 'in';
 
         foreach ($items as $item) {
-
+            if (! isset($item['expiration_date'])) {
+                $item['expiration_date'] = null;
+            }
             $quantity = (int) $item['quantity'];
             $discount = (int) $item['discount'];
             $price = (int) $item['unit_price'];
@@ -74,6 +75,7 @@ class InvoiceService
                 'total_line' => $total_line,
                 'product_id' => $item['product_id'],
                 'warehouse_id' => $item['warehouse_id'],
+                'expiration_date' => $item['expiration_date'],
                 'invoice_id' => $invoice_id,
                 'id' => (string) Str::uuid(),
                 'created_at' => Carbon::now(),
@@ -187,6 +189,7 @@ class InvoiceService
                     'unit_price' => $item['unit_price'],
                     'quantity' => $item['quantity'],
                     'remaining' => $item['quantity'],
+                    'expiration_date' => $item['expiration_date'],
                     'id' => (string) Str::uuid(),
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('unit_price');
             $table->integer('quantity');
             $table->integer('remaining')->index();
+            $table->date("expiration_date")->nullable()->index();
 
             $table->timestamps();
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');

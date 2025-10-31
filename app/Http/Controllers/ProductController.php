@@ -37,7 +37,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
 
-        $this->hasPermission('create_product');
+        // $this->hasPermission('create_product');
 
         $data = $request->validated(); // Récupère les données validées
 

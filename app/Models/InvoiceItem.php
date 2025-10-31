@@ -18,6 +18,7 @@ class InvoiceItem extends Model
         'unit_price',
         'discount',
         'total_line',
+        'expiration_date'
     ];
 
     /* =====================
