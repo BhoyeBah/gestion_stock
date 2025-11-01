@@ -14,10 +14,9 @@
         </button>
     </div>
 
-
     <!-- =========================
-                                         SECTION 1 : RECHERCHE ET FILTRES
-                                    ========================= -->
+                             SECTION 1 : RECHERCHE ET FILTRES
+                        ========================= -->
     <section id="invoice-filters">
         <div class="card shadow border-left-info mb-4">
             <div class="card-header bg-info text-white py-3 d-flex justify-content-between align-items-center">
@@ -25,7 +24,6 @@
                     <i class="fas fa-search"></i> Recherche et filtres
                 </h6>
             </div>
-
             <div class="card-body">
                 <form method="GET" action="{{ route('invoices.index', $type) }}">
                     <div class="form-row align-items-end">
@@ -34,15 +32,14 @@
                             <input type="text" name="search_number" id="search_number" class="form-control"
                                 value="{{ request('search_number') }}" placeholder="Rechercher par numéro...">
                         </div>
-
                         <div class="col-md-3">
-                            <label for="search_contact"
-                                class="small text-muted">{{ $invoiceType === 'Clients' ? 'Client' : 'Fournisseur' }}</label>
+                            <label for="search_contact" class="small text-muted">
+                                {{ $invoiceType === 'Clients' ? 'Client' : 'Fournisseur' }}
+                            </label>
                             <input type="text" name="search_contact" id="search_contact" class="form-control"
                                 value="{{ request('search_contact') }}"
                                 placeholder="Nom {{ strtolower($invoiceType === 'Clients' ? 'du client' : 'du fournisseur') }}">
                         </div>
-
                         <div class="col-md-3">
                             <label for="status" class="small text-muted">Statut</label>
                             <select name="status" id="status" class="form-control">
@@ -58,7 +55,6 @@
                                 </option>
                             </select>
                         </div>
-
                         <div class="col-md-3 text-right">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-search"></i> Rechercher
@@ -73,10 +69,9 @@
         </div>
     </section>
 
-
     <!-- =========================
-                                         SECTION 2 : LISTE DES FACTURES
-                                    ========================= -->
+                             SECTION 2 : LISTE DES FACTURES
+                        ========================= -->
     <section id="invoice-list">
         <div class="card shadow border-left-primary">
             <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
@@ -84,7 +79,6 @@
                     <i class="fas fa-list-ul"></i> Liste des factures {{ strtolower($invoiceType) }}
                 </h6>
             </div>
-
             <div class="card-body">
                 @if ($invoices->count() > 0)
                     <div class="table-responsive">
@@ -97,6 +91,7 @@
                                     <th>Date</th>
                                     <th>Statut</th>
                                     <th>Total (FCFA)</th>
+                                    <th>Balance (FCFA)</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -107,8 +102,9 @@
                                         </td>
                                         <td>{{ $invoice->invoice_number ?? '-' }}</td>
                                         <td>
-                                            <a
-                                                href="{{ route("$type.show", $invoice->contact->id) }}">{{ $invoice->contact->fullname ?? '-' }}</a>
+                                            <a href="{{ route("$type.show", $invoice->contact->id) }}">
+                                                {{ $invoice->contact->fullname ?? '-' }}
+                                            </a>
                                         </td>
                                         <td>{{ $invoice->invoice_date ? Carbon::parse($invoice->invoice_date)->format('d/m/Y') : '-' }}
                                         </td>
@@ -127,14 +123,114 @@
                                                 class="badge badge-{{ $statusColor }}">{{ ucfirst($invoice->status) }}</span>
                                         </td>
                                         <td>{{ number_format($invoice->total_invoice, 0, ',', ' ') }}</td>
+                                        <td>{{ number_format($invoice->balance, 0, ',', ' ') }}</td>
 
                                         <td class="text-center">
+                                            <!-- Bouton paiement facture -->
+                                            <button type="button" class="btn btn-sm btn-primary" title="Payer"
+                                                data-toggle="modal" data-target="#paymentModal{{ $invoice->id }}"
+                                                @if (!in_array($invoice->status, ['validated', 'partial'])) disabled @endif>
+                                                <i class="fas fa-money-bill"></i>
+                                            </button>
+
+                                            <!-- Modal paiement facture -->
+                                            <div class="modal fade" id="paymentModal{{ $invoice->id }}" tabindex="-1"
+                                                role="dialog" aria-labelledby="paymentModalLabel{{ $invoice->id }}"
+                                                aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                                    <div class="modal-content border-0 shadow-lg">
+                                                        <div class="modal-header bg-primary text-white">
+                                                            <h5 class="modal-title"
+                                                                id="paymentModalLabel{{ $invoice->id }}">
+                                                                Paiement de la facture #{{ $invoice->invoice_number }}
+                                                            </h5>
+                                                            <button type="button" class="close text-white"
+                                                                data-dismiss="modal" aria-label="Fermer">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+
+                                                        <form action="{{ route('invoices.pay', [$type, $invoice->id]) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <div class="modal-body">
+                                                                <input type="hidden" name="invoice_id"
+                                                                    value="{{ $invoice->id }}">
+
+                                                                <!-- Solde restant -->
+                                                                <div class="alert alert-info text-center py-2 mb-3">
+                                                                    <i class="fas fa-wallet"></i>
+                                                                    Solde restant :
+                                                                    <strong>{{ number_format($invoice->balance, 0, ',', ' ') }}
+                                                                        FCFA</strong>
+                                                                </div>
+
+                                                                <!-- Montant payé -->
+                                                                <div class="input-group mb-3">
+                                                                    <div class="input-group-prepend">
+                                                                        <span
+                                                                            class="input-group-text bg-primary text-white">
+                                                                            <i class="fas fa-dollar-sign"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                    <input type="number" class="form-control"
+                                                                        id="amount_paid_{{ $invoice->id }}"
+                                                                        name="amount_paid" placeholder="Montant payé"
+                                                                        min="1" max="{{ $invoice->balance }}"
+                                                                        required>
+                                                                </div>
+
+                                                                <!-- Type de paiement -->
+                                                                <div class="input-group mb-3">
+                                                                    <div class="input-group-prepend">
+                                                                        <span
+                                                                            class="input-group-text bg-primary text-white">
+                                                                            <i class="fas fa-credit-card"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                    <input type="text" class="form-control"
+                                                                        id="payment_type_{{ $invoice->id }}"
+                                                                        name="payment_type"
+                                                                        placeholder="Type de paiement (Ex : Espèces, Virement)"
+                                                                        required>
+                                                                </div>
+
+                                                                <!-- Date du paiement -->
+                                                                <div class="input-group mb-3">
+                                                                    <div class="input-group-prepend">
+                                                                        <span
+                                                                            class="input-group-text bg-primary text-white">
+                                                                            <i class="fas fa-calendar-alt"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                    <input type="date" class="form-control"
+                                                                        id="payment_date_{{ $invoice->id }}"
+                                                                        name="payment_date" value="{{ date('Y-m-d') }}"
+                                                                        required>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                    data-dismiss="modal">Annuler</button>
+                                                                <button type="submit" class="btn btn-primary">Confirmer
+                                                                    le paiement</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                            <!-- Bouton valider -->
                                             <form action="{{ route('invoices.validate', [$type, $invoice->id]) }}"
                                                 method="POST" class="d-inline"
                                                 onsubmit="return confirm('Confirmez-vous la validation de cette facture ?')">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="btn btn-sm btn-success" title="valider" @if($invoice->status !='draft') disabled @endif >
+                                                <button type="submit" class="btn btn-sm btn-success" title="valider"
+                                                    @if ($invoice->status != 'draft') disabled @endif>
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                             </form>
@@ -149,13 +245,13 @@
                                                     class="btn btn-sm btn-warning" title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-
                                                 <form action="{{ route('invoices.destroy', [$type, $invoice->id]) }}"
                                                     method="POST" class="d-inline"
                                                     onsubmit="return confirm('Confirmer la suppression de cette facture ?')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                                    <button type="submit" class="btn btn-sm btn-danger"
+                                                        title="Supprimer">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>
                                                 </form>
@@ -187,7 +283,6 @@
             </div>
         </div>
     </section>
-
 
     <!-- Modal ajout / édition d'une facture -->
     <div class="modal fade" id="addInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="addInvoiceModalLabel"

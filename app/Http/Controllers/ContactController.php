@@ -16,8 +16,9 @@ class ContactController extends Controller
         //
         $this->validateType($type);
 
-        $contacts = Contact::type(rtrim($type, 's'))->get();
-        // Définir un titre dynamique
+        $contacts = Contact::type(rtrim($type, 's'))
+        ->withSum('invoices as balance_total', 'balance') // somme des balances
+        ->get();
 
         $contactType = $type === 'clients' ? 'Clients' : 'Fournisseurs';
 

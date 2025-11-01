@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\UnitsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
@@ -113,6 +114,16 @@ Route::prefix('invoices/{type}')->controller(InvoiceController::class)->name('in
     Route::delete('/{invoice}', 'destroy')->name('destroy');
     Route::get('/{invoice}', 'show')->where('invoice', '[0-9a-fA-F\-]{36}')->name('show');
     Route::patch('/{invoice}/validate', 'validateInvoice')->where('invoice', '[0-9a-fA-F\-]{36}')->name('validate');
+    Route::patch('/{invoice}/pay', 'validatePay')->where('invoice', '[0-9a-fA-F\-]{36}')->name('pay');
 })->where('type', 'client|supplier');
+
+
+// Route::resource('/payments', PaymentController::class)->middleware(['auth'])->names('payments');
+Route::prefix('payments/{type}')->controller(PaymentController::class)->name("payments.")->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::delete('/{payment}', 'destroy')->name('destroy');
+    Route::get('/{payment}', 'show')->where('payment', '[0-9a-fA-F\-]{36}')->name('show');
+})->where('type', 'client|supplier');
+
 
 require __DIR__.'/auth.php';

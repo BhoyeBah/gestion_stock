@@ -77,7 +77,18 @@
             </a>
         </li>
     @endif
-
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('clients.index', ['type' => 'clients']) }}">
+            <i class="fas fa-fw fa-file-invoice"></i>
+            <span>Clients</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('suppliers.index', ['type' => 'clients']) }}">
+            <i class="fas fa-fw fa-file-invoice"></i>
+            <span>Fournisseurs</span>
+        </a>
+    </li>
     <li class="nav-item">
         <a class="nav-link" href="{{ route('invoices.index', ['type' => 'suppliers']) }}">
             <i class="fas fa-fw fa-file-invoice"></i>
@@ -92,6 +103,19 @@
         </a>
     </li>
 
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('payments.index', ['type' => 'clients']) }}">
+            <i class="fas fa-fw fa-file-invoice"></i>
+            <span>Paiement clients</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('payments.index', ['type' => 'suppliers']) }}">
+            <i class="fas fa-fw fa-file-invoice"></i>
+            <span>Paiement Fournisseurs</span>
+        </a>
+    </li>
 
     {{-- Section visible uniquement pour l'admin plateforme --}}
     @if ($current_user->is_platform_user())

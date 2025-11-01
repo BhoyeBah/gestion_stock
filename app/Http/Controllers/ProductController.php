@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -17,7 +18,9 @@ class ProductController extends Controller
 
         $this->hasPermission('read_products');
 
-        $products = Product::all();
+        $products = Product::withSum('batches as stock_total', 'remaining')
+            ->with(['category', 'unit'])
+            ->get();
 
         return view('back.products.index', compact('products'));
 
@@ -58,9 +61,12 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show(Request $request, string $id)
     {
         //
+
+        $product = Product::with(['batches.warehouse', 'payments.invoice.contact', 'invoices.contact'])->findOrFail($id);
+
         return view('back.products.show', compact('product'));
     }
 
@@ -69,7 +75,8 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $this->hasPermission("edit_product");
+        $this->hasPermission('edit_product');
+
         return view('back.products.edit', compact('product'));
 
     }
@@ -80,7 +87,7 @@ class ProductController extends Controller
     public function update(ProductRequest $request, Product $product)
     {
 
-        $this->hasPermission("update_product");
+        $this->hasPermission('update_product');
 
         // Récupère les données validées
         $data = $request->validated();
@@ -100,7 +107,7 @@ class ProductController extends Controller
         $product->update($data);
 
         return redirect()->route('products.index')
-                        ->with('success', "Le produit « {$product->name} » a été modifié avec succès !");
+            ->with('success', "Le produit « {$product->name} » a été modifié avec succès !");
     }
 
     /**
@@ -108,7 +115,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $this->hasPermission("delete_product");
+        $this->hasPermission('delete_product');
 
         // Vérifie si le produit est désactivé
         if ($product->is_active) {
@@ -128,7 +135,7 @@ class ProductController extends Controller
 
     public function toggleActive(string $id)
     {
-        $this->hasPermission("toggle_product");
+        $this->hasPermission('toggle_product');
         // Inversion du statut
         $product = Product::findOrFail($id);
         $product->is_active = ! $product->is_active;
@@ -143,13 +150,12 @@ class ProductController extends Controller
         return redirect()->back()->with('success', $message);
     }
 
-    private function hasPermission(String $permission) {
+    private function hasPermission(string $permission)
+    {
 
-        if(!auth()->user()->can($permission)) {
+        if (! auth()->user()->can($permission)) {
             abort(403, "Vous n'avez pas l'autorisation d'effectuer cette action");
         }
 
     }
-
-
 }

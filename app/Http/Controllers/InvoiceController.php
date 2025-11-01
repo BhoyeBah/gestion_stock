@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PaymentRequest;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Models\Contact;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Warehouse;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
@@ -176,12 +179,62 @@ class InvoiceController extends Controller
 
         $this->checkAuthorization($invoice, $type);
 
+
         try {
             $this->service->validateInvoice($invoice);
+
+
+
             return back()->with('success', 'Facture validée avec succès');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
+
+    }
+
+    public function validatePay(PaymentRequest $request, string $type, Invoice $invoice)
+    {
+        $this->validateType($type);
+        $this->checkAuthorization($invoice, $type);
+        $amount_paid = (int) $request->input('amount_paid');
+
+        if ($amount_paid > $invoice->balance || $amount_paid <= 0) {
+            return back()->with('error', "Impossible de payer $amount_paid pour cette facture.");
+        }
+
+
+        try {
+            // code...
+            DB::beginTransaction();
+            $invoice->balance -= $amount_paid;
+            if ($invoice->balance > 0) {
+                $invoice->status = 'partial';
+
+            } elseif ($invoice->balance == 0) {
+                $invoice->status = 'paid';
+            }
+            $invoice->save();
+
+            Payment::create([
+                'invoice_id' => $invoice->id,
+                'tenant_id' => $invoice->tenant_id,
+                'contact_id' => $invoice->contact_id,
+                'amount_paid' => $amount_paid,
+                'remaining_amount' => $invoice->balance,
+                'payment_date' => now(),
+                'payment_type' => $request->input('payment_type'),
+                'payment_source' => $invoice->type,
+            ]);
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // throw $th;
+            throw $e;
+        }
+        return back()
+        ->with('success', "Vous venez de faire un paiement de $amount_paid FCFA sur la facture $invoice->invoice_number");
 
     }
 

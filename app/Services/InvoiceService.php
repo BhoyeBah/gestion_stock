@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Batch;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -109,18 +110,14 @@ class InvoiceService
 
     public function validateInvoice(Invoice $invoice)
     {
+        try {
+            DB::beginTransaction();
 
-        if ($invoice->type == 'supplier') {
-
-            try {
-
-                DB::beginTransaction();
-
+            if ($invoice->type === 'supplier') {
                 $result = $this->batchLines($invoice->items, $invoice->tenant_id);
                 $lines = $result['batchRows'];
                 $inventoryMovements = $result['inventoryMovements'];
 
-                // dd($lines, $inventoryMovements);
                 if (! empty($lines)) {
                     DB::table('batches')->insert($lines);
                 }
@@ -128,31 +125,36 @@ class InvoiceService
                 if (! empty($inventoryMovements)) {
                     DB::table('inventory_movements')->insert($inventoryMovements);
                 }
-                $invoice->status = 'validated';
 
-                $invoice->save();
-
-                DB::commit();
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            }
-
-        } else {
-
-            DB::transaction(function () use ($invoice) {
-
+            } else {
                 foreach ($invoice->items as $item) {
-
                     $this->applyFifo($item);
                 }
+            }
 
-                $invoice->status = 'validated';
-                $invoice->save();
-            });
+            // ✅ Validation de la facture (commun aux deux cas)
+            $invoice->status = 'validated';
+            $invoice->generateInvoiceNumber();
+            $invoice->save();
+
+            // ✅ Création du paiement initial (une seule fois ici)
+            Payment::create([
+                'invoice_id' => $invoice->id,
+                'tenant_id' => $invoice->tenant_id,
+                'contact_id' => $invoice->contact_id,
+                'amount_paid' => 0,
+                'remaining_amount' => $invoice->balance,
+                'payment_date' => now(),
+                'payment_type' => 'initialisation paiement',
+                'payment_source' => $invoice->type,
+            ]);
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
-
     }
 
     public function batchLines(Collection $items, string $tenant_id)

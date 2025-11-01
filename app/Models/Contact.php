@@ -72,4 +72,9 @@ class Contact extends Model
     {
         return $this->belongsTo(Tenant::class, 'tenant_id');
     }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }
