@@ -117,6 +117,13 @@
         </a>
     </li>
 
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('expenses.index') }}">
+            <i class="fas fa-fw fa-file-invoice"></i>
+            <span>Dépenses</span>
+        </a>
+    </li>
+
     {{-- Section visible uniquement pour l'admin plateforme --}}
     @if ($current_user->is_platform_user())
         <hr class="sidebar-divider">

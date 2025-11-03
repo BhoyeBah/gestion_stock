@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\UnitsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
@@ -125,5 +126,6 @@ Route::prefix('payments/{type}')->controller(PaymentController::class)->name("pa
     Route::get('/{payment}', 'show')->where('payment', '[0-9a-fA-F\-]{36}')->name('show');
 })->where('type', 'client|supplier');
 
+Route::resource("expenses", ExpenseController::class)->middleware(['auth'])->names('expenses');
 
 require __DIR__.'/auth.php';

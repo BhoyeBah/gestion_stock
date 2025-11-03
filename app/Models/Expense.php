@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models;
+
+use App\Traits\HasTenant;
+use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Expense extends Model
+{
+    use HasFactory, HasTenant, HasUuid;
+
+    protected $fillable = ['reason', 'amount', 'expense_date'];
+
+    protected $casts = [
+        'expense_date' => 'datetime',
+    ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
+    }
+}
