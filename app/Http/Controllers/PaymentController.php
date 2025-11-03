@@ -41,7 +41,7 @@ class PaymentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Payment $payment)
+    public function show(string $type,Payment $payment)
     {
         //
     }
@@ -105,7 +105,7 @@ class PaymentController extends Controller
 
             return back()->with('error', 'Erreur lors de la suppression du paiement : '.$e->getMessage());
         }
-        
+
     }
 
     protected function validateType(string $type): void

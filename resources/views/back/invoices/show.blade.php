@@ -1,160 +1,372 @@
 @extends('back.layouts.admin')
 
 @section('content')
-    <div class="container">
+    <style>
+        :root { --primary: #0d6efd; --muted: #6c757d; --card-bg: #ffffff; }
 
-        {{-- Header --}}
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">
-                <i class="fas fa-file-invoice"></i> Détails de la facture
-            </h1>
-            <a href="{{ route('invoices.index', $invoice->type . 's') }}" class="btn btn-outline-primary">
-                <i class="fas fa-arrow-left"></i> Retour à la liste
-            </a>
+        /* Global subtle adjustments */
+        .card { border-radius: 10px; }
+        .card-header.bg-primary { background-color: var(--primary) !important; color: #fff; border-top-left-radius: 10px; border-top-right-radius: 10px; }
+
+        /* === Résumé cards : même hauteur (flex stretch) === */
+        .balance-row {
+            display: flex;             /* utilise flexbox */
+            gap: .8rem;
+            align-items: stretch;      /* => enfants auront la même hauteur */
+            flex-wrap: wrap;
+        }
+        .balance-card {
+            flex: 1 1 180px;           /* grow | shrink | basis */
+            display: flex;
+            align-items: center;       /* centre le contenu verticalement */
+            background: var(--card-bg);
+            border: 1px solid rgba(13,110,253,0.06);
+            padding: .75rem 1rem;
+            border-radius: 10px;
+            transition: transform .14s ease, box-shadow .14s ease;
+            box-shadow: 0 1px 6px rgba(15, 23, 42, 0.04);
+            min-height: 72px;          /* hauteur minimale élégante */
+        }
+        .balance-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+        }
+        .balance-icon {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-right: .75rem;
+            font-size: 1.05rem;
+            color: var(--primary);
+            background: linear-gradient(180deg, rgba(13,110,253,0.06), rgba(13,110,253,0.02));
+            flex: 0 0 44px;
+        }
+        .balance-text { font-size: .85rem; color: var(--muted); }
+        .balance-amount { font-size: 1.05rem; font-weight: 600; color: #0d1b3a; }
+
+        /* s'assurer que le contenu texte prend toute la hauteur disponible */
+        .balance-card > div:last-child {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* Small responsive tweaks */
+        @media (max-width: 768px) {
+            .balance-row { flex-direction: column; align-items: stretch; }
+            .balance-card { width: 100%; }
+        }
+
+        /* Tabs style - subtle */
+        .nav-tabs .nav-link.active { color: var(--primary); border-color: transparent transparent var(--primary); font-weight: 600; }
+        .nav-tabs .nav-link { color: #495057; }
+
+        /* Table subtle hover */
+        table.table-hover tbody tr:hover { background-color: #fbfdff; }
+
+        /* small helpers */
+        .muted { color: var(--muted); }
+        .ml-2 { margin-left: .5rem; }
+        .me-2 { margin-right: .5rem; } /* for projects using both notations it's harmless */
+    </style>
+
+    <div class="container-fluid">
+
+        @php
+            $totalInvoice = $invoice->items->sum('total_line');
+            $totalPaid = $payments->sum('amount_paid');
+            $remaining = max(0, $totalInvoice - $totalPaid);
+        @endphp
+
+        {{-- === Header réorganisé : gauche = titre, centre = totaux, droite = retour === --}}
+        <div class="row align-items-center mb-3">
+            {{-- Gauche : Titre --}}
+            <div class="col-12 col-md-4 mb-2 mb-md-0">
+                <h2 class="h5 mb-0">
+                    <i class="fas fa-file-invoice text-primary"></i>
+                    <span class="ml-2">Facture n° <span class="text-primary">{{ $invoice->invoice_number }}</span></span>
+                </h2>
+                <div class="small text-muted">
+                    Créée le : {{ $invoice->created_at ? \Carbon\Carbon::parse($invoice->created_at)->format('d/m/Y') : '-' }}
+                </div>
+            </div>
+
+            {{-- Centre : Totaux (centrés) --}}
+            <div class="col-12 col-md-4 d-flex justify-content-center">
+                <div class="d-flex balance-row" style="max-width:760px; width:100%;">
+                    {{-- Total facture --}}
+                    <div class="balance-card">
+                        <div class="balance-icon" aria-hidden="true">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <div>
+                            <div class="balance-text">Total facture</div>
+                            <div class="balance-amount">{{ number_format($totalInvoice, 0, ',', ' ') }} FCFA</div>
+                        </div>
+                    </div>
+
+                    {{-- Total payé --}}
+                    <div class="balance-card">
+                        <div class="balance-icon" aria-hidden="true">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div>
+                            <div class="balance-text">Total payé</div>
+                            <div class="balance-amount">{{ number_format($totalPaid, 0, ',', ' ') }} FCFA</div>
+                        </div>
+                    </div>
+
+                    {{-- Reste --}}
+                    <div class="balance-card">
+                        <div class="balance-icon" aria-hidden="true">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div>
+                            <div class="balance-text">Reste</div>
+                            <div class="balance-amount">{{ number_format($remaining, 0, ',', ' ') }} FCFA</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Droite : Bouton Retour (aligné à droite) --}}
+            <div class="col-12 col-md-4 text-md-right mt-2 mt-md-0">
+                <a href="{{ route('invoices.index', $invoice->type . 's') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
         </div>
 
-        {{-- Row Facture + Contact --}}
-        <div class="row d-flex align-items-stretch">
+        {{-- Top cards (Facture / Contact) --}}
+        <div class="row mb-3">
+            <div class="col-lg-6 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary"><i class="fas fa-info-circle me-2"></i>Informations de la facture</div>
+                    <div class="card-body p-3">
+                        <div class="row mb-2">
+                            <div class="col-5 muted">Numéro</div>
+                            <div class="col-7">{{ $invoice->invoice_number ?? '-' }}</div>
+                        </div>
 
-            {{-- Bloc facture --}}
-            <div class="col-md-6 mb-4 d-flex">
-                <div class="card shadow border-left-info w-100">
-                    <div class="card-header bg-info text-white">
-                        <h6 class="m-0 font-weight-bold">Informations de la facture</h6>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-bordered table-striped mb-0">
-                            <tbody>
-                                <tr>
-                                    <th>Numéro de facture</th>
-                                    <td>{{ $invoice->invoice_number ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Date de facture</th>
-                                    <td>{{ $invoice->invoice_date ? \Carbon\Carbon::parse($invoice->invoice_date)->format('d/m/Y') : '-' }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Date d'échéance</th>
-                                    <td>{{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') : '-' }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Status</th>
-                                    <td>
-                                        @php
-                                            $statusColor =
-                                                [
-                                                    'draft' => 'secondary',
-                                                    'partial' => 'warning',
-                                                    'paid' => 'success',
-                                                    'validated' => 'info',
-                                                    'cancelled' => 'danger',
-                                                ][$invoice->status] ?? 'secondary';
-                                        @endphp
-                                        <span class="badge badge-{{ $statusColor }}">{{ ucfirst($invoice->status) }}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Note</th>
-                                    <td>{{ $invoice->note ?? '-' }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="row mb-2">
+                            <div class="col-5 muted">Date</div>
+                            <div class="col-7">{{ $invoice->invoice_date ? \Carbon\Carbon::parse($invoice->invoice_date)->format('d/m/Y') : '-' }}</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-5 muted">Échéance</div>
+                            <div class="col-7">{{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') : '-' }}</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-5 muted">Statut</div>
+                            <div class="col-7">
+                                @php $badge = ['draft'=>'secondary','validated'=>'info','partial'=>'warning','paid'=>'success','cancelled'=>'danger'][$invoice->status] ?? 'secondary'; @endphp
+                                <span class="badge badge-{{ $badge }}">{{ ucfirst($invoice->status) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-5 muted">Note</div>
+                            <div class="col-7">{{ $invoice->note ?? '-' }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Bloc contact --}}
-            <div class="col-md-6 mb-4 d-flex">
-                <div class="card shadow border-left-primary w-100">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="m-0 font-weight-bold">
-                            Informations du {{ ucfirst($invoice->type == 'client' ? 'client' : 'fournisseur') }}
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-bordered table-striped mb-0">
-                            <tbody>
-                                <tr>
-                                    <th>Nom complet</th>
-                                    <td>{{ optional($invoice->contact)->fullname ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Téléphone</th>
-                                    <td>{{ optional($invoice->contact)->phone_number ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Email</th>
-                                    <td>{{ optional($invoice->contact)->email ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Adresse</th>
-                                    <td>{{ optional($invoice->contact)->address ?? '-' }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+            <div class="col-lg-6 mb-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary"><i class="fas fa-user-tie me-2"></i>{{ ucfirst($invoice->type == 'client' ? 'Client' : 'Fournisseur') }}</div>
+                    <div class="card-body p-3">
+                        <div class="row mb-2">
+                            <div class="col-5 muted">Nom</div>
+                            <div class="col-7">{{ optional($invoice->contact)->fullname ?? '-' }}</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-5 muted">Téléphone</div>
+                            <div class="col-7">{{ optional($invoice->contact)->phone_number ?? '-' }}</div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-5 muted">Email</div>
+                            <div class="col-7">{{ optional($invoice->contact)->email ?? '-' }}</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-5 muted">Adresse</div>
+                            <div class="col-7">{{ optional($invoice->contact)->address ?? '-' }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-        </div> {{-- /Row Facture + Contact --}}
-
-        {{-- Lignes de la facture --}}
-        <div class="card shadow border-left-primary mb-4">
-            <div class="card-header bg-primary text-white">
-                <h6 class="m-0 font-weight-bold">Lignes de la facture</h6>
+        {{-- Tabs (Lignes / Paiements / Lots) --}}
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <ul class="nav nav-tabs card-header-tabs" id="invoiceTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="lines-tab" data-toggle="tab" href="#lines" role="tab" aria-controls="lines" aria-selected="true">
+                            <i class="fas fa-list mr-1 text-primary"></i> Lignes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="payments-tab" data-toggle="tab" href="#payments" role="tab" aria-controls="payments" aria-selected="false">
+                            <i class="fas fa-credit-card mr-1 text-primary"></i> Paiements
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="batches-tab" data-toggle="tab" href="#batches" role="tab" aria-controls="batches" aria-selected="false">
+                            <i class="fas fa-boxes mr-1 text-primary"></i> Lots (Batches)
+                        </a>
+                    </li>
+                </ul>
             </div>
+
             <div class="card-body">
-                @if ($invoice->items->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="thead-light text-uppercase text-secondary small">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Entrepôt</th>
-                                    <th>Produit</th>
-                                    <th>Quantité</th>
-                                    <th>Prix unitaire (FCFA)</th>
-                                    <th>Discount (FCFA)</th>
-                                    <th>Total ligne (FCFA)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($invoice->items as $item)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item->warehouse ? $item->warehouse->name : '-' }}</td>
-                                        <td>{{ optional($item->product)->name ?? '-' }}</td>
-                                        <td>{{ $item->quantity }}</td>
-                                        <td>{{ number_format($item->unit_price, 0, ',', ' ') }}</td>
-                                        <td>{{ number_format($item->discount ?? 0, 0, ',', ' ') }}</td>
-                                        <td>{{ number_format($item->total_line, 0, ',', ' ') }}</td>
-                                    </tr>
-                                @endforeach
-
-                                {{-- Total Discount --}}
-                                <tr class="font-weight-bold bg-light">
-                                    <td colspan="5" class="text-right">Total Discount</td>
-                                    <td>{{ number_format($invoice->items->sum(fn($i) => $i->discount ?? 0), 0, ',', ' ') }}
-                                    </td>
-                                    <td>-</td>
-                                </tr>
-
-                                {{-- Total Général --}}
-                                <tr class="font-weight-bold bg-secondary text-white">
-                                    <td colspan="6" class="text-right">Total Général (après remise)</td>
-                                    <td>{{ number_format($invoice->items->sum(fn($i) => $i->total_line), 0, ',', ' ') }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="tab-content" id="invoiceTabsContent">
+                    {{-- TAB: Lignes --}}
+                    <div class="tab-pane fade show active" id="lines" role="tabpanel" aria-labelledby="lines-tab">
+                        @if ($invoice->items->count())
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Entrepôt</th>
+                                            <th>Produit</th>
+                                            <th class="text-center">Qté</th>
+                                            <th class="text-right">Prix U</th>
+                                            <th class="text-right">Remise</th>
+                                            <th class="text-right">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($invoice->items as $item)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $item->warehouse->name ?? '-' }}</td>
+                                                <td>{{ $item->product->name ?? '-' }}</td>
+                                                <td class="text-center">{{ $item->quantity }}</td>
+                                                <td class="text-right">{{ number_format($item->unit_price, 0, ',', ' ') }}</td>
+                                                <td class="text-right">{{ number_format($item->discount ?? 0, 0, ',', ' ') }}</td>
+                                                <td class="text-right">{{ number_format($item->total_line, 0, ',', ' ') }}</td>
+                                            </tr>
+                                        @endforeach
+                                        <tr>
+                                            <td colspan="4"></td>
+                                            <td class="text-right font-weight-bold">Total Remise</td>
+                                            <td class="text-right font-weight-bold">{{ number_format($invoice->items->sum('discount'), 0, ',', ' ') }}</td>
+                                            <td class="text-right">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"></td>
+                                            <td colspan="2" class="text-right font-weight-bold">Total Général</td>
+                                            <td class="text-right font-weight-bold">{{ number_format($totalInvoice, 0, ',', ' ') }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="alert alert-light text-center">Aucune ligne enregistrée.</div>
+                        @endif
                     </div>
-                @else
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-info-circle"></i> Aucune ligne de produit pour cette facture.
+
+                    {{-- TAB: Paiements --}}
+                    <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+                        @if ($payments->count())
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Date</th>
+                                            <th class="text-right">Montant payé</th>
+                                            <th class="text-right">Reste</th>
+                                            <th>Type</th>
+                                            <th>Source</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($payments as $payment)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d/m/Y') }}</td>
+                                                <td class="text-right">{{ number_format($payment->amount_paid, 0, ',', ' ') }}</td>
+                                                <td class="text-right">{{ number_format($payment->remaining_amount, 0, ',', ' ') }}</td>
+                                                <td>{{ ucfirst($payment->payment_type ?? '-') }}</td>
+                                                <td>{{ ucfirst($payment->payment_source ?? '-') }}</td>
+                                            </tr>
+                                        @endforeach
+
+                                        <tr>
+                                            <td colspan="2" class="text-right font-weight-bold">Total payé</td>
+                                            <td class="text-right font-weight-bold">{{ number_format($totalPaid, 0, ',', ' ') }}</td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" class="text-right font-weight-bold">Reste à payer</td>
+                                            <td class="text-right font-weight-bold">{{ number_format($remaining, 0, ',', ' ') }}</td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="mt-3 d-flex justify-content-center">
+                                {{ $payments->links() }}
+                            </div>
+                        @else
+                            <div class="alert alert-light text-center">Aucun paiement enregistré.</div>
+                        @endif
                     </div>
-                @endif
+
+                    {{-- TAB: Lots --}}
+                    <div class="tab-pane fade" id="batches" role="tabpanel" aria-labelledby="batches-tab">
+                        @if ($batches->count())
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Produit</th>
+                                            <th class="text-right">Prix</th>
+                                            <th class="text-center">Qté initiale</th>
+                                            <th class="text-center">Restante</th>
+                                            <th class="text-center">Expiration</th>
+                                            <th class="text-center">Créé le</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($batches as $batch)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ optional($batch->product)->name ?? '-' }}</td>
+                                                <td class="text-right">{{ number_format($batch->unit_price, 0, ',', ' ') }}</td>
+                                                <td class="text-center">{{ number_format($batch->quantity, 0, ',', ' ') }}</td>
+                                                <td class="text-center">{{ number_format($batch->remaining, 0, ',', ' ') }}</td>
+                                                <td class="text-center">{{ $batch->expiry_date ? \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') : '-' }}</td>
+                                                <td class="text-center">{{ $batch->created_at->format('d/m/Y') }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="mt-3 d-flex justify-content-center">
+                                {{ $batches->links() }}
+                            </div>
+                        @else
+                            <div class="alert alert-light text-center">Aucun lot enregistré.</div>
+                        @endif
+                    </div>
+
+                </div>
             </div>
         </div>
 

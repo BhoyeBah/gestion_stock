@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PaymentRequest;
 use App\Http\Requests\StoreInvoiceRequest;
+use App\Models\Batch;
 use App\Models\Contact;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -105,7 +106,13 @@ class InvoiceController extends Controller
 
         $this->checkAuthorization($invoice, $type);
 
-        return view('back.invoices.show', compact('invoice'));
+        $batches = Batch::where("invoice_id", $invoice->id)->orderBy("remaining")->paginate(1);
+        $payments = Payment::where("invoice_id", $invoice->id)->paginate(10);
+
+
+
+
+        return view('back.invoices.show', compact('invoice', 'batches','payments'));
     }
 
     /**

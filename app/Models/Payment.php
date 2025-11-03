@@ -25,6 +25,12 @@ class Payment extends Model
         'payment_source'
     ];
 
+    protected $casts = [
+        'payment_date' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
 
     /**
      * Relation : un paiement appartient à une facture.

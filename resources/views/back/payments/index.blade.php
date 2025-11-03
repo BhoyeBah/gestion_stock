@@ -103,10 +103,7 @@
 
                                         <td>
 
-                                            <a href="{{ route('payments.show', [$type, $payment->id]) }}"
-                                                class="btn btn-sm btn-info">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
+                                         
                                             <form action="{{ route('payments.destroy', [$type, $payment->id]) }}"
                                                 method="POST" class="d-inline"
                                                 onsubmit="return confirm('Confirmez-vous la suppression de ce paiement ?')">

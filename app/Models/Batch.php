@@ -23,6 +23,14 @@ class Batch extends Model
         'expiration_date',
     ];
 
+    protected $casts = [
+        'expiry_date' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+
+
     /* =====================
        RELATIONS
        ===================== */

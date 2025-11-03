@@ -24,6 +24,13 @@ class Invoice extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'invoice_date' => 'datetime',
+        'due_date' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     // Types disponibles
     public const TYPE_CLIENT = 'client';
 
@@ -101,5 +108,5 @@ class Invoice extends Model
 
         return $this->invoice_number;
     }
-    
+
 }
