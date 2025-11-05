@@ -14,6 +14,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\Tenant\SubscriptionController as TenantSubscriptionController;
@@ -65,6 +66,8 @@ Route::resource('/categories', CategoryController::class)->middleware(['auth', '
 Route::patch('/products/{id}', [ProductController::class, 'toggleActive'])->name('products.toggle');
 Route::resource('/products', ProductController::class)->middleware(['auth', 'subscription.permission:read_products'])->names('products');
 
+Route::get('/warehouses/{id}/exchange', [WarehouseController::class, 'exchangeIndex'])->name('warehouses.exchange');
+Route::post('/warehouses/{id}/exchange', [WarehouseController::class, 'exchange'])->name('warehouses.exchange');
 Route::patch('/warehouses/{id}', [WarehouseController::class, 'toggleActive'])->name('warehouses.toggle');
 Route::resource('/warehouses', WarehouseController::class)->middleware(['auth', 'subscription.permission:manage_warehouses'])->names('warehouses');
 
@@ -116,10 +119,11 @@ Route::prefix('invoices/{type}')->controller(InvoiceController::class)->name('in
     Route::get('/{invoice}', 'show')->where('invoice', '[0-9a-fA-F\-]{36}')->name('show');
     Route::patch('/{invoice}/validate', 'validateInvoice')->where('invoice', '[0-9a-fA-F\-]{36}')->name('validate');
     Route::patch('/{invoice}/pay', 'validatePay')->where('invoice', '[0-9a-fA-F\-]{36}')->name('pay');
+    Route::post('/{invoice}/return', 'returnProduct')->where('invoice', '[0-9a-fA-F\-]{36}')->name('returnProduct');
 })->where('type', 'client|supplier');
 
 
-// Route::resource('/payments', PaymentController::class)->middleware(['auth'])->names('payments');
+Route::resource('/reports', ReportController::class)->middleware(['auth'])->names('reports');
 Route::prefix('payments/{type}')->controller(PaymentController::class)->name("payments.")->group(function () {
     Route::get('/', 'index')->name('index');
     Route::delete('/{payment}', 'destroy')->name('destroy');

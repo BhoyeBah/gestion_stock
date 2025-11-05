@@ -14,6 +14,63 @@
         </button>
     </div>
 
+        <!-- =========================
+         CARTES STATISTIQUES PAR STATUT
+    ========================= -->
+    <div class="row mb-4">
+        @php
+            $statuses = [
+                'draft' => ['label' => 'Brouillon', 'color' => 'secondary'],
+                'validated' => ['label' => 'Validée', 'color' => 'info'],
+                'partial' => ['label' => 'Partielle', 'color' => 'warning'],
+                'paid' => ['label' => 'Payée', 'color' => 'success'],
+                'cancelled' => ['label' => 'Annulée', 'color' => 'danger'],
+            ];
+        @endphp
+
+        @foreach ($statuses as $key => $status)
+            <div class="col-md-2 mb-3">
+                <div class="card border-left-{{ $status['color'] }} shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-{{ $status['color'] }} text-uppercase mb-1">
+                                    {{ $status['label'] }}</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    {{ $allInvoices->where('status', $key)->count() }}
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+
+        <!-- Total général -->
+        <div class="col-md-2 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ $allInvoices->count() }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-layer-group fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- =========================
                              SECTION 1 : RECHERCHE ET FILTRES
                         ========================= -->

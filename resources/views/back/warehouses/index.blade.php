@@ -53,6 +53,13 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
+
+                                        <a href="{{ route('warehouses.exchange', $warehouse->id) }}" class="btn btn-sm btn-info"
+                                            title="Transférer">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </a>
+
+
                                         <!-- Activer / Désactiver -->
                                         <form action="{{ route('warehouses.toggle', $warehouse->id) }}" method="POST"
                                             class="d-inline"

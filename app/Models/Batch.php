@@ -29,8 +29,6 @@ class Batch extends Model
         'updated_at' => 'datetime',
     ];
 
-
-
     /* =====================
        RELATIONS
        ===================== */
@@ -57,6 +55,12 @@ class Batch extends Model
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    // Dans Batch.php
+    public function invoiceItems()
+    {
+        return $this->hasMany(InvoiceItem::class);
     }
 
     public function isExpired()

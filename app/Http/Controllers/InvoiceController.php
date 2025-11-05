@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PaymentRequest;
+use App\Http\Requests\ReturnRequestProduct;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Models\Batch;
 use App\Models\Contact;
+use App\Models\InventoryMovement;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\ReturnProduct;
 use App\Models\Warehouse;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
@@ -62,8 +66,9 @@ class InvoiceController extends Controller
         $contacts = Contact::type(rtrim($type, 's'))->get();
 
         $warehouses = Warehouse::all();
+        $allInvoices = Invoice::where('type', rtrim($type, 's'))->get();
 
-        return view('back.invoices.index', compact('invoices', 'invoiceType', 'type', 'products', 'contacts', 'warehouses'));
+        return view('back.invoices.index', compact('invoices', 'invoiceType', 'type', 'products', 'contacts', 'warehouses', 'allInvoices'));
 
     }
 
@@ -106,13 +111,10 @@ class InvoiceController extends Controller
 
         $this->checkAuthorization($invoice, $type);
 
-        $batches = Batch::where("invoice_id", $invoice->id)->orderBy("remaining")->paginate(1);
-        $payments = Payment::where("invoice_id", $invoice->id)->paginate(10);
+        $batches = Batch::where('invoice_id', $invoice->id)->orderBy('remaining')->paginate(10);
+        $payments = Payment::where('invoice_id', $invoice->id)->paginate(10);
 
-
-
-
-        return view('back.invoices.show', compact('invoice', 'batches','payments'));
+        return view('back.invoices.show', compact('invoice', 'batches', 'payments', 'type'));
     }
 
     /**
@@ -186,11 +188,8 @@ class InvoiceController extends Controller
 
         $this->checkAuthorization($invoice, $type);
 
-
         try {
             $this->service->validateInvoice($invoice);
-
-
 
             return back()->with('success', 'Facture validée avec succès');
         } catch (\Exception $e) {
@@ -208,7 +207,6 @@ class InvoiceController extends Controller
         if ($amount_paid > $invoice->balance || $amount_paid <= 0) {
             return back()->with('error', "Impossible de payer $amount_paid pour cette facture.");
         }
-
 
         try {
             // code...
@@ -240,8 +238,79 @@ class InvoiceController extends Controller
             // throw $th;
             throw $e;
         }
+
         return back()
-        ->with('success', "Vous venez de faire un paiement de $amount_paid FCFA sur la facture $invoice->invoice_number");
+            ->with('success', "Vous venez de faire un paiement de $amount_paid FCFA sur la facture $invoice->invoice_number");
+
+    }
+
+    public function returnProduct(string $type, ReturnRequestProduct $request)
+    {
+        $validated = $request->validated();
+
+        $invoiceItem = InvoiceItem::with('invoice')->find($validated['invoice_item_id']);
+        $invoice = $invoiceItem->invoice;
+
+        $batch = InventoryMovement::where('invoice_item_id', $invoiceItem->id)->first()->batch;
+
+        $quantityToReturn = (int) $request->input('quantity');
+
+        // $quantityToReturn = $type === 'clients' ? $quantityToReturn : -1 * $quantityToReturn;
+
+        $purchasePrice = (int) $invoiceItem->unit_price;
+        $balanceToReturn = $quantityToReturn * $purchasePrice;
+
+        try {
+            DB::beginTransaction();
+
+            // Mise à jour de Batch
+            if ($type == 'suppliers') {
+                $batch->quantity -= $quantityToReturn;
+                $batch->remaining -= $quantityToReturn;
+            } else {
+                $batch->remaining += $quantityToReturn;
+            }
+
+            $invoice->balance -= $balanceToReturn;
+            $invoice->total_invoice -= $balanceToReturn;
+
+            if ($batch->quantity >= $batch->remaining && $batch->remaining >= 0 && $invoice->balance >= 0) {
+
+                $inventoryMovement = InventoryMovement::create([
+                    'invoice_item_id' => $invoiceItem->id,
+                    'invoice_id' => $invoice->id,
+                    'batch_id' => $batch->id,
+                    'product_id' => $invoiceItem->product_id,
+                    'quantity' => $quantityToReturn,
+                    'reason' => 'Retour produit',
+                ]);
+
+                ReturnProduct::create([
+                    'invoice_item_id' => $invoiceItem->id,
+                    'inventory_movement_id' => $inventoryMovement->id,
+                    'quantity' => $quantityToReturn,
+                    'motif' =>$request->input("motif"),
+                ]);
+
+                if ($invoice->balance == 0){
+                    $invoice->status = "paid";
+                }
+
+                $invoice->save();
+                $batch->save();
+
+                DB::commit();
+
+                return back()->with('success', 'Rétour enrégistrée avec success');
+            }
+
+            return back()->with('error', 'Impossible de faire un rétour sur ce produit');
+        } catch (\Exception $e) {
+            throw $e;
+
+            return back()->with('error', 'Impossible de faire un rétour sur ce produit');
+
+        }
 
     }
 

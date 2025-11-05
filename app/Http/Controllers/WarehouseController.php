@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ExchangeRequest;
 use App\Http\Requests\WarehouseRequest;
+use App\Models\Batch;
+use App\Models\StockTransfert;
 use App\Models\Warehouse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class WarehouseController extends Controller
 {
@@ -49,7 +54,7 @@ class WarehouseController extends Controller
     public function show(Warehouse $warehouse)
     {
         //
-        return view("back.warehouses.show", compact("warehouse"));
+        return view('back.warehouses.show', compact('warehouse'));
     }
 
     /**
@@ -88,6 +93,78 @@ class WarehouseController extends Controller
 
         return back()->with('success', 'Entrêpot supprimé avec succés');
     }
+
+    public function exchangeIndex(string $id)
+    {
+        $warehouse = Warehouse::with('batches.product')->findOrFail($id);
+
+        // Récupérer tous les entrepôts sauf l'entrepôt source
+        $warehouses = Warehouse::with('batches')->where('id', '!=', $warehouse->id)->get();
+
+        return view('back.warehouses.exchange', compact('warehouse', 'warehouses'));
+
+    }
+
+public function exchange(ExchangeRequest $request, string $id)
+{
+    $warehouseOut = Warehouse::with('batches.product')->findOrFail($id);
+
+    $warehouseInId = $request->input('to_warehouse');
+    $batches = $request->input('batch_id');
+    $quantities = $request->input('quantity');
+
+    try {
+        DB::beginTransaction();
+
+        foreach ($batches as $index => $batchId) {
+            $quantity = $quantities[$index];
+
+            // Récupérer le batch source
+            $batch = Batch::findOrFail($batchId);
+
+            if ($batch->remaining < $quantity) {
+                throw new \Exception("La quantité demandée pour le lot {$batch->code} est supérieure au stock disponible.");
+            }
+
+            // Décrémenter le stock du batch source
+            $batch->remaining -= $quantity;
+            $batch->save();
+
+            // Créer un nouveau batch dans l'entrepôt cible
+            $newBatch = Batch::create([
+                'id' => (string) Str::uuid(),
+                'invoice_id' => $batch->invoice_id,
+                'tenant_id' => $batch->tenant_id,
+                'warehouse_id' => $warehouseInId,
+                'product_id' => $batch->product_id,
+                'unit_price' => $batch->unit_price,
+                'quantity' => $quantity,
+                'remaining' => $quantity,
+                'expiration_date' => $batch->expiration_date,
+            ]);
+
+            // Enregistrer le transfert
+            StockTransfert::create([
+                'tenant_id' => $batch->tenant_id,
+                'product_id' => $batch->product_id,
+                'source_warehouse_id' => $warehouseOut->id,
+                'target_warehouse_id' => $warehouseInId,
+                'source_batch_id' => $batch->id,
+                'target_batch_id' => $newBatch->id,
+                'quantity' => $quantity,
+            ]);
+        }
+
+        DB::commit();
+
+        return back()->with('success', 'Transfert enrégistré avec succès.');
+
+    } catch (\Exception $e) {
+        DB::rollback();
+        return back()->with('error', $e->getMessage());
+    }
+}
+
 
     public function toggleActive(string $id)
     {

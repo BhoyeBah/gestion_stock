@@ -39,10 +39,11 @@ class Warehouse extends Model
     }
 
     /**
-     * Relation avec les stocks par entrepôt.
+     * Relation avec les batches par entrepôt.
      */
-    public function stocks()
+
+        public function batches()
     {
-        return $this->hasMany(StockWarehouse::class);
+        return $this->hasMany(Batch::class);
     }
 }

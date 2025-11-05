@@ -18,7 +18,7 @@ class InvoiceItem extends Model
         'unit_price',
         'discount',
         'total_line',
-        'expiration_date'
+        'expiration_date',
     ];
 
     /* =====================
@@ -41,5 +41,11 @@ class InvoiceItem extends Model
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    // Lien avec le batch
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class);
     }
 }
