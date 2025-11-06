@@ -75,6 +75,12 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    // ✅ Relation avec les paiements de cette facture
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'invoice_id', 'id');
+    }
+
     /**
      * Génère un invoice_number unique pour cette facture.
      * Utilisable comme $invoice->generateInvoiceNumber();
@@ -108,5 +114,4 @@ class Invoice extends Model
 
         return $this->invoice_number;
     }
-
 }

@@ -19,11 +19,13 @@ class Product extends Model
         'price',
         'seuil_alert',
         'is_active',
+        'is_perishable',
         'image',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_perishable' => 'boolean',
         'price' => 'integer',
         'seuil_alert' => 'integer',
     ];
@@ -68,6 +70,16 @@ class Product extends Model
             'id',                // products.id (local key)
             'invoice_id'         // invoice_items.invoice_id (clé locale du through)
         );
+    }
+
+    public function invoiceItems()
+    {
+        return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function Movement()
+    {
+        return $this->hasMany(InventoryMovement::class);
     }
 
     public function batches()

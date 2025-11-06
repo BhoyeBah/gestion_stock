@@ -229,15 +229,29 @@
         <div class="card shadow-sm">
             <div class="card-header bg-white">
                 <ul class="nav nav-tabs card-header-tabs" id="invoiceTabs" role="tablist">
-                    <li class="nav-item"><a class="nav-link active" id="lines-tab" data-toggle="tab" href="#lines"
-                            role="tab" aria-controls="lines" aria-selected="true"><i
-                                class="fas fa-list mr-1 text-primary"></i> Lignes</a></li>
-                    <li class="nav-item"><a class="nav-link" id="payments-tab" data-toggle="tab" href="#payments"
-                            role="tab" aria-controls="payments" aria-selected="false"><i
-                                class="fas fa-credit-card mr-1 text-primary"></i> Paiements</a></li>
-                    <li class="nav-item"><a class="nav-link" id="batches-tab" data-toggle="tab" href="#batches"
-                            role="tab" aria-controls="batches" aria-selected="false"><i
-                                class="fas fa-boxes mr-1 text-primary"></i> Lots</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link active" id="lines-tab" data-toggle="tab" href="#lines" role="tab"
+                            aria-controls="lines" aria-selected="true">
+                            <i class="fas fa-list mr-1 text-primary"></i>
+                            Lignes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="payments-tab" data-toggle="tab" href="#payments" role="tab"
+                            aria-controls="payments" aria-selected="false">
+                            <i class="fas fa-credit-card mr-1 text-primary"></i>
+                            Paiements
+                        </a>
+                    </li>
+                    @if ($invoice->type === 'supplier')
+                        <li class="nav-item">
+                            <a class="nav-link" id="batches-tab" data-toggle="tab" href="#batches" role="tab"
+                                aria-controls="batches" aria-selected="false">
+                                <i class="fas fa-boxes mr-1 text-primary"></i>
+                                Lots
+                            </a>
+                        </li>
+                    @endif
                 </ul>
             </div>
 
@@ -263,6 +277,7 @@
                                     </thead>
                                     <tbody>
                                         @foreach ($invoice->items as $item)
+                                            {{-- Ligne principale du produit --}}
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $item->warehouse->name ?? '-' }}</td>
@@ -271,8 +286,7 @@
                                                 <td class="text-right">{{ number_format($item->unit_price, 0, ',', ' ') }}
                                                 </td>
                                                 <td class="text-right">
-                                                    {{ number_format($item->discount ?? 0, 0, ',', ' ') }}
-                                                </td>
+                                                    {{ number_format($item->discount ?? 0, 0, ',', ' ') }}</td>
                                                 <td class="text-right">{{ number_format($item->total_line, 0, ',', ' ') }}
                                                 </td>
                                                 <td class="text-center">
@@ -282,7 +296,22 @@
                                                             class="fas fa-undo"></i></button>
                                                 </td>
                                             </tr>
+
+                                            {{-- Lignes des retours --}}
+                                            @foreach ($item->returns as $return)
+                                                <tr class="table-warning">
+                                                    <td></td>
+                                                    <td colspan="2"><strong>Retourné</strong></td>
+                                                    <td class="text-center">{{ $return->quantity }}</td>
+                                                    <td class="text-right">-</td>
+                                                    <td class="text-right">-</td>
+                                                    <td class="text-right">-</td>
+                                                    <td class="text-center">{{ $return->motif ?? '-' }}</td>
+                                                </tr>
+                                            @endforeach
                                         @endforeach
+
+                                        {{-- Total Remise --}}
                                         <tr>
                                             <td colspan="4"></td>
                                             <td class="text-right font-weight-bold">Total Remise</td>
@@ -291,6 +320,8 @@
                                             <td class="text-right">-</td>
                                             <td></td>
                                         </tr>
+
+                                        {{-- Total Général --}}
                                         <tr>
                                             <td colspan="4"></td>
                                             <td colspan="2" class="text-right font-weight-bold">Total Général</td>

@@ -9,14 +9,30 @@
         <h1 class="h3 mb-0 text-gray-800">
             <i class="fas fa-file-invoice"></i> Factures {{ $invoiceType }}
         </h1>
-        <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#addInvoiceModal">
-            <i class="fas fa-plus fa-sm text-white-50"></i> Nouvelle facture
-        </button>
+
+        <div>
+            <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#addContactModal">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Nouveau {{ $type === 'clients' ? 'client' : 'fournisseur' }}
+            </button>
+
+            <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#addWarehouseModal">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Nouvel entrepôt
+            </button>
+
+            <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#addproductModal">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Nouveau produit
+            </button>
+
+            <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#addInvoiceModal">
+                <i class="fas fa-plus fa-sm text-white-50"></i>
+                Nouvelle facture
+            </button>
+        </div>
     </div>
 
-        <!-- =========================
-         CARTES STATISTIQUES PAR STATUT
-    ========================= -->
+    <!-- =========================
+                                     CARTES STATISTIQUES PAR STATUT
+                                ========================= -->
     <div class="row mb-4">
         @php
             $statuses = [
@@ -72,8 +88,8 @@
 
 
     <!-- =========================
-                             SECTION 1 : RECHERCHE ET FILTRES
-                        ========================= -->
+                                                         SECTION 1 : RECHERCHE ET FILTRES
+                                                    ========================= -->
     <section id="invoice-filters">
         <div class="card shadow border-left-info mb-4">
             <div class="card-header bg-info text-white py-3 d-flex justify-content-between align-items-center">
@@ -127,8 +143,8 @@
     </section>
 
     <!-- =========================
-                             SECTION 2 : LISTE DES FACTURES
-                        ========================= -->
+                                                         SECTION 2 : LISTE DES FACTURES
+                                                    ========================= -->
     <section id="invoice-list">
         <div class="card shadow border-left-primary">
             <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
@@ -357,4 +373,49 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal ajout d'un entrepôt -->
+    <div class="modal fade" id="addWarehouseModal" tabindex="-1" role="dialog"
+        aria-labelledby="addWarehouseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                @include('back.warehouses._form', [
+                    'route' => route('warehouses.store'),
+                    'method' => 'POST',
+                    'warehouse' => new \App\Models\Warehouse(),
+                ])
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal ajout -->
+    <div class="modal fade" id="addContactModal" tabindex="-1" role="dialog" aria-labelledby="addContactModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                @include('back.contacts._form', [
+                    'route' => route("$type.store"),
+                    'method' => 'POST',
+                    'contact' => new \App\Models\Contact(),
+                    'type' => $type,
+                ])
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal ajout d'un produit -->
+    <div class="modal fade" id="addproductModal" tabindex="-1" role="dialog" aria-labelledby="addproductModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                @include('back.products._form', [
+                    'route' => route('products.store'),
+                    'method' => 'POST',
+                    'product' => new \App\Models\Product(),
+                    'categories' => \App\Models\Category::all(),
+                    'units' => \App\Models\Units::all(),
+                ])
+            </div>
+        </div>
+    </div>
+
 @endsection

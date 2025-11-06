@@ -1,122 +1,151 @@
 @extends('back.layouts.admin')
 
 @section('content')
-<div class="container-fluid">
+    <div class="container-fluid">
 
-    <!-- Header -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            <i class="fas fa-tags"></i> Produits
-        </h1>
-        <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#addproductModal">
-            <i class="fas fa-plus fa-sm text-white-50"></i> Nouveau produit
-        </button>
-    </div>
-
-    <!-- Liste des produits -->
-    <div class="card shadow mb-4 border-left-primary">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold"><i class="fas fa-list-ul"></i> Liste des produits disponibles</h6>
-        </div>
-        <div class="card-body">
-            @if ($products->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped align-middle">
-                        <thead class="thead-light text-uppercase text-secondary small">
-                            <tr>
-                                <th>#</th>
-                                <th>Nom</th>
-                                <th>Catégorie</th>
-                                <th>Prix de vente</th>
-                                <th>Stock disponible</th>
-                                <th>Seuil d'alerte</th>
-                                <th>Status</th>
-                                <th class="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($products as $product)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td><strong>{{ $product->name }}</strong></td>
-                                    <td>{{ $product->category->name ?? '-' }}</td>
-                                    <td>{{ number_format($product->price, 0, ',', ' ') }} CFA</td>
-                                    <td>
-                                        <span class="badge {{ $product->stock_total > $product->seuil_alert ? 'badge-success' : 'badge-warning' }}">
-                                            {{ $product->stock_total ?? 0 }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $product->seuil_alert }}</td>
-                                    <td>
-                                        @if ($product->is_active)
-                                            <span class="badge badge-success">Activé</span>
-                                        @else
-                                            <span class="badge badge-danger">Désactivé</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        <!-- Activer / Désactiver -->
-                                        <form action="{{ route('products.toggle', $product->id) }}" method="POST" class="d-inline"
-                                            onsubmit="return confirm('Voulez-vous {{ $product->is_active ? 'désactiver' : 'activer' }} ce produit ?')">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit"
-                                                class="btn btn-sm {{ $product->is_active ? 'btn-success' : 'btn-danger' }}"
-                                                title="{{ $product->is_active ? 'Désactiver' : 'Activer' }}">
-                                                <i class="fas fa-toggle-{{ $product->is_active ? 'off' : 'on' }}"></i>
-                                            </button>
-                                        </form>
-
-                                        <!-- Modifier -->
-                                        <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-warning" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-
-                                        <!-- Voir -->
-                                        <a href="{{ route('products.show', $product->id) }}" class="btn btn-sm btn-info" title="Voir">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-
-                                        <!-- Supprimer -->
-                                        <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline"
-                                            onsubmit="return confirm('Confirmer la suppression de ce produit ?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="alert alert-info text-center">
-                    <i class="fas fa-info-circle"></i> Aucun produit disponible pour le moment.
-                    <br>
-                    <small>Créez-en un en cliquant sur le bouton ci-dessus.</small>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Modal ajout d'un produit -->
-    <div class="modal fade" id="addproductModal" tabindex="-1" role="dialog" aria-labelledby="addproductModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                @include('back.products._form', [
-                    'route' => route('products.store'),
-                    'method' => 'POST',
-                    'product' => new \App\Models\Product(),
-                    'categories' => \App\Models\Category::all(),
-                    'units' => \App\Models\Units::all(),
-                ])
+        <!-- Header -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-tags"></i> Produits
+            </h1>
+            <div>
+                <button type="button" class="btn btn-secondary shadow-sm mr-2" data-toggle="modal"
+                    data-target="#addcategoryModal">
+                    <i class="fas fa-plus fa-sm text-white-50"></i> Nouvelle catégorie
+                </button>
+                <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#addproductModal">
+                    <i class="fas fa-plus fa-sm text-white-50"></i> Nouveau produit
+                </button>
             </div>
         </div>
-    </div>
 
-</div>
+        <!-- Liste des produits -->
+        <div class="card shadow mb-4 border-left-primary">
+            <div class="card-header bg-primary text-white">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-list-ul"></i> Liste des produits disponibles</h6>
+            </div>
+            <div class="card-body">
+                @if ($products->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped align-middle">
+                            <thead class="thead-light text-uppercase text-secondary small">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nom</th>
+                                    <th>Catégorie</th>
+                                    <th>Prix de vente</th>
+                                    <th>Stock disponible</th>
+                                    <th>Seuil d'alerte</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($products as $product)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td><strong>{{ $product->name }}</strong></td>
+                                        <td>
+                                            <a href="{{ route('categories.index', $product->category->id) }}">
+                                                {{ $product->category->name ?? '-' }}
+                                            </a>
+                                        </td>
+                                        <td>{{ number_format($product->price, 0, ',', ' ') }} CFA</td>
+                                        <td>
+                                            <span
+                                                class="badge {{ $product->stock_total > $product->seuil_alert ? 'badge-success' : 'badge-warning' }}">
+                                                {{ $product->stock_total ?? 0 }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $product->seuil_alert }}</td>
+                                        <td>
+                                            <span
+                                                class="badge {{ $product->is_active ? 'badge-success' : 'badge-danger' }}">
+                                                {{ $product->is_active ? 'Activé' : 'Désactivé' }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <!-- Activer / Désactiver -->
+                                                <form action="{{ route('products.toggle', $product->id) }}" method="POST"
+                                                    onsubmit="return confirm('Voulez-vous {{ $product->is_active ? 'désactiver' : 'activer' }} ce produit ?')">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit"
+                                                        class="btn btn-sm {{ $product->is_active ? 'btn-success' : 'btn-danger' }}"
+                                                        title="{{ $product->is_active ? 'Désactiver' : 'Activer' }}">
+                                                        <i
+                                                            class="fas fa-toggle-{{ $product->is_active ? 'off' : 'on' }}"></i>
+                                                    </button>
+                                                </form>
+
+                                                <!-- Modifier -->
+                                                <a href="{{ route('products.edit', $product->id) }}"
+                                                    class="btn btn-sm btn-warning" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+
+                                                <!-- Voir -->
+                                                <a href="{{ route('products.show', $product->id) }}"
+                                                    class="btn btn-sm btn-info" title="Voir">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+
+                                                <!-- Supprimer -->
+                                                <form action="{{ route('products.destroy', $product->id) }}" method="POST"
+                                                    onsubmit="return confirm('Confirmer la suppression de ce produit ?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle"></i> Aucun produit disponible pour le moment.
+                        <br>
+                        <small>Créez-en un en cliquant sur le bouton ci-dessus.</small>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Modal ajout d'un produit -->
+        <div class="modal fade" id="addproductModal" tabindex="-1" role="dialog" aria-labelledby="addproductModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content border-0 shadow-lg">
+                    @include('back.products._form', [
+                        'route' => route('products.store'),
+                        'method' => 'POST',
+                        'product' => new \App\Models\Product(),
+                        'categories' => \App\Models\Category::all(),
+                        'units' => \App\Models\Units::all(),
+                    ])
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal ajout d'une catégorie -->
+        <div class="modal fade" id="addcategoryModal" tabindex="-1" role="dialog" aria-labelledby="addcategoryModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content border-0 shadow-lg">
+                    @include('back.categories._form', [
+                        'route' => route('categories.store'),
+                        'method' => 'POST',
+                        'categorie' => new \App\Models\Category(),
+                    ])
+                </div>
+            </div>
+        </div>
+
+    </div>
 @endsection

@@ -4,17 +4,15 @@
         @method($method)
     @endif
 
-    @if ($method == "POST")
-        <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title">
-                <i class="fas {{ $method === 'POST' ? 'fa-plus-circle' : 'fa-edit' }}"></i>
-                {{ $method === 'POST' ? 'Ajouter un produit' : 'Modifier le produit' }}
-            </h5>
-            <button type="button" class="close text-white" data-dismiss="modal">
-                <span>&times;</span>
-            </button>
-        </div>
-    @endif
+    <div class="modal-header {{ $method === 'POST' ? 'bg-primary text-white' : 'bg-light' }}">
+        <h5 class="modal-title">
+            <i class="fas {{ $method === 'POST' ? 'fa-plus-circle' : 'fa-edit' }}"></i>
+            {{ $method === 'POST' ? 'Ajouter un produit' : 'Modifier le produit' }}
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal">
+            <span>&times;</span>
+        </button>
+    </div>
 
     <div class="modal-body">
         <div class="row">
@@ -47,6 +45,14 @@
                     <input type="number" name="price" class="form-control" placeholder="Ex: 1500"
                         value="{{ old('price', $product->price ?? 0) }}">
                 </div>
+
+                <!-- Checkbox périssable -->
+                <div class="form-group form-check mt-2">
+                    <input type="checkbox" class="form-check-input" name="is_perishable" id="is_perishable"
+                        value="1" {{ old('is_perishable', $product->is_perishable ?? false) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="is_perishable">Produit périssable</label>
+                </div>
+
             </div>
 
             <!-- Colonne droite -->

@@ -59,7 +59,7 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     @if($tenant->slug !== 'platform')
-                                    
+
                                         <form action="{{ route('admin.tenants.destroy', $tenant->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Confirmer la suppression de cette entreprise ?')">
                                             @csrf
                                             @method('DELETE')

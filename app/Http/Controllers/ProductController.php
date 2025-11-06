@@ -39,10 +39,12 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
+        // dd($request);
 
         // $this->hasPermission('create_product');
 
         $data = $request->validated(); // Récupère les données validées
+        $data['is_perishable'] = $request->has('is_perishable') ? true : false;
 
         // Vérifie s'il y a une image
         if ($request->hasFile('image')) {
@@ -63,11 +65,25 @@ class ProductController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        //
+        // Charger le produit avec ses relations utiles
+        $product = Product::with([
+            'batches.warehouse',
+            'invoices.contact',
+            'movement.invoice.contact',
+            'invoiceItems.invoice.contact', // pour stats factures / ventes
+        ])->findOrFail($id);
 
-        $product = Product::with(['batches.warehouse', 'payments.invoice.contact', 'invoices.contact'])->findOrFail($id);
+        // Calcul des stats rapides
+        $totalIn = $product->invoiceItems->where('type', 'in')->sum('quantity');
+        $totalOut = $product->invoiceItems->where('type', 'out')->sum('quantity');
+        $totalValueSold = $product->invoiceItems->where('type', 'out')->sum(fn ($item) => $item->quantity * $item->unit_price - $item->discount);
+        $totalValueIn = $product->invoiceItems->where('type', 'in')->sum(fn ($item) => $item->quantity * $item->unit_price - $item->discount);
+        $averagePriceOut = $product->invoiceItems->where('type', 'out')->avg('unit_price');
+        $averagePriceIn = $product->invoiceItems->where('type', 'in')->avg('unit_price');
+        $expiredQuantity = $product->batches->where('expiration_date', '<', now())->sum('quantity');
+        $totalDiscount = $product->invoiceItems->where('type', 'out')->sum('discount');
 
-        return view('back.products.show', compact('product'));
+        return view('back.products.show', compact('product', 'totalIn', 'totalOut', 'totalValueSold'));
     }
 
     /**

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
-use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
@@ -17,8 +16,8 @@ class ContactController extends Controller
         $this->validateType($type);
 
         $contacts = Contact::type(rtrim($type, 's'))
-        ->withSum('invoices as balance_total', 'balance') // somme des balances
-        ->get();
+            ->withSum('invoices as balance_total', 'balance') // somme des balances
+            ->get();
 
         $contactType = $type === 'clients' ? 'Clients' : 'Fournisseurs';
 
@@ -61,6 +60,10 @@ class ContactController extends Controller
     {
         //
         $this->checkAuthorization($contact, $type);
+
+        $contact = Contact::with(['invoices.payments'])
+            ->findOrFail($contact->id);
+
 
         return view('back.contacts.show', compact('contact', 'type'));
     }

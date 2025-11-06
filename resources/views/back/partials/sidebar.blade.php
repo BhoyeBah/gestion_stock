@@ -93,12 +93,6 @@
         </a>
     </li>
 
-    <li class="nav-item {{ $isActive(['suppliers.*']) }}">
-        <a class="nav-link" href="{{ route('suppliers.index') }}">
-            <i class="fas fa-fw fa-user-tie"></i>
-            <span>Fournisseurs</span>
-        </a>
-    </li>
 
     <hr class="sidebar-divider">
 

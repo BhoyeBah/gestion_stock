@@ -48,4 +48,9 @@ class InvoiceItem extends Model
     {
         return $this->belongsTo(Batch::class);
     }
+
+    public function returns()
+    {
+        return $this->hasMany(ReturnProduct::class, 'invoice_item_id');
+    }
 }

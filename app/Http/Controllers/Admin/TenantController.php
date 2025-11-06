@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Role;
 use Illuminate\Support\Facades\Storage;
-use App\Traits\LogsActivity;
 
 class TenantController extends Controller
 {
@@ -19,6 +19,7 @@ class TenantController extends Controller
     public function index()
     {
         $tenants = Tenant::latest()->paginate(100);
+
         return view('back.admin.tenants.index', compact('tenants'));
     }
 
@@ -59,7 +60,7 @@ class TenantController extends Controller
             $tenant->save();
 
             $adminRole = Role::create([
-                'name' =>  $roleName = $tenant->slug . "_Admin",
+                'name' => $roleName = $tenant->slug.'_Admin',
                 'guard_name' => 'web',
                 'tenant_id' => $tenant->id,
             ]);
@@ -94,6 +95,7 @@ class TenantController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
+
             return back()->with('error', 'Une erreur est survenue lors de la création.')->withInput();
         }
     }
@@ -116,7 +118,7 @@ class TenantController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|alpha_dash|unique:tenants,slug,' . $tenant->id,
+            'slug' => 'required|string|alpha_dash|unique:tenants,slug,'.$tenant->id,
             'email' => 'nullable|email|required',
             'phone' => 'nullable|string|max:20',
             'logo' => 'nullable|image|max:2048',
@@ -125,7 +127,7 @@ class TenantController extends Controller
 
         try {
             $tenant->name = $request->name;
-            if ($tenant->slug !== "platform") {
+            if ($tenant->slug !== 'platform') {
                 $tenant->slug = $request->slug;
             }
             $tenant->email = $request->email ?? null;
@@ -151,6 +153,7 @@ class TenantController extends Controller
             return redirect()->route('admin.tenants.index')->with('success', 'Entreprise mise à jour avec succès.');
         } catch (\Throwable $e) {
             report($e);
+
             return back()->with('error', 'Une erreur est survenue lors de la mise à jour.')->withInput();
         }
     }
@@ -161,24 +164,7 @@ class TenantController extends Controller
             return redirect()->back()->with('error', 'Ce tenant ne peut pas être supprimé car il est réservé à la plateforme.');
         }
 
-        try {
-            $tenantName = $tenant->name;
-            $tenantId = $tenant->id;
-            $tenant->delete();
+        return back()->with('error', 'Une erreur est survenue lors de la suppression.');
 
-            // 🔹 Sauvegarde activité
-            $this->saveActivity(
-                "Suppression d'une entreprise",
-                "Entreprise: {$tenantName}",
-                ['tenant_id' => $tenantId]
-            );
-
-            return redirect()
-                ->route('admin.tenants.index')
-                ->with('success', 'Entreprise supprimée avec succès.');
-        } catch (\Throwable $e) {
-            report($e);
-            return back()->with('error', 'Une erreur est survenue lors de la suppression.');
-        }
     }
 }

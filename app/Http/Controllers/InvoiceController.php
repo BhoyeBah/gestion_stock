@@ -109,11 +109,15 @@ class InvoiceController extends Controller
         $this->validateType($type);
         $invoice = Invoice::with('items')->findOrFail($id);
 
+        $invoice = Invoice::with(['items.returns', 'items.product', 'items.warehouse', 'contact'])
+            ->findOrFail($id);
+
         $this->checkAuthorization($invoice, $type);
 
         $batches = Batch::where('invoice_id', $invoice->id)->orderBy('remaining')->paginate(10);
         $payments = Payment::where('invoice_id', $invoice->id)->paginate(10);
 
+        // dd($batches);
         return view('back.invoices.show', compact('invoice', 'batches', 'payments', 'type'));
     }
 
@@ -289,11 +293,11 @@ class InvoiceController extends Controller
                     'invoice_item_id' => $invoiceItem->id,
                     'inventory_movement_id' => $inventoryMovement->id,
                     'quantity' => $quantityToReturn,
-                    'motif' =>$request->input("motif"),
+                    'motif' => $request->input('motif'),
                 ]);
 
-                if ($invoice->balance == 0){
-                    $invoice->status = "paid";
+                if ($invoice->balance == 0) {
+                    $invoice->status = 'paid';
                 }
 
                 $invoice->save();
