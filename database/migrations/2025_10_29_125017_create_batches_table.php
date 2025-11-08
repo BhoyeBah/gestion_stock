@@ -19,6 +19,7 @@ return new class extends Migration
             $table->uuid('product_id')->index();
             $table->integer('unit_price');
             $table->integer('quantity');
+            $table->integer('benefit')->default(0);
             $table->integer('remaining')->index();
             $table->date("expiration_date")->nullable()->index();
 

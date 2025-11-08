@@ -41,7 +41,7 @@ class ProductController extends Controller
     {
         // dd($request);
 
-        // $this->hasPermission('create_product');
+        $this->hasPermission('create_products');
 
         $data = $request->validated(); // Récupère les données validées
         $data['is_perishable'] = $request->has('is_perishable') ? true : false;

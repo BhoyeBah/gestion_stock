@@ -51,6 +51,9 @@ class TenantController extends Controller
                 'slug' => $tenantData['slug'],
                 'email' => $tenantData['email'] ?? null,
                 'phone' => $tenantData['phone'] ?? null,
+                'address' => $tenantData['address'] ?? null,
+                'ninea' => $tenantData['ninea'] ?? null,
+                'rc' => $tenantData['rc'] ?? null,
             ]);
 
             if ($request->hasFile('tenant.logo')) {
@@ -120,7 +123,10 @@ class TenantController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|alpha_dash|unique:tenants,slug,'.$tenant->id,
             'email' => 'nullable|email|required',
+            'ninea' => 'nullable|string|required',
             'phone' => 'nullable|string|max:20',
+            'rc' => 'nullable|string|max:50',
+            'address' => 'nullable|string|max:100',
             'logo' => 'nullable|image|max:2048',
             'is_active' => 'nullable|boolean',
         ]);

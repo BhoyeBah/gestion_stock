@@ -82,5 +82,9 @@ class Contact extends Model
     {
         return $this->hasMany(Payment::class, 'invoice_id', 'id');
     }
-    
+
+    public function info()
+    {
+        return $this->fullname.' ('.$this->address.', '.$this->phone_number.' )';
+    }
 }

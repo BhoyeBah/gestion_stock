@@ -15,6 +15,9 @@ class Tenant extends Model
         'slug',
         'email',
         'phone',
+        'address',
+        'ninea',
+        'rc',
         'logo',
         'is_active',
 

@@ -33,6 +33,21 @@
                 <label>Téléphone</label>
                 <input type="text" name="tenant[phone]" class="form-control">
             </div>
+
+             <div class="form-group">
+                <label>Adresse</label>
+                <input type="text" name="tenant[address]" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>Ninea</label>
+                <input type="text" name="tenant[ninea]" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>Rc</label>
+                <input type="text" name="tenant[rc]" class="form-control">
+            </div>
             <div class="form-group">
                 <label>Logo</label>
                 <input type="file" name="tenant[logo]" class="form-control-file">

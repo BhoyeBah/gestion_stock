@@ -1,0 +1,127 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Batch;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+class FrontController extends Controller
+{
+    public function index(Request $request)
+    {
+        $tenant = auth()->user()->tenant;
+        $period = $request->get('period', 'month'); // 'day', 'week', 'month'
+
+        $key = "dashboard_stats_{$tenant->id}_{$period}";
+        $stats = Cache::remember($key, 30, function () use ($period, $tenant) {
+            [$start, $end] = match ($period) {
+                'day' => [Carbon::today(), Carbon::today()],
+                'week' => [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
+                default => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
+            };
+
+            // Statistiques globales sur factures
+            $invoiceStats = DB::table('invoices')
+                ->selectRaw("
+                SUM(CASE WHEN type = 'client' AND status != 'cancelled' THEN total_invoice ELSE 0 END) as total_ventes,
+                SUM(CASE WHEN type = 'supplier' AND status != 'cancelled' THEN total_invoice ELSE 0 END) as total_achats,
+                COUNT(CASE WHEN type = 'client' THEN 1 END) as nb_factures_clients,
+                COUNT(CASE WHEN type = 'supplier' THEN 1 END) as nb_factures_fournisseurs
+            ")
+                ->where('tenant_id', $tenant->id)
+                ->whereBetween('invoice_date', [$start, $end])
+                ->first();
+
+            // Comptage entités (clients, fournisseurs)
+            $counts = DB::table('contacts')
+                ->selectRaw("
+                COUNT(CASE WHEN type = 'client' THEN 1 END) as nb_clients,
+                COUNT(CASE WHEN type = 'supplier' THEN 1 END) as nb_fournisseurs
+            ")
+                ->where('tenant_id', $tenant->id)
+                ->first();
+
+            $nbProduits = DB::table('products')
+                ->where('tenant_id', $tenant->id)
+                ->count();
+
+            // Paiements groupés
+            $paiements = DB::table('payments')
+                ->selectRaw("
+                SUM(CASE WHEN payment_source = 'client' THEN amount_paid ELSE 0 END) as total_paiement_clients,
+                SUM(CASE WHEN payment_source = 'supplier' THEN amount_paid ELSE 0 END) as total_paiement_fournisseurs
+            ")
+                ->where('tenant_id', $tenant->id)
+                ->whereBetween('payment_date', [$start, $end])
+                ->first();
+
+            // Balance clients et fournisseurs
+            $balance_clients = DB::table('invoices')
+                ->where('tenant_id', $tenant->id)
+                ->where('type', 'client')
+                ->whereBetween('invoice_date', [$start, $end])
+                ->sum('balance');
+
+            $balance_fournisseurs = DB::table('invoices')
+                ->where('tenant_id', $tenant->id)
+                ->where('type', 'supplier')
+                ->whereBetween('invoice_date', [$start, $end])
+                ->sum('balance');
+
+            $depenses = DB::table('expenses')
+                ->where('tenant_id', $tenant->id)
+                ->whereBetween('expense_date', [$start, $end])
+                ->sum('amount');
+
+            // Bénéfice net filtré par tenant si Batch a tenant_id
+            $benefice = Batch::where('tenant_id', $tenant->id)->sum('benefit');
+
+            return [
+                'start' => $start,
+                'end' => $end,
+                'invoices' => $invoiceStats,
+                'counts' => $counts,
+                'nbProduits' => $nbProduits,
+                'paiements' => $paiements,
+                'balance_clients' => $balance_clients,
+                'balance_fournisseurs' => $balance_fournisseurs,
+                'benefice' => $benefice,
+                'depenses' => $depenses,
+            ];
+        });
+
+        // 10 dernières factures filtrées par tenant
+        $dernieresFactures = DB::table('invoices as i')
+            ->join('contacts as c', 'i.contact_id', '=', 'c.id')
+            ->select('i.invoice_number', 'i.invoice_date', 'i.total_invoice', 'i.status',
+                'c.type as contact_type', 'c.fullname as client')
+            ->where('i.tenant_id', $tenant->id)
+            ->orderByDesc('i.invoice_date')
+            ->limit(10)
+            ->get();
+
+        // 10 derniers paiements filtrés par tenant
+        $derniersPaiements = DB::table('payments as p')
+            ->join('contacts as c', 'p.contact_id', '=', 'c.id')
+            ->select(
+                'p.amount_paid',
+                'p.payment_date',
+                DB::raw('c.fullname as client'),
+                'c.type as contact_type'
+            )
+            ->where('p.tenant_id', $tenant->id)
+            ->orderByDesc('p.payment_date')
+            ->limit(10)
+            ->get();
+
+        return view('back.dashboard.client', [
+            'period' => $period,
+            'stats' => $stats,
+            'dernieresFactures' => $dernieresFactures,
+            'derniersPaiements' => $derniersPaiements,
+        ]);
+    }
+}

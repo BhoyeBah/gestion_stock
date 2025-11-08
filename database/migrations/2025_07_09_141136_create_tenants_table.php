@@ -13,6 +13,9 @@ return new class extends Migration {
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->string('logo')->nullable();
+            $table->string("ninea")->nullable();
+            $table->string("address")->nullable();
+            $table->string("rc")->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

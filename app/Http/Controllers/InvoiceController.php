@@ -250,8 +250,8 @@ class InvoiceController extends Controller
 
     public function returnProduct(string $type, ReturnRequestProduct $request)
     {
-        $validated = $request->validated();
 
+        $validated = $request->validated();
         $invoiceItem = InvoiceItem::with('invoice')->find($validated['invoice_item_id']);
         $invoice = $invoiceItem->invoice;
 
@@ -264,11 +264,12 @@ class InvoiceController extends Controller
         $purchasePrice = (int) $invoiceItem->unit_price;
         $balanceToReturn = $quantityToReturn * $purchasePrice;
 
+
         try {
             DB::beginTransaction();
 
             // Mise à jour de Batch
-            if ($type == 'suppliers') {
+            if ($type == 'supplier') {
                 $batch->quantity -= $quantityToReturn;
                 $batch->remaining -= $quantityToReturn;
             } else {
@@ -277,7 +278,7 @@ class InvoiceController extends Controller
 
             $invoice->balance -= $balanceToReturn;
             $invoice->total_invoice -= $balanceToReturn;
-
+// dd($batch->quantity, $batch->remaining);
             if ($batch->quantity >= $batch->remaining && $batch->remaining >= 0 && $invoice->balance >= 0) {
 
                 $inventoryMovement = InventoryMovement::create([
@@ -307,6 +308,7 @@ class InvoiceController extends Controller
 
                 return back()->with('success', 'Rétour enrégistrée avec success');
             }
+            // dd($invoice, $batch,$quantityToReturn,$balanceToReturn);
 
             return back()->with('error', 'Impossible de faire un rétour sur ce produit');
         } catch (\Exception $e) {
@@ -316,6 +318,16 @@ class InvoiceController extends Controller
 
         }
 
+    }
+
+    // Printf
+    public function print(string $type, Invoice $invoice)
+    {
+        //  dd($invoice->contact);
+
+        $this->validateType($type);
+        $this->checkAuthorization($invoice, $type);
+        return view('back.invoices.invoice', compact('invoice'));
     }
 
     protected function validateType(string $type): void

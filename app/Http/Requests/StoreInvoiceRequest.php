@@ -38,7 +38,7 @@ class StoreInvoiceRequest extends FormRequest
                         ->where('type', $this->input('type'))),
             ],
             'invoice_date' => ['required', 'date'],
-            'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],
+            'due_date' => ['required', 'date', 'after_or_equal:invoice_date'],
             'type' => ['required', Rule::in(['client', 'supplier'])],
 
             // Lignes de facture
@@ -74,6 +74,7 @@ class StoreInvoiceRequest extends FormRequest
             'invoice_number.unique' => 'Ce numéro de facture existe déjà pour ce tenant.',
             'contact_id.required' => 'Le contact est requis.',
             'invoice_date.required' => 'La date de facture est obligatoire.',
+            'due_date.required' => 'La date \'echeance de la facture est obligatoire.',
             'items.required' => 'La facture doit contenir au moins une ligne.',
             'items.*.warehouse_id.required' => 'Chaque ligne doit avoir un entrepôt.',
             'items.*.product_id.required' => 'Chaque ligne doit avoir un produit.',

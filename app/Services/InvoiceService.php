@@ -103,7 +103,9 @@ class InvoiceService
             $price = (int) $item['unit_price'];
             $total_line = $price * $quantity - $discount;
             $total_invoice += $total_line;
+
         }
+
 
         return $total_invoice;
     }
@@ -233,6 +235,7 @@ class InvoiceService
         $warehouseId = $invoiceItem->warehouse_id;
         $quantityToRemove = $invoiceItem->quantity;
         $invoiceId = $invoiceItem->invoice_id;
+        $unitPrice = $invoiceItem->unit_price;
 
         // Récupérer les lots disponibles (FIFO) et les verrouiller
         $batches = DB::table('batches')
@@ -258,12 +261,21 @@ class InvoiceService
             $used = min($available, $quantityToRemove);
 
             // Mise à jour du lot
-            DB::table('batches')
+            $batchRecord = DB::table('batches')
                 ->where('id', $batch->id)
-                ->update([
-                    'remaining' => $available - $used,
-                    'updated_at' => now(),
-                ]);
+                ->first();
+
+            if ($batchRecord) {
+                $benef = $quantityToRemove * $unitPrice - $quantityToRemove * $batchRecord->unit_price;
+                $newBenef = $batchRecord->benefit + $benef;
+                DB::table('batches')
+                    ->where('id', $batch->id)
+                    ->update([
+                        'remaining' => $available - $used,
+                        'benefit' => $newBenef,
+                        'updated_at' => now(),
+                    ]);
+            }
 
             $movement = DB::table('inventory_movements')->insert([
                 'id' => (string) Str::uuid(),

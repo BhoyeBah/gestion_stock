@@ -19,6 +19,7 @@ class Batch extends Model
         'product_id',
         'unit_price',
         'quantity',
+        'benefit',
         'remaining',
         'expiration_date',
     ];

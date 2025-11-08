@@ -1,245 +1,472 @@
 @extends('back.layouts.admin')
 
+@php use Carbon\Carbon; @endphp
+
 @section('content')
     <style>
-        :root {
-            --primary: #0d6efd;
-            --muted: #6c757d;
-            --card-bg: #ffffff;
+        /* ====================================
+               FIXES GLOBALES & FONDAMENTAUX
+               ==================================== */
+        /* Assurez une police lisible et une taille de police de base */
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            color: #1a202c;
+            /* Couleur de texte sombre standard */
         }
 
-        /* Global subtle adjustments */
-        .card {
-            border-radius: 10px;
+        /* Conteneur pour repousser le footer (si le layout parent utilise flex) */
+        /* Si le layout parent n'utilise pas flex, cette règle aide quand même */
+        .content-wrapper-fix {
+            min-height: calc(100vh - 100px);
+            /* Ajustez 100px selon la hauteur réelle de votre header/footer */
+            padding-bottom: 2rem;
+            /* Espace sous le dernier élément */
         }
 
-        .card-header.bg-primary {
-            background-color: var(--primary) !important;
+        /* Réinitialisation Bootstrap/Admin template */
+        .row.no-gutters {
+            margin-right: 0;
+            margin-left: 0;
+        }
+
+        .row.no-gutters>[class*="col-"] {
+            padding-right: 0;
+            padding-left: 0;
+        }
+
+        /* ====================================
+               EN-TÊTE DE PAGE
+               ==================================== */
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            /* S'assurer que le texte est lisible sur le dégradé */
             color: #fff;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
         }
 
-        /* === Résumé cards : même hauteur (flex stretch) === */
-        .balance-row {
-            display: flex;
-            gap: .8rem;
-            align-items: stretch;
-            flex-wrap: wrap;
+        .page-header h1 {
+            color: #fff;
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.75rem;
         }
 
-        .balance-card {
-            flex: 1 1 180px;
-            display: flex;
-            align-items: center;
-            background: var(--card-bg);
-            border: 1px solid rgba(13, 110, 253, 0.06);
-            padding: .75rem 1rem;
+        .page-header .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-header .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ====================================
+               CARTES STATISTIQUES
+               ==================================== */
+        .stats-card {
+            border: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            background: #fff;
+            /* Animation pour une meilleure perception */
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stats-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .stats-card .stats-icon {
+            width: 50px;
+            height: 50px;
             border-radius: 10px;
-            transition: transform .14s ease, box-shadow .14s ease;
-            box-shadow: 0 1px 6px rgba(15, 23, 42, 0.04);
-            min-height: 72px;
-        }
-
-        .balance-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-        }
-
-        .balance-icon {
-            width: 44px;
-            height: 44px;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
-            margin-right: .75rem;
-            font-size: 1.05rem;
-            color: var(--primary);
-            background: linear-gradient(180deg, rgba(13, 110, 253, 0.06), rgba(13, 110, 253, 0.02));
-            flex: 0 0 44px;
+            font-size: 1.5rem;
+            opacity: 0.8;
+            /* Légèrement plus discret */
         }
 
-        .balance-text {
-            font-size: .85rem;
-            color: var(--muted);
+        /* Couleurs pour les icônes */
+        .stats-card.border-left-primary .stats-icon {
+            background: rgba(78, 115, 223, 0.1);
+            color: #4e73df;
         }
 
-        .balance-amount {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: #0d1b3a;
+        .stats-card.border-left-success .stats-icon {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
         }
 
-        .balance-card>div:last-child {
+        .stats-card.border-left-danger .stats-icon {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+
+        /* ====================================
+               CARTES D'INFORMATION & LISTE (ONGLETS)
+               ==================================== */
+        .invoice-list-section {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            height: 100%;
+            /* Important pour que les cartes soient égales */
+        }
+
+        .invoice-list-section .card-header {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            border: none;
+            color: #fff;
+            /* Texte blanc sur l'en-tête */
+            padding: 1.25rem 1.5rem;
+        }
+
+        .invoice-list-section.h-100 .card-body {
             display: flex;
+            /* Pour centrer ou aligner le contenu si nécessaire */
             flex-direction: column;
-            justify-content: center;
-            width: 100%;
         }
 
-        @media (max-width: 768px) {
-            .balance-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
+        /* Liste de description (Informations & Contact) */
+        .info-list dt {
+            font-weight: 600;
+            color: #5a5c69;
+            margin-bottom: 0.5rem;
+        }
 
-            .balance-card {
-                width: 100%;
-            }
+        .info-list dd {
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-link {
+            color: #4e73df;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .contact-link:hover {
+            color: #224abe;
+            text-decoration: underline;
+        }
+
+        /* ====================================
+               TABLEAUX DANS LES ONGLETS
+               ==================================== */
+        .invoice-table {
+            width: 100%;
+            margin-bottom: 0;
+            table-layout: auto;
+            /* Permet un redimensionnement fluide */
+        }
+
+        .invoice-table thead th {
+            background: #f8f9fc;
+            color: #5a5c69;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border: none;
+            padding: 1rem 0.75rem;
+            white-space: nowrap;
+        }
+
+        .invoice-table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #e3e6f0;
+        }
+
+        .invoice-table tbody tr:hover {
+            background: #f8f9fc;
+        }
+
+        .invoice-table tbody td {
+            padding: 1rem 0.75rem;
+            vertical-align: middle;
+            font-size: 0.875rem;
+        }
+
+        /* Style spécifique pour les retours (table-warning) */
+        .table-warning {
+            background-color: #fffaf0 !important;
+            color: #7a5c00;
+            font-style: italic;
+        }
+
+        .table-warning td {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.8rem;
+        }
+
+        /* ====================================
+               ONGLETS
+               ==================================== */
+        .nav-tabs .nav-link {
+            color: #ffff;
+            font-weight: 500;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 1rem 1.25rem;
+            transition: all 0.3s ease;
         }
 
         .nav-tabs .nav-link.active {
-            color: var(--primary);
-            border-color: transparent transparent var(--primary);
-            font-weight: 600;
+            color: #ffffffe5;
+            border-bottom-color: #4e73df;
+            font-weight: 700;
+            background: none;
         }
 
-        .nav-tabs .nav-link {
-            color: #495057;
+        .nav-tabs .nav-link:hover {
+            border-bottom-color: #e3e6f0;
         }
 
-        table.table-hover tbody tr:hover {
-            background-color: #fbfdff;
+        /* ====================================
+               ANIMATIONS
+               ==================================== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .muted {
-            color: var(--muted);
-        }
-
-        .ml-2 {
-            margin-left: .5rem;
-        }
-
-        .me-2 {
-            margin-right: .5rem;
+        /* Appliquer l'animation aux éléments principaux */
+        .stats-card,
+        .invoice-list-section {
+            animation: fadeInUp 0.5s ease-out;
         }
     </style>
 
-    <div class="container-fluid">
+    @php
+        // Calculs
+        $totalInvoice = $invoice->items->sum('total_line');
+        $totalPaid = $payments->sum('amount_paid');
+        $remaining = max(0, $totalInvoice - $totalPaid);
 
-        @php
-            $totalInvoice = $invoice->items->sum('total_line');
-            $totalPaid = $payments->sum('amount_paid');
-            $remaining = max(0, $totalInvoice - $totalPaid);
-        @endphp
+        // Type de contact
+        $type = $invoice->type == 'client' ? 'client' : 'supplier';
+    @endphp
 
-        {{-- Header --}}
-        <div class="row align-items-center mb-3">
-            <div class="col-12 col-md-4 mb-2 mb-md-0">
-                <h2 class="h5 mb-0"><i class="fas fa-file-invoice text-primary"></i> <span class="ml-2">Facture n° <span
-                            class="text-primary">{{ $invoice->invoice_number }}</span></span></h2>
-                <div class="small text-muted">Créée le :
-                    {{ $invoice->created_at ? \Carbon\Carbon::parse($invoice->created_at)->format('d/m/Y') : '-' }}</div>
+    <!-- Conteneur principal (avec la classe de correction pour la hauteur) -->
+    <div class="content-wrapper-fix">
+
+        <!-- En-tête de page -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1>
+                        <i class="fas fa-file-invoice mr-2"></i> Facture N° <span
+                            class="text-warning">{{ $invoice->invoice_number }}</span>
+                    </h1>
+                    <p class="mb-0 text-white-50 small">
+                        Créée le :
+                        {{ $invoice->created_at ? \Carbon\Carbon::parse($invoice->created_at)->format('d/m/Y') : '-' }}
+                    </p>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
+                     <!-- ✅ Nouveau bouton imprimer -->
+                    <a href="{{ route('invoices.print', [$invoice->type.'s', $invoice->id]) }}" class="btn btn-info m-1"
+                        title="Imprimer">
+                        <i class="fas fa-print"></i>
+                        <strong>Imprimer</strong>
+                    </a>
+                    <a href="{{ route('invoices.index', $invoice->type . 's') }}" class="btn btn-light m-1">
+                        <i class="fas fa-arrow-left mr-1"></i>
+                        <strong>Retour à la liste</strong>
+                    </a>
+
+                </div>
             </div>
-            <div class="col-12 col-md-4 d-flex justify-content-center">
-                <div class="d-flex balance-row" style="max-width:760px; width:100%;">
-                    <div class="balance-card">
-                        <div class="balance-icon"><i class="fas fa-file-invoice"></i></div>
-                        <div>
-                            <div class="balance-text">Total facture</div>
-                            <div class="balance-amount">{{ number_format($totalInvoice, 0, ',', ' ') }} FCFA</div>
-                        </div>
-                    </div>
-                    <div class="balance-card">
-                        <div class="balance-icon"><i class="fas fa-wallet"></i></div>
-                        <div>
-                            <div class="balance-text">Total payé</div>
-                            <div class="balance-amount">{{ number_format($totalPaid, 0, ',', ' ') }} FCFA</div>
-                        </div>
-                    </div>
-                    <div class="balance-card">
-                        <div class="balance-icon"><i class="fas fa-coins"></i></div>
-                        <div>
-                            <div class="balance-text">Reste</div>
-                            <div class="balance-amount">{{ number_format($remaining, 0, ',', ' ') }} FCFA</div>
+        </div>
+
+        <!-- Cartes statistiques -->
+        <div class="row mb-4">
+            <!-- Total Facture -->
+            <div class="col-xl-4 col-md-6 mb-3">
+                <div class="card stats-card border-left-primary shadow h-100">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-2">
+                                    Total Facture
+                                </div>
+                                <div class="h4 mb-0 font-weight-bold text-gray-800">
+                                    {{ number_format($totalInvoice, 0, ',', ' ') }} FCFA
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="stats-icon border-left-primary">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-4 text-md-right mt-2 mt-md-0">
-                <a href="{{ route('invoices.index', $invoice->type . 's') }}" class="btn btn-outline-primary btn-sm"><i
-                        class="fas fa-arrow-left"></i> Retour</a>
+
+            <!-- Total Payé -->
+            <div class="col-xl-4 col-md-6 mb-3">
+                <div class="card stats-card border-left-success shadow h-100">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-2">
+                                    Total Payé
+                                </div>
+                                <div class="h4 mb-0 font-weight-bold text-gray-800">
+                                    {{ number_format($totalPaid, 0, ',', ' ') }} FCFA
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="stats-icon border-left-success">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reste à Payer -->
+            <div class="col-xl-4 col-md-6 mb-3">
+                <div class="card stats-card border-left-danger shadow h-100">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col">
+                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-2">
+                                    Reste à Payer
+                                </div>
+                                <div class="h4 mb-0 font-weight-bold text-gray-800">
+                                    {{ number_format($remaining, 0, ',', ' ') }} FCFA
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="stats-icon border-left-danger">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        {{-- Top cards --}}
-        <div class="row mb-3">
+        <!-- Cartes d'information -->
+        <div class="row mb-4">
             <div class="col-lg-6 mb-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-primary"><i class="fas fa-info-circle me-2"></i>Informations de la facture
+                <div class="invoice-list-section h-100">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold"><i class="fas fa-info-circle mr-2"></i>Informations de la facture
+                        </h6>
                     </div>
-                    <div class="card-body p-3">
-                        <div class="row mb-2">
-                            <div class="col-5 muted">Numéro</div>
-                            <div class="col-7">{{ $invoice->invoice_number ?? '-' }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 muted">Date</div>
-                            <div class="col-7">
+                    <div class="card-body p-4">
+                        <dl class="row mb-0 info-list">
+                            <dt class="col-sm-4">Numéro</dt>
+                            <dd class="col-sm-8 font-weight-bold">{{ $invoice->invoice_number ?? '-' }}</dd>
+
+                            <dt class="col-sm-4">Date</dt>
+                            <dd class="col-sm-8">
                                 {{ $invoice->invoice_date ? \Carbon\Carbon::parse($invoice->invoice_date)->format('d/m/Y') : '-' }}
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 muted">Échéance</div>
-                            <div class="col-7">
+                            </dd>
+
+                            <dt class="col-sm-4">Échéance</dt>
+                            <dd class="col-sm-8">
                                 {{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') : '-' }}
-                            </div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 muted">Statut</div>
-                            <div class="col-7">@php $badge=['draft'=>'secondary','validated'=>'info','partial'=>'warning','paid'=>'success','cancelled'=>'danger'][$invoice->status]??'secondary';@endphp <span
-                                    class="badge badge-{{ $badge }}">{{ ucfirst($invoice->status) }}</span></div>
-                        </div>
-                        <div class="row">
-                            <div class="col-5 muted">Note</div>
-                            <div class="col-7">{{ $invoice->note ?? '-' }}</div>
-                        </div>
+                            </dd>
+
+                            <dt class="col-sm-4">Statut</dt>
+                            <dd class="col-sm-8">
+                                @php
+                                    $statusConfig = [
+                                        'draft' => ['color' => 'secondary', 'icon' => 'fa-file'],
+                                        'validated' => ['color' => 'info', 'icon' => 'fa-check-circle'],
+                                        'partial' => ['color' => 'warning', 'icon' => 'fa-clock'],
+                                        'paid' => ['color' => 'success', 'icon' => 'fa-check-double'],
+                                        'cancelled' => ['color' => 'danger', 'icon' => 'fa-times-circle'],
+                                    ];
+                                    $config = $statusConfig[$invoice->status] ?? [
+                                        'color' => 'secondary',
+                                        'icon' => 'fa-file',
+                                    ];
+                                @endphp
+                                <span class="badge badge-{{ $config['color'] }}">
+                                    <i class="fas {{ $config['icon'] }} mr-1"></i>
+                                    {{ ucfirst($invoice->status) }}
+                                </span>
+                            </dd>
+
+                            <dt class="col-sm-4 mt-2">Note</dt>
+                            <dd class="col-sm-8 mt-2 text-wrap">{{ $invoice->note ?? '-' }}</dd>
+                        </dl>
                     </div>
                 </div>
             </div>
             <div class="col-lg-6 mb-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-primary"><i
-                            class="fas fa-user-tie me-2"></i>{{ ucfirst($invoice->type == 'client' ? 'Client' : 'Fournisseur') }}
+                <div class="invoice-list-section h-100">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold"><i
+                                class="fas fa-user-tie mr-2"></i>{{ ucfirst($invoice->type == 'client' ? 'Client' : 'Fournisseur') }}
+                        </h6>
                     </div>
-                    <div class="card-body p-3">
-                        <div class="row mb-2">
-                            <div class="col-5 muted">Nom</div>
-                            <div class="col-7">{{ optional($invoice->contact)->fullname ?? '-' }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 muted">Téléphone</div>
-                            <div class="col-7">{{ optional($invoice->contact)->phone_number ?? '-' }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 muted">Email</div>
-                            <div class="col-7">{{ optional($invoice->contact)->email ?? '-' }}</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-5 muted">Adresse</div>
-                            <div class="col-7">{{ optional($invoice->contact)->address ?? '-' }}</div>
-                        </div>
+                    <div class="card-body p-4">
+                        <dl class="row mb-0 info-list">
+                            <dt class="col-sm-4">Nom</dt>
+                            <dd class="col-sm-8 font-weight-bold">
+                                <a href="{{ route($type . 's.show', $invoice->contact->id) }}" class="contact-link"
+                                    title="Voir le contact">
+                                    {{ optional($invoice->contact)->fullname ?? '-' }}
+                                </a>
+                            </dd>
+
+                            <dt class="col-sm-4">Téléphone</dt>
+                            <dd class="col-sm-8">{{ optional($invoice->contact)->phone_number ?? '-' }}</dd>
+
+                            <dt class="col-sm-4">Email</dt>
+                            <dd class="col-sm-8">{{ optional($invoice->contact)->email ?? '-' }}</dd>
+
+                            <dt class="col-sm-4">Adresse</dt>
+                            <dd class="col-sm-8 text-wrap">{{ optional($invoice->contact)->address ?? '-' }}</dd>
+                        </dl>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Tabs --}}
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
+        <!-- Onglets -->
+        <div class="invoice-list-section">
+            <div class="card-header bg-white border-bottom p-0">
                 <ul class="nav nav-tabs card-header-tabs" id="invoiceTabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active" id="lines-tab" data-toggle="tab" href="#lines" role="tab"
                             aria-controls="lines" aria-selected="true">
-                            <i class="fas fa-list mr-1 text-primary"></i>
-                            Lignes
+                            <i class="fas fa-list mr-1"></i>
+                            Lignes de la facture
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="payments-tab" data-toggle="tab" href="#payments" role="tab"
                             aria-controls="payments" aria-selected="false">
-                            <i class="fas fa-credit-card mr-1 text-primary"></i>
+                            <i class="fas fa-credit-card mr-1"></i>
                             Paiements
                         </a>
                     </li>
@@ -247,7 +474,7 @@
                         <li class="nav-item">
                             <a class="nav-link" id="batches-tab" data-toggle="tab" href="#batches" role="tab"
                                 aria-controls="batches" aria-selected="false">
-                                <i class="fas fa-boxes mr-1 text-primary"></i>
+                                <i class="fas fa-boxes mr-1"></i>
                                 Lots
                             </a>
                         </li>
@@ -255,15 +482,15 @@
                 </ul>
             </div>
 
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div class="tab-content" id="invoiceTabsContent">
 
                     {{-- TAB Lignes --}}
                     <div class="tab-pane fade show active" id="lines" role="tabpanel" aria-labelledby="lines-tab">
                         @if ($invoice->items->count())
                             <div class="table-responsive">
-                                <table class="table table-sm table-striped table-hover">
-                                    <thead class="thead-light">
+                                <table class="table invoice-table">
+                                    <thead>
                                         <tr>
                                             <th>#</th>
                                             <th>Entrepôt</th>
@@ -279,21 +506,24 @@
                                         @foreach ($invoice->items as $item)
                                             {{-- Ligne principale du produit --}}
                                             <tr>
-                                                <td>{{ $loop->iteration }}</td>
+                                                <td class="text-muted">{{ $loop->iteration }}</td>
                                                 <td>{{ $item->warehouse->name ?? '-' }}</td>
-                                                <td>{{ $item->product->name ?? '-' }}</td>
-                                                <td class="text-center">{{ $item->quantity }}</td>
+                                                <td><strong class="text-dark">{{ $item->product->name ?? '-' }}</strong>
+                                                </td>
+                                                <td class="text-center font-weight-bold">{{ $item->quantity }}</td>
                                                 <td class="text-right">{{ number_format($item->unit_price, 0, ',', ' ') }}
                                                 </td>
-                                                <td class="text-right">
+                                                <td class="text-right text-danger">
                                                     {{ number_format($item->discount ?? 0, 0, ',', ' ') }}</td>
-                                                <td class="text-right">{{ number_format($item->total_line, 0, ',', ' ') }}
-                                                </td>
-                                                <td class="text-center">
+                                                <td class="text-right font-weight-bold">
+                                                    {{ number_format($item->total_line, 0, ',', ' ') }}</td>
+                                                <td class="text-center action-buttons">
                                                     <button type="button" class="btn btn-sm btn-secondary"
                                                         data-toggle="modal"
-                                                        data-target="#returnModal-{{ $item->id }}"><i
-                                                            class="fas fa-undo"></i></button>
+                                                        data-target="#returnModal-{{ $item->id }}"
+                                                        title="Enregistrer un retour">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
                                                 </td>
                                             </tr>
 
@@ -301,39 +531,45 @@
                                             @foreach ($item->returns as $return)
                                                 <tr class="table-warning">
                                                     <td></td>
-                                                    <td colspan="2"><strong>Retourné</strong></td>
-                                                    <td class="text-center">{{ $return->quantity }}</td>
-                                                    <td class="text-right">-</td>
-                                                    <td class="text-right">-</td>
-                                                    <td class="text-right">-</td>
-                                                    <td class="text-center">{{ $return->motif ?? '-' }}</td>
+                                                    <td colspan="2">
+                                                        <i class="fas fa-undo-alt mr-1"></i>
+                                                        <strong>Retourné</strong> le
+                                                        {{ $return->created_at->format('d/m/Y') }}
+                                                    </td>
+                                                    <td class="text-center font-weight-bold">{{ $return->quantity }}</td>
+                                                    <td class="text-right" colspan="3">
+                                                        <em class="text-muted small">{{ $return->motif ?? '-' }}</em>
+                                                    </td>
+                                                    <td class="text-center"></td>
                                                 </tr>
                                             @endforeach
                                         @endforeach
 
                                         {{-- Total Remise --}}
-                                        <tr>
-                                            <td colspan="4"></td>
-                                            <td class="text-right font-weight-bold">Total Remise</td>
-                                            <td class="text-right font-weight-bold">
-                                                {{ number_format($invoice->items->sum('discount'), 0, ',', ' ') }}</td>
-                                            <td class="text-right">-</td>
-                                            <td></td>
+                                        <tr class="table-secondary">
+                                            <td colspan="5" class="text-right font-weight-bold">Total Remise</td>
+                                            <td class="text-right font-weight-bold text-danger">
+                                                {{ number_format($invoice->items->sum('discount'), 0, ',', ' ') }}
+                                            </td>
+                                            <td colspan="2"></td>
                                         </tr>
 
                                         {{-- Total Général --}}
-                                        <tr>
-                                            <td colspan="4"></td>
-                                            <td colspan="2" class="text-right font-weight-bold">Total Général</td>
-                                            <td class="text-right font-weight-bold">
-                                                {{ number_format($totalInvoice, 0, ',', ' ') }}</td>
+                                        <tr class="bg-light">
+                                            <td colspan="5" class="text-right font-weight-bold h5">Total Général</td>
+                                            <td colspan="2" class="text-right font-weight-bold h5 text-primary">
+                                                {{ number_format($totalInvoice, 0, ',', ' ') }} FCFA
+                                            </td>
                                             <td></td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         @else
-                            <div class="alert alert-light text-center">Aucune ligne enregistrée.</div>
+                            <div class="p-5 text-center">
+                                <i class="fas fa-list-alt fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Aucune ligne enregistrée.</h5>
+                            </div>
                         @endif
                     </div>
 
@@ -341,8 +577,8 @@
                     <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
                         @if ($payments->count())
                             <div class="table-responsive">
-                                <table class="table table-sm table-striped table-hover">
-                                    <thead class="thead-light">
+                                <table class="table invoice-table">
+                                    <thead>
                                         <tr>
                                             <th>#</th>
                                             <th>Date</th>
@@ -355,35 +591,37 @@
                                     <tbody>
                                         @foreach ($payments as $payment)
                                             <tr>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d/m/Y') }}
+                                                <td class="text-muted">{{ $loop->iteration }}</td>
+                                                <td><i class="fas fa-calendar-alt text-muted mr-1"></i>
+                                                    {{ \Carbon\Carbon::parse($payment->payment_date)->format('d/m/Y') }}
                                                 </td>
-                                                <td class="text-right">
-                                                    {{ number_format($payment->amount_paid, 0, ',', ' ') }}</td>
-                                                <td class="text-right">
-                                                    {{ number_format($payment->remaining_amount, 0, ',', ' ') }}</td>
-                                                <td>{{ ucfirst($payment->payment_type ?? '-') }}</td>
+                                                <td class="text-right font-weight-bold text-success">
+                                                    {{ number_format($payment->amount_paid, 0, ',', ' ') }}
+                                                </td>
+                                                <td class="text-right font-weight-bold text-warning">
+                                                    {{ number_format($payment->remaining_amount, 0, ',', ' ') }}
+                                                </td>
+                                                <td><i class="fas fa-credit-card text-muted mr-1"></i>
+                                                    {{ ucfirst($payment->payment_type ?? '-') }}</td>
                                                 <td>{{ ucfirst($payment->payment_source ?? '-') }}</td>
                                             </tr>
                                         @endforeach
-                                        <tr>
-                                            <td colspan="2" class="text-right font-weight-bold">Total payé</td>
-                                            <td class="text-right font-weight-bold">
-                                                {{ number_format($totalPaid, 0, ',', ' ') }}</td>
-                                            <td colspan="3"></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2" class="text-right font-weight-bold">Reste à payer</td>
-                                            <td class="text-right font-weight-bold">
-                                                {{ number_format($remaining, 0, ',', ' ') }}</td>
+                                        <tr class="bg-light">
+                                            <td colspan="2" class="text-right font-weight-bold h5">Total payé</td>
+                                            <td class="text-right font-weight-bold h5 text-success">
+                                                {{ number_format($totalPaid, 0, ',', ' ') }} FCFA
+                                            </td>
                                             <td colspan="3"></td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="mt-3 d-flex justify-content-center">{{ $payments->links() }}</div>
+                            <div class="p-3 d-flex justify-content-center">{{ $payments->links() }}</div>
                         @else
-                            <div class="alert alert-light text-center">Aucun paiement enregistré.</div>
+                            <div class="p-5 text-center">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Aucun paiement enregistré.</h5>
+                            </div>
                         @endif
                     </div>
 
@@ -391,8 +629,8 @@
                     <div class="tab-pane fade" id="batches" role="tabpanel" aria-labelledby="batches-tab">
                         @if ($batches->count())
                             <div class="table-responsive">
-                                <table class="table table-sm table-striped table-hover">
-                                    <thead class="thead-light">
+                                <table class="table invoice-table">
+                                    <thead>
                                         <tr>
                                             <th>#</th>
                                             <th>Produit</th>
@@ -406,14 +644,16 @@
                                     <tbody>
                                         @foreach ($batches as $batch)
                                             <tr>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>{{ optional($batch->product)->name ?? '-' }}</td>
+                                                <td class="text-muted">{{ $loop->iteration }}</td>
+                                                <td><strong
+                                                        class="text-dark">{{ optional($batch->product)->name ?? '-' }}</strong>
+                                                </td>
                                                 <td class="text-right">
                                                     {{ number_format($batch->unit_price, 0, ',', ' ') }}
                                                 </td>
                                                 <td class="text-center">{{ number_format($batch->quantity, 0, ',', ' ') }}
                                                 </td>
-                                                <td class="text-center">
+                                                <td class="text-center font-weight-bold">
                                                     {{ number_format($batch->remaining, 0, ',', ' ') }}
                                                 </td>
                                                 <td class="text-center">
@@ -425,70 +665,70 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="mt-3 d-flex justify-content-center">{{ $batches->links() }}</div>
+                            <div class="p-3 d-flex justify-content-center">{{ $batches->links() }}</div>
                         @else
-                            <div class="alert alert-light text-center">Aucun lot enregistré.</div>
+                            <div class="p-5 text-center">
+                                <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Aucun lot enregistré.</h5>
+                            </div>
                         @endif
                     </div>
 
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- Modals Retour produit améliorés - Bootstrap 4 --}}
-        @foreach ($invoice->items as $item)
-            <div class="modal fade" id="returnModal-{{ $item->id }}" tabindex="-1" role="dialog"
-                aria-labelledby="returnModalLabel-{{ $item->id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-md" role="document">
-                    <div class="modal-content border-0 shadow-lg rounded">
-                        <form action="{{ route('invoices.returnProduct', [$type, $invoice->id]) }}" method="POST">
-                            @csrf
+    {{-- Modals Retour produit (Style mis à jour) --}}
+    @foreach ($invoice->items as $item)
+        <div class="modal fade" id="returnModal-{{ $item->id }}" tabindex="-1" role="dialog"
+            aria-labelledby="returnModalLabel-{{ $item->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+                <div class="modal-content">
+                    <form action="{{ route('invoices.returnProduct', [$type, $invoice->id]) }}" method="POST">
+                        @csrf
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="returnModalLabel-{{ $item->id }}">
+                                <i class="fas fa-undo-alt mr-2"></i> Retour produit :
+                                {{ $item->product->name ?? 'Produit' }}
+                            </h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
 
-                            <div class="modal-header bg-primary text-white">
-                                <h5 class="modal-title" id="returnModalLabel-{{ $item->id }}">
-                                    <i class="fas fa-undo-alt mr-2"></i> Retour produit :
-                                    {{ $item->product->name ?? 'Produit' }}
-                                </h5>
-                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                        <div class="modal-body">
+                            <input type="hidden" name="invoice_item_id" value="{{ $item->id }}">
+
+                            <div class="form-group">
+                                <label for="quantity-{{ $item->id }}" class="font-weight-bold">Quantité retournée
+                                    <span class="text-danger">*</span></label>
+                                <input type="number" name="quantity" id="quantity-{{ $item->id }}"
+                                    class="form-control form-control-lg" min="1" max="{{ $item->quantity }}"
+                                    placeholder="Ex: 1" required>
+                                <small class="text-muted">Quantité maximale : {{ $item->quantity }}</small>
                             </div>
 
-                            <div class="modal-body">
-                                {{-- Champ hidden correctement nommé --}}
-                                <input type="hidden" name="invoice_item_id" value="{{ $item->id }}">
-
-                                <div class="form-group">
-                                    <label class="font-weight-bold">Quantité retournée</label>
-                                    <input type="number" name="quantity" class="form-control form-control-lg"
-                                        min="1" max="{{ $item->quantity }}" placeholder="Ex: 1" required>
-                                    <small class="text-muted">Quantité maximale : {{ $item->quantity }}</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="font-weight-bold">Motif</label>
-                                    <input type="text" name="motif" class="form-control form-control-lg"
-                                        placeholder="Raison du retour" maxlength="255" required>
-                                </div>
-
-                                <div class="d-flex justify-content-between align-items-center mt-4">
-                                    <button type="button" class="btn btn-outline-secondary btn-lg" data-dismiss="modal">
-                                        <i class="fas fa-times mr-1"></i> Annuler
-                                    </button>
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-check mr-1"></i> Valider le retour
-                                    </button>
-                                </div>
+                            <div class="form-group">
+                                <label for="motif-{{ $item->id }}" class="font-weight-bold">Motif <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="motif" id="motif-{{ $item->id }}"
+                                    class="form-control form-control-lg" placeholder="Raison du retour" maxlength="255"
+                                    required>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                <i class="fas fa-times mr-1"></i> Annuler
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check mr-1"></i> Valider le retour
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        @endforeach
-
-
-
-
-
-    </div>
+        </div>
+    @endforeach
 @endsection
