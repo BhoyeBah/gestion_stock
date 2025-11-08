@@ -564,7 +564,7 @@
                                         </a>
 
                                         <!-- ✅ Nouveau bouton imprimer -->
-                                        <a href="{{ route('invoices.print', [$type, $invoice->id]) }}" class="btn btn-sm btn-primary" title="Imprimer">
+                                        <a href="{{ route('invoices.print', [$type, $invoice->id]) }}" class="btn btn-sm btn-primary" title="Imprimer" onclick="event.preventDefault(); window.open(this.href,'_blank').print();">
                                             <i class="fas fa-print"></i>
                                         </a>
 

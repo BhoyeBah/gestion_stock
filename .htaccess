@@ -1,0 +1,18 @@
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Force HTTPS (décommente les 3 lignes suivantes si tu veux forcer HTTPS)
+    # RewriteCond %{HTTPS} !=on
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Redirige tout vers le dossier /public
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+</IfModule>
+
+# Sécurité : bloque l’accès à certains fichiers
+<FilesMatch "^(\.env|artisan|composer\.(json|lock)|package\.json|webpack\.mix\.js|phpunit\.xml|server\.php)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
