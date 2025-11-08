@@ -3,11 +3,12 @@
 
 <head>
 
-   @include('back.partials.head')
+    @include('back.partials.head')
 
-   
-        @stack('styles')
-   
+
+    @stack('styles')
+
+
 </head>
 
 <body id="page-top">
@@ -31,12 +32,12 @@
 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-                    
+
                     {{-- Messages flash de succès / erreur --}}
                     @include('back.partials.alerts')
-                    
+
                     @yield('content')
-                    
+
 
                 </div>
                 <!-- /.container-fluid -->
@@ -60,30 +61,48 @@
     </a>
 
     <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
+
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                    <h5 class="modal-title" id="logoutModalLabel">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Confirmer la déconnexion
+                    </h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                        <input type="submit" class="btn btn-primary" value="Logout">
+
+                <div class="modal-body text-center">
+                    <p class="mb-2">Êtes-vous sûr de vouloir vous déconnecter ?</p>
+                    <small class="text-muted d-block">Vous devrez vous reconnecter pour accéder de nouveau à votre
+                        compte.</small>
+                </div>
+
+                <div class="modal-footer justify-content-between">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i> Annuler
+                    </button>
+
+                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Se déconnecter
+                        </button>
                     </form>
                 </div>
+
             </div>
         </div>
     </div>
 
-   @include('back.partials.js')
-   
+
+
+    @include('back.partials.js')
+
     @stack('scripts')
 </body>
 

@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [FrontController::class, 'index'])->middleware(['auth'])->name('home');
 
 Route::get('/dashboard', function () {
-    return view('back.layouts.admin');
+    return redirect()->route("home");
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
