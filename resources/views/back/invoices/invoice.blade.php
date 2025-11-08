@@ -33,7 +33,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facture Professionnelle</title>
+    <title>Facture N°: {{ $invoice->invoice_number }}</title>
     <style>
         * {
             margin: 0;

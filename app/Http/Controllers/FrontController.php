@@ -96,7 +96,8 @@ class FrontController extends Controller
         // 10 dernières factures filtrées par tenant
         $dernieresFactures = DB::table('invoices as i')
             ->join('contacts as c', 'i.contact_id', '=', 'c.id')
-            ->select('i.invoice_number', 'i.invoice_date', 'i.total_invoice', 'i.status',
+            ->select('i.id', 'i.invoice_number', 'i.invoice_date', 'i.total_invoice',
+                'c.id as contact_id', 'i.status',
                 'c.type as contact_type', 'c.fullname as client')
             ->where('i.tenant_id', $tenant->id)
             ->orderByDesc('i.invoice_date')
@@ -110,7 +111,8 @@ class FrontController extends Controller
                 'p.amount_paid',
                 'p.payment_date',
                 DB::raw('c.fullname as client'),
-                'c.type as contact_type'
+                'c.type as contact_type',
+                'c.id as contact_id'
             )
             ->where('p.tenant_id', $tenant->id)
             ->orderByDesc('p.payment_date')

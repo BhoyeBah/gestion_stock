@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ====================================
-               FIXES GLOBALES & FONDAMENTAUX
-               ==================================== */
+                   FIXES GLOBALES & FONDAMENTAUX
+                   ==================================== */
         /* Assurez une police lisible et une taille de police de base */
         body {
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -35,8 +35,8 @@
         }
 
         /* ====================================
-               EN-TÊTE DE PAGE
-               ==================================== */
+                   EN-TÊTE DE PAGE
+                   ==================================== */
         .page-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 15px;
@@ -65,8 +65,8 @@
         }
 
         /* ====================================
-               CARTES STATISTIQUES
-               ==================================== */
+                   CARTES STATISTIQUES
+                   ==================================== */
         .stats-card {
             border: none;
             border-radius: 12px;
@@ -116,8 +116,8 @@
 
 
         /* ====================================
-               CARTES D'INFORMATION & LISTE (ONGLETS)
-               ==================================== */
+                   CARTES D'INFORMATION & LISTE (ONGLETS)
+                   ==================================== */
         .invoice-list-section {
             background: #fff;
             border-radius: 12px;
@@ -165,8 +165,8 @@
         }
 
         /* ====================================
-               TABLEAUX DANS LES ONGLETS
-               ==================================== */
+                   TABLEAUX DANS LES ONGLETS
+                   ==================================== */
         .invoice-table {
             width: 100%;
             margin-bottom: 0;
@@ -213,8 +213,8 @@
         }
 
         /* ====================================
-               ONGLETS
-               ==================================== */
+                   ONGLETS
+                   ==================================== */
         .nav-tabs .nav-link {
             color: #ffff;
             font-weight: 500;
@@ -236,8 +236,8 @@
         }
 
         /* ====================================
-               ANIMATIONS
-               ==================================== */
+                   ANIMATIONS
+                   ==================================== */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -284,12 +284,12 @@
                     </p>
                 </div>
                 <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
-                     <!-- ✅ Nouveau bouton imprimer -->
-                    <a href="{{ route('invoices.print', [$invoice->type.'s', $invoice->id]) }}" class="btn btn-info m-1"
-                        title="Imprimer">
+                    <a href="{{ route('invoices.print', [$invoice->type . 's', $invoice->id]) }}" class="btn btn-info m-1"
+                        title="Imprimer" onclick="event.preventDefault(); window.open(this.href,'_blank').print();">
                         <i class="fas fa-print"></i>
                         <strong>Imprimer</strong>
                     </a>
+
                     <a href="{{ route('invoices.index', $invoice->type . 's') }}" class="btn btn-light m-1">
                         <i class="fas fa-arrow-left mr-1"></i>
                         <strong>Retour à la liste</strong>
