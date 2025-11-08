@@ -1,27 +1,76 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Http\Request;
 
 use App\Http\Requests\ContactRequest;
 use App\Models\Contact;
+use App\Models\Invoice;
 
 class ContactController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(string $type)
+   public function index(Request $request, string $type)
     {
-        //
+        // 1. Valider que le type est bien 'clients' ou 'fournisseurs'
         $this->validateType($type);
+        $contactModelType = rtrim($type, 's'); // 'client' ou 'fournisseur'
 
-        $contacts = Contact::type(rtrim($type, 's'))
-            ->withSum('invoices as balance_total', 'balance') // somme des balances
-            ->get();
+        // 2. Calculer les statistiques sur TOUS les contacts du type donné (AVANT le filtrage de la liste)
+        // On utilise des requêtes séparées pour s'assurer que les totaux sont globaux
+        $statsQuery = Contact::type($contactModelType);
 
+        $totalContacts = (clone $statsQuery)->count();
+        $activeContacts = (clone $statsQuery)->where('is_active', true)->count();
+        $inactiveContacts = $totalContacts - $activeContacts;
+
+        // 3. Construire la requête de base pour la liste des contacts
+        $query = Contact::type($contactModelType)
+            ->withSum('invoices as balance_total', 'balance'); // Calcule le solde pour chaque contact
+        
+
+
+        
+
+       
+
+
+        // 4. Appliquer les filtres de recherche et de statut s'ils existent dans la requête
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('fullname', 'like', "%{$searchTerm}%")
+                  ->orWhere('phone_number', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $status = $request->input('status') === 'active' ? true : false;
+            $query->where('is_active', $status);
+        }
+
+        // 5. Paginer les résultats FINAUX (après filtrage)
+        $contacts = $query->latest()->paginate(10);
+        
+        // Très important : ajouter les paramètres de la requête à la pagination
+        // pour que les filtres persistent lors du changement de page.
+        $contacts->appends($request->query());
+
+
+        // 6. Préparer les données pour la vue
         $contactType = $type === 'clients' ? 'Clients' : 'Fournisseurs';
 
-        return view('back.contacts.index', compact('contacts', 'type', 'contactType'));
+        // 7. Retourner la vue avec toutes les données nécessaires
+        return view('back.contacts.index', compact(
+            'contacts',
+            'type',
+            'contactType',
+            'totalContacts',
+            'activeContacts',
+            'inactiveContacts',
+        ));
     }
 
     /**

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
+use App\Models\Category;
+use App\Models\Units;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,18 +14,28 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-
         $this->hasPermission('read_products');
 
-        $products = Product::withSum('batches as stock_total', 'remaining')
-            ->with(['category', 'unit'])
-            ->get();
+        $query = Product::withSum('batches as stock_total', 'remaining')
+            ->with(['category', 'unit']);
+
+        if ($search_name = $request->input('search_name')) {
+            $query->where('name', 'like', "%{$search_name}%");
+        }
+
+        if ($category_id = $request->input('category_id')) {
+            $query->where('category_id', $category_id);
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('is_active', $status === 'active' ? true : false);
+        }
+
+        $products = $query->paginate(10);
 
         return view('back.products.index', compact('products'));
-
     }
 
     /**
@@ -91,10 +103,21 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
+        // 1. Vérification des permissions de l'utilisateur
         $this->hasPermission('edit_product');
 
-        return view('back.products.edit', compact('product'));
+        // 2. Récupération des données nécessaires pour les listes déroulantes du formulaire.
+        //    Le tri par nom ('orderBy') garantit un affichage alphabétique pratique pour l'utilisateur.
+        $categories = Category::orderBy('name')->get();
+        $units = Units::orderBy('name')->get();
 
+        // 3. Retour de la vue 'edit' en lui passant le produit à modifier
+        //    ainsi que les collections de catégories et d'unités.
+        return view('back.products.edit', compact(
+            'product',
+            'categories',
+            'units'
+        ));
     }
 
     /**

@@ -12,11 +12,17 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-       $categories = Category::all();
-        return view("back.categories.index", compact("categories"));
+        $query = Category::query();
+
+        if ($search_name = $request->input('search_name')) {
+            $query->where('name', 'like', "%{$search_name}%");
+        }
+
+        $categories = $query->paginate(10);
+
+        return view('back.categories.index', compact('categories'));
     }
 
     /**
@@ -35,13 +41,13 @@ class CategoryController extends Controller
         //
 
         Category::create([
-           "name" => $request->name,
-           "slug" => $request->slug,
-           "tenant_id" => Auth::user()->tenant_id,
+            'name' => $request->name,
+            'slug' => $request->slug,
+            'tenant_id' => Auth::user()->tenant_id,
 
         ]);
 
-        return back()->with("success", "La catégorie est enrégistrée avec succès");
+        return back()->with('success', 'La catégorie est enrégistrée avec succès');
 
     }
 
@@ -59,7 +65,7 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         //
-        return view("back.categories.edit", compact("category"));
+        return view('back.categories.edit', compact('category'));
     }
 
     /**
@@ -71,7 +77,7 @@ class CategoryController extends Controller
         $category->slug = $request->slug;
         $category->save();
 
-         return redirect()->route('categories.index')->with("success", "Catégorie modifié avec succés");
+        return redirect()->route('categories.index')->with('success', 'Catégorie modifié avec succés');
 
     }
 
@@ -82,6 +88,7 @@ class CategoryController extends Controller
     {
         //
         $category->delete();
-        return back()->with("success", "La catégorie est supprimée avec succés");
+
+        return back()->with('success', 'La catégorie est supprimée avec succés');
     }
 }
