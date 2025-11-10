@@ -43,53 +43,25 @@
             $format = fn($v) => number_format($v ?? 0, 0, ',', ' ') . ' FCFA';
         @endphp
 
-        <div class="col-md-3 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body d-flex align-items-center">
-                    <i class="fas fa-file-invoice fa-2x text-primary mr-3"></i>
-                    <div>
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Factures</div>
-                        <div class="h5 mb-0 font-weight-bold">{{ $format($stats->total_factures) }}</div>
+        @foreach ([
+            'Total Factures' => ['value' => $stats->total_factures, 'icon' => 'fa-file-invoice', 'color' => 'primary'],
+            'Total Payé' => ['value' => $stats->total_paye, 'icon' => 'fa-dollar-sign', 'color' => 'success'],
+            'En Attente' => ['value' => $stats->total_attente, 'icon' => 'fa-hourglass-half', 'color' => 'warning'],
+            'Annulées' => ['value' => $stats->total_annule, 'icon' => 'fa-times-circle', 'color' => 'danger'],
+        ] as $title => $data)
+            <div class="col-md-3 mb-4">
+                <div class="card border-left-{{ $data['color'] }} shadow h-100 py-2">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas {{ $data['icon'] }} fa-2x text-{{ $data['color'] }} mr-3"></i>
+                        <div>
+                            <div class="text-xs font-weight-bold text-{{ $data['color'] }} text-uppercase mb-1">
+                                {{ $title }}</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ $format($data['value']) }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body d-flex align-items-center">
-                    <i class="fas fa-dollar-sign fa-2x text-success mr-3"></i>
-                    <div>
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Payé</div>
-                        <div class="h5 mb-0 font-weight-bold">{{ $format($stats->total_paye) }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body d-flex align-items-center">
-                    <i class="fas fa-hourglass-half fa-2x text-warning mr-3"></i>
-                    <div>
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">En Attente</div>
-                        <div class="h5 mb-0 font-weight-bold">{{ $format($stats->total_attente) }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card border-left-danger shadow h-100 py-2">
-                <div class="card-body d-flex align-items-center">
-                    <i class="fas fa-times-circle fa-2x text-danger mr-3"></i>
-                    <div>
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Annulées</div>
-                        <div class="h5 mb-0 font-weight-bold">{{ $format($stats->total_annule) }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
     {{-- Tableau --}}
@@ -118,10 +90,21 @@
                             <td>{{ number_format($invoice->balance, 0, ',', ' ') }} FCFA</td>
                             <td>{{ number_format($invoice->total_invoice, 0, ',', ' ') }} FCFA</td>
                             <td>
-                                <span
-                                    class="badge badge-{{ $invoice->status == 'paid' ? 'success' : ($invoice->status == 'cancelled' ? 'danger' : 'warning') }}">
-                                    {{ ucfirst($invoice->status) }}
-                                </span>
+                                @php
+                                    $statusLabel = match ($invoice->status) {
+                                        'paid' => 'Payé',
+                                        'partial' => 'Partiellement payé',
+                                        'cancelled' => 'Annulée',
+                                        default => ucfirst($invoice->status),
+                                    };
+                                    $statusColor = match ($invoice->status) {
+                                        'paid' => 'success',
+                                        'partial' => 'warning',
+                                        'cancelled' => 'danger',
+                                        default => 'secondary',
+                                    };
+                                @endphp
+                                <span class="badge badge-{{ $statusColor }}">{{ $statusLabel }}</span>
                             </td>
                         </tr>
                     @endforeach
@@ -132,19 +115,18 @@
         </div>
     </div>
 
-    {{-- Graphique Évolution des ventes (déplacé en dernier) --}}
+    {{-- Graphique Évolution des ventes --}}
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Évolution des ventes</h6>
         </div>
         <div class="card-body" style="position: relative; height:300px;">
-            <canvas id="salesChart">
-            </canvas>
+            <canvas id="salesChart"></canvas>
         </div>
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const labels = @json($chartData->pluck('date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('d M')));
@@ -159,13 +141,32 @@
                     data: values,
                     fill: false,
                     borderColor: 'rgba(78,115,223,1)',
-                    borderWidth: 2
+                    backgroundColor: 'rgba(78,115,223,0.2)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(78,115,223,1)',
+                    pointRadius: 4,
+                    tension: 0.3
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
             }
         });
+        
     </script>
-@endsection
+@endpush

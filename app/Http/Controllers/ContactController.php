@@ -29,13 +29,7 @@ class ContactController extends Controller
         // 3. Construire la requête de base pour la liste des contacts
         $query = Contact::type($contactModelType)
             ->withSum('invoices as balance_total', 'balance'); // Calcule le solde pour chaque contact
-        
-
-
-        
-
-       
-
+    
 
         // 4. Appliquer les filtres de recherche et de statut s'ils existent dans la requête
         if ($request->filled('search')) {
@@ -53,7 +47,7 @@ class ContactController extends Controller
 
         // 5. Paginer les résultats FINAUX (après filtrage)
         $contacts = $query->latest()->paginate(10);
-        
+
         // Très important : ajouter les paramètres de la requête à la pagination
         // pour que les filtres persistent lors du changement de page.
         $contacts->appends($request->query());
