@@ -321,7 +321,7 @@
                                                                 default => [
                                                                     'class' => 'info',
                                                                     'icon' => 'info-circle',
-                                                                    'label' => 'En attente',
+                                                                    'label' => 'Validée(non payéé)',
                                                                 ],
                                                             };
                                                         @endphp
@@ -396,7 +396,7 @@
                                                                 default => [
                                                                     'class' => 'info',
                                                                     'icon' => 'info-circle',
-                                                                    'label' => 'En attente',
+                                                                    'label' => 'Validée(non payée)',
                                                                 ],
                                                             };
                                                         @endphp

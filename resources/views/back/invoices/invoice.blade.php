@@ -156,7 +156,7 @@
         /* Badge de statut */
         .status-badge {
             display: inline-block;
-            padding: 2mm 4mm;
+            padding: 1mm 2mm;
             border-radius: 3mm;
             font-size: 8pt;
             font-weight: bold;
@@ -414,15 +414,23 @@
                             NINEA: {{ $invoice->tenant->ninea }}
                         </p>
                     </div>
-                    <div class="invoice-title">
-                        <h2>FACTURE</h2>
-                        <p class="invoice-type">
-                            @if ($invoice->type === 'client')
-                                Facture Client
-                            @else
-                                Facture Fournisseur
-                            @endif
-                        </p>
+                    <div class="invoice-title" style="text-align: center;">
+
+                        @if ($invoice->tenant && $invoice->tenant->logo)
+                            {{-- Afficher uniquement le logo --}}
+                            <img src="{{ asset('storage/' . $invoice->tenant->logo) }}" alt="Logo entreprise"
+                                style="max-width: 70px; max-height: 70px; display:block; margin:0 auto 5px;">
+                        @else
+                            {{-- Si pas de logo, afficher le texte --}}
+                            <p class="invoice-type" style="margin-bottom: 5px;">
+                                @if ($invoice->type === 'client')
+                                    Facture Client
+                                @else
+                                    Facture Fournisseur
+                                @endif
+                            </p>
+                        @endif
+
                         @php
                             $statusClass = match ($invoice->status) {
                                 'paid' => 'status-paid',
@@ -439,7 +447,11 @@
                                 default => 'Brouillon',
                             };
                         @endphp
-                        <span class="status-badge {{ $statusClass }}">{{ $statusText }}</span>
+
+                        <span class="status-badge {{ $statusClass }}" style="display: inline-block; margin-top: 5px;">
+                            {{ $statusText }}
+                        </span>
+
                     </div>
 
                 </div>
@@ -582,15 +594,23 @@
                             NINEA: {{ $invoice->tenant->ninea }}
                         </p>
                     </div>
-                    <div class="invoice-title">
-                        <h2>FACTURE</h2>
-                        <p class="invoice-type">
-                            @if ($invoice->type === 'client')
-                                Facture Client
-                            @else
-                                Facture Fournisseur
-                            @endif
-                        </p>
+                    <div class="invoice-title" style="text-align: center;">
+
+                        @if ($invoice->tenant && $invoice->tenant->logo)
+                            {{-- Afficher uniquement le logo --}}
+                            <img src="{{ asset('storage/' . $invoice->tenant->logo) }}" alt="Logo entreprise"
+                                style="max-width: 70px; max-height: 70px; display:block; margin:0 auto 5px;">
+                        @else
+                            {{-- Si pas de logo, afficher le texte --}}
+                            <p class="invoice-type" style="margin-bottom: 5px;">
+                                @if ($invoice->type === 'client')
+                                    Facture Client
+                                @else
+                                    Facture Fournisseur
+                                @endif
+                            </p>
+                        @endif
+
                         @php
                             $statusClass = match ($invoice->status) {
                                 'paid' => 'status-paid',
@@ -607,7 +627,11 @@
                                 default => 'Brouillon',
                             };
                         @endphp
-                        <span class="status-badge {{ $statusClass }}">{{ $statusText }}</span>
+
+                        <span class="status-badge {{ $statusClass }}" style="display: inline-block; margin-top: 5px;">
+                            {{ $statusText }}
+                        </span>
+
                     </div>
 
                 </div>
