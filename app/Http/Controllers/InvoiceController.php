@@ -150,7 +150,7 @@ class InvoiceController extends Controller
         $invoice->delete();
         $new_invoice = $this->service->createInvoice($request->validated());
 
-        return redirect()->route('invoices.edit', [$type, $new_invoice->id])->with('success', 'Facture modifier avec succès');
+        return redirect()->route('invoices.index', [$type, $new_invoice->id])->with('success', 'Facture modifier avec succès');
 
     }
 

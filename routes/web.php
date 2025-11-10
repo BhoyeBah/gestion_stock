@@ -62,7 +62,7 @@ Route::resource('/activities', ActivityController::class)->middleware('auth')->n
 Route::resource('/units', UnitsController::class)->names('admin.units');
 Route::resource('/categories', CategoryController::class)->middleware(['auth', 'subscription.permission:manage_categories'])->names('categories');
 
-Route::patch('/products/{id}', [ProductController::class, 'toggleActive'])->middleware(['auth', 'subscription.permission:toggle_products'])->name('products.toggle');
+Route::patch('/products/{id}', [ProductController::class, 'toggleActive'])->middleware(['auth', 'subscription.permission:read_products'])->name('products.toggle');
 Route::resource('/products', ProductController::class)->middleware(['auth', 'subscription.permission:read_products'])->names('products');
 
 Route::get('/warehouses/{id}/exchange', [WarehouseController::class, 'exchangeIndex'])->name('warehouses.exchange');

@@ -55,7 +55,8 @@
                         <i class="fas {{ $data['icon'] }} fa-2x text-{{ $data['color'] }} mr-3"></i>
                         <div>
                             <div class="text-xs font-weight-bold text-{{ $data['color'] }} text-uppercase mb-1">
-                                {{ $title }}</div>
+                                {{ $title }}
+                            </div>
                             <div class="h5 mb-0 font-weight-bold">{{ $format($data['value']) }}</div>
                         </div>
                     </div>
@@ -83,9 +84,22 @@
                 </thead>
                 <tbody>
                     @foreach ($invoicesList as $invoice)
+                        @php
+                            $contactRoute = $invoice->type === 'client' ? 'clients.show' : 'suppliers.show';
+                        @endphp
                         <tr>
-                            <td>{{ $invoice->invoice_number }}</td>
-                            <td>{{ $invoice->customer->name ?? '-' }}</td>
+                            <td>
+                                <a href="{{ route('invoices.show', [$invoice->type . 's', $invoice->id]) }}">
+                                    {{ $invoice->invoice_number }}
+                                </a>
+                            </td>
+
+                            <td>
+                                <a href="{{ route($contactRoute, $invoice->contact->id) }}">
+                                    {{ $invoice->contact->fullname ?? '-' }}
+                                </a>
+                            </td>
+
                             <td>{{ $invoice->invoice_date->format('Y-m-d') }}</td>
                             <td>{{ number_format($invoice->balance, 0, ',', ' ') }} FCFA</td>
                             <td>{{ number_format($invoice->total_invoice, 0, ',', ' ') }} FCFA</td>
@@ -167,6 +181,5 @@
                 }
             }
         });
-        
     </script>
 @endpush

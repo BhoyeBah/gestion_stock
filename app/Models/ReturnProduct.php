@@ -17,7 +17,6 @@ class ReturnProduct extends Model
         'quantity',
         'motif',
     ];
-
     public function invoiceItem()
     {
         return $this->belongsTo(InvoiceItem::class);

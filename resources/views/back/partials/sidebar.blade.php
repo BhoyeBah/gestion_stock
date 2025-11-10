@@ -272,36 +272,38 @@
         </li>
     @endcan
 
-    <hr class="sidebar-divider">
+    @can('manage_user')
+        <hr class="sidebar-divider">
 
-    <!-- Gestion du Système -->
-    <div class="sidebar-heading">Gestion du Système</div>
+        <!-- Gestion du Système -->
+        <div class="sidebar-heading">Gestion du Système</div>
 
-    <li class="nav-item {{ $isGestionActive ? 'active' : '' }}">
-        <a class="nav-link {{ $isGestionActive ? '' : 'collapsed' }}" href="#" data-toggle="collapse"
-            data-target="#collapseGestion" aria-expanded="{{ $isGestionActive ? 'true' : 'false' }}"
-            aria-controls="collapseGestion">
-            <i class="fas fa-users-cog"></i>
-            <span>Utilisateurs & Accès</span>
-        </a>
-        <div id="collapseGestion" class="collapse {{ $isGestionOpen }}" aria-labelledby="headingGestion"
-            data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                @can('manage_roles')
-                    <a class="collapse-item {{ $isActive(['roles.*']) ? 'active' : '' }}"
-                        href="{{ route('roles.index') }}">Rôles</a>
-                @endcan
-                @can('manage_users')
-                    <a class="collapse-item {{ $isActive(['users.*']) ? 'active' : '' }}"
-                        href="{{ route('users.index') }}">Utilisateurs</a>
-                @endcan
-                @can('manage_invoices')
-                    <a class="collapse-item {{ $isActive(['tenant.subscriptions.*']) ? 'active' : '' }}"
-                        href="{{ route('tenant.subscriptions.index') }}">Mes Souscriptions</a>
-                @endcan
+        <li class="nav-item {{ $isGestionActive ? 'active' : '' }}">
+            <a class="nav-link {{ $isGestionActive ? '' : 'collapsed' }}" href="#" data-toggle="collapse"
+                data-target="#collapseGestion" aria-expanded="{{ $isGestionActive ? 'true' : 'false' }}"
+                aria-controls="collapseGestion">
+                <i class="fas fa-users-cog"></i>
+                <span>Utilisateurs & Accès</span>
+            </a>
+            <div id="collapseGestion" class="collapse {{ $isGestionOpen }}" aria-labelledby="headingGestion"
+                data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    @can('manage_roles')
+                        <a class="collapse-item {{ $isActive(['roles.*']) ? 'active' : '' }}"
+                            href="{{ route('roles.index') }}">Rôles</a>
+                    @endcan
+                    @can('manage_users')
+                        <a class="collapse-item {{ $isActive(['users.*']) ? 'active' : '' }}"
+                            href="{{ route('users.index') }}">Utilisateurs</a>
+                    @endcan
+                    @can('manage_invoices')
+                        <a class="collapse-item {{ $isActive(['tenant.subscriptions.*']) ? 'active' : '' }}"
+                            href="{{ route('tenant.subscriptions.index') }}">Mes Souscriptions</a>
+                    @endcan
+                </div>
             </div>
-        </div>
-    </li>
+        </li>
+    @endcan
 
     <!-- Administration Plateforme -->
     @if ($current_user->is_platform_user())

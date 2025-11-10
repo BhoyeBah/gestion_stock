@@ -104,7 +104,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         // 1. Vérification des permissions de l'utilisateur
-        $this->hasPermission('edit_product');
+        $this->hasPermission('update_product');
 
         // 2. Récupération des données nécessaires pour les listes déroulantes du formulaire.
         //    Le tri par nom ('orderBy') garantit un affichage alphabétique pratique pour l'utilisateur.

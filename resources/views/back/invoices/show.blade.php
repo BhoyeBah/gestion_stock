@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ====================================
-                   FIXES GLOBALES & FONDAMENTAUX
-                   ==================================== */
+                                           FIXES GLOBALES & FONDAMENTAUX
+                                           ==================================== */
         /* Assurez une police lisible et une taille de police de base */
         body {
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -35,8 +35,8 @@
         }
 
         /* ====================================
-                   EN-TÊTE DE PAGE
-                   ==================================== */
+                                           EN-TÊTE DE PAGE
+                                           ==================================== */
         .page-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 15px;
@@ -65,8 +65,8 @@
         }
 
         /* ====================================
-                   CARTES STATISTIQUES
-                   ==================================== */
+                                           CARTES STATISTIQUES
+                                           ==================================== */
         .stats-card {
             border: none;
             border-radius: 12px;
@@ -116,8 +116,8 @@
 
 
         /* ====================================
-                   CARTES D'INFORMATION & LISTE (ONGLETS)
-                   ==================================== */
+                                           CARTES D'INFORMATION & LISTE (ONGLETS)
+                                           ==================================== */
         .invoice-list-section {
             background: #fff;
             border-radius: 12px;
@@ -165,8 +165,8 @@
         }
 
         /* ====================================
-                   TABLEAUX DANS LES ONGLETS
-                   ==================================== */
+                                           TABLEAUX DANS LES ONGLETS
+                                           ==================================== */
         .invoice-table {
             width: 100%;
             margin-bottom: 0;
@@ -213,8 +213,8 @@
         }
 
         /* ====================================
-                   ONGLETS
-                   ==================================== */
+                                           ONGLETS
+                                           ==================================== */
         .nav-tabs .nav-link {
             color: #ffff;
             font-weight: 500;
@@ -236,8 +236,8 @@
         }
 
         /* ====================================
-                   ANIMATIONS
-                   ==================================== */
+                                           ANIMATIONS
+                                           ==================================== */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -265,6 +265,12 @@
 
         // Type de contact
         $type = $invoice->type == 'client' ? 'client' : 'supplier';
+
+        $totalReturned = $invoice->items->sum(function ($item) {
+            return $item->returns->sum(function ($return) use ($item) {
+                return $return->quantity * $item->unit_price;
+            });
+        });
     @endphp
 
     <!-- Conteneur principal (avec la classe de correction pour la hauteur) -->
@@ -511,7 +517,7 @@
                                                 <td><strong class="text-dark">{{ $item->product->name ?? '-' }}</strong>
                                                 </td>
                                                 <td class="text-center font-weight-bold">{{ $item->quantity }}</td>
-                                                <td class="text-right">{{ number_format($item->unit_price, 0, ',', ' ') }}
+                                                <td class="text-right">{{ number_format($item->unit_price, 0, ',', ' ') }} FCFA
                                                 </td>
                                                 <td class="text-right text-danger">
                                                     {{ number_format($item->discount ?? 0, 0, ',', ' ') }}</td>
@@ -537,7 +543,11 @@
                                                         {{ $return->created_at->format('d/m/Y') }}
                                                     </td>
                                                     <td class="text-center font-weight-bold">{{ $return->quantity }}</td>
-                                                    <td class="text-right" colspan="3">
+                                                    <td class="text-right">
+
+                                                        {{ number_format($return->invoiceItem->unit_price * $return->quantity, 0, ',', ' ') }} FCFA
+                                                    </td>
+                                                    <td colspan="2" class="text-right">
                                                         <em class="text-muted small">{{ $return->motif ?? '-' }}</em>
                                                     </td>
                                                     <td class="text-center"></td>
@@ -549,7 +559,15 @@
                                         <tr class="table-secondary">
                                             <td colspan="5" class="text-right font-weight-bold">Total Remise</td>
                                             <td class="text-right font-weight-bold text-danger">
-                                                {{ number_format($invoice->items->sum('discount'), 0, ',', ' ') }}
+                                                {{ number_format($invoice->items->sum('discount'), 0, ',', ' ') }} FCFA
+                                            </td>
+                                            <td colspan="2"></td>
+                                        </tr>
+
+                                        <tr class="table-secondary">
+                                            <td colspan="5" class="text-right font-weight-bold">Total retourné</td>
+                                            <td class="text-right font-weight-bold text-primary">
+                                                {{ number_format($totalReturned, 0, ',', ' ') }} FCFA
                                             </td>
                                             <td colspan="2"></td>
                                         </tr>
@@ -557,7 +575,7 @@
                                         {{-- Total Général --}}
                                         <tr class="bg-light">
                                             <td colspan="5" class="text-right font-weight-bold h5">Total Général</td>
-                                            <td colspan="2" class="text-right font-weight-bold h5 text-primary">
+                                            <td colspan="2" class="text-right font-weight-bold h5 text-success">
                                                 {{ number_format($totalInvoice, 0, ',', ' ') }} FCFA
                                             </td>
                                             <td></td>
