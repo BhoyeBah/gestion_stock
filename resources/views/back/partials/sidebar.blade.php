@@ -129,12 +129,15 @@
     @endif
 
     <!-- Dashboard -->
-    <li class="nav-item {{ $isActive(['home', 'dashboard', '/']) ? 'active' : '' }}">
-        <a class="nav-link" href="{{ url('/') }}">
-            <i class="fas fa-home"></i>
-            <span>Dashboard</span>
-        </a>
-    </li>
+    @can('access_dashboard')
+        <li class="nav-item {{ $isActive(['home', 'dashboard', '/']) ? 'active' : '' }}">
+            <a class="nav-link" href="{{ url('/') }}">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+    @endcan
+
     <hr class="sidebar-divider">
 
     <!-- Catalogue & Partenaires -->
