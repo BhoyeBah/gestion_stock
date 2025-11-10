@@ -306,7 +306,7 @@
                                                                 'partial' => [
                                                                     'class' => 'warning',
                                                                     'icon' => 'clock',
-                                                                    'label' => 'Partiel',
+                                                                    'label' => 'Partiellement payé',
                                                                 ],
                                                                 'draft' => [
                                                                     'class' => 'secondary',
@@ -381,7 +381,7 @@
                                                                 'partial' => [
                                                                     'class' => 'warning',
                                                                     'icon' => 'clock',
-                                                                    'label' => 'Partiel',
+                                                                    'label' => 'Partiellement payé',
                                                                 ],
                                                                 'draft' => [
                                                                     'class' => 'secondary',
