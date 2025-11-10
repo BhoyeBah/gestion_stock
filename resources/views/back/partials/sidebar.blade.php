@@ -275,7 +275,7 @@
         </li>
     @endcan
 
-    @can('manage_user')
+    {{-- @can('manage_user') --}}
         <hr class="sidebar-divider">
 
         <!-- Gestion du Système -->
@@ -306,7 +306,7 @@
                 </div>
             </div>
         </li>
-    @endcan
+    {{-- @endcan --}}
 
     <!-- Administration Plateforme -->
     @if ($current_user->is_platform_user())
