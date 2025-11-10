@@ -1,99 +1,116 @@
 @extends('back.layouts.admin')
 
 @section('content')
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">✏️ Modifier le plan : <strong>{{ $plan->name }}</strong></h1>
-    <a href="{{ route('admin.plans.index') }}" class="btn btn-sm btn-secondary">
-        <i class="fas fa-arrow-left"></i> Retour à la liste
-    </a>
-</div>
-
-<div class="card shadow border-left-warning">
-    <div class="card-header bg-warning text-white">
-        <h6 class="m-0 font-weight-bold">Formulaire de modification</h6>
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">✏️ Modifier le plan : <strong>{{ $plan->name }}</strong></h1>
+        <a href="{{ route('admin.plans.index') }}" class="btn btn-sm btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
     </div>
 
-    <div class="card-body">
-        <form method="POST" action="{{ route('admin.plans.update', $plan->id) }}">
-            @csrf
-            @method('PUT')
+    <div class="card shadow border-left-warning">
+        <div class="card-header bg-warning text-white">
+            <h6 class="m-0 font-weight-bold">Formulaire de modification</h6>
+        </div>
 
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="name">Nom du plan *</label>
-                    <input type="text" class="form-control" id="name" name="name"
-                           value="{{ old('name', $plan->name) }}" required>
+        <div class="card-body">
+            <form method="POST" action="{{ route('admin.plans.update', $plan->id) }}">
+                @csrf
+                @method('PUT')
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="name">Nom du plan *</label>
+                        <input type="text" class="form-control" id="name" name="name"
+                            value="{{ old('name', $plan->name) }}" required>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label for="slug">Identifiant (slug) *</label>
+                        <input type="text" class="form-control" id="slug" name="slug"
+                            value="{{ old('slug', $plan->slug) }}" required>
+                    </div>
                 </div>
 
-                <div class="form-group col-md-6">
-                    <label for="slug">Identifiant (slug) *</label>
-                    <input type="text" class="form-control" id="slug" name="slug"
-                           value="{{ old('slug', $plan->slug) }}" required>
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="price">Prix (FCFA) *</label>
+                        <input type="number" class="form-control" id="price" name="price"
+                            value="{{ old('price', $plan->price) }}" required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="duration_days">Durée (jours) *</label>
+                        <input type="number" class="form-control" id="duration_days" name="duration_days"
+                            value="{{ old('duration_days', $plan->duration_days) }}" required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="max_users">Utilisateurs max</label>
+                        <input type="number" class="form-control" id="max_users" name="max_users"
+                            value="{{ old('max_users', $plan->max_users) }}">
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-row">
-                <div class="form-group col-md-4">
-                    <label for="price">Prix (FCFA) *</label>
-                    <input type="number" class="form-control" id="price" name="price"
-                           value="{{ old('price', $plan->price) }}" required>
+                <div class="form-group">
+                    <label for="max_storage_mb">Stockage max (Mo)</label>
+                    <input type="number" class="form-control" id="max_storage_mb" name="max_storage_mb"
+                        value="{{ old('max_storage_mb', $plan->max_storage_mb) }}">
                 </div>
 
-                <div class="form-group col-md-4">
-                    <label for="duration_days">Durée (jours) *</label>
-                    <input type="number" class="form-control" id="duration_days" name="duration_days"
-                           value="{{ old('duration_days', $plan->duration_days) }}" required>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3">{{ old('description', $plan->description) }}</textarea>
                 </div>
 
-                <div class="form-group col-md-4">
-                    <label for="max_users">Utilisateurs max</label>
-                    <input type="number" class="form-control" id="max_users" name="max_users"
-                           value="{{ old('max_users', $plan->max_users) }}">
-                </div>
-            </div>
+                <div class="form-group">
+                    <label>Permissions associées au plan</label>
 
-            <div class="form-group">
-                <label for="max_storage_mb">Stockage max (Mo)</label>
-                <input type="number" class="form-control" id="max_storage_mb" name="max_storage_mb"
-                       value="{{ old('max_storage_mb', $plan->max_storage_mb) }}">
-            </div>
+                    <div class="mb-2">
+                        <input type="checkbox" id="checkAllPermissions">
+                        <label for="checkAllPermissions" class="font-weight-bold text-primary">
+                            Cocher / Décocher tout
+                        </label>
+                    </div>
 
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea class="form-control" id="description" name="description" rows="3">{{ old('description', $plan->description) }}</textarea>
-            </div>
-
-            <div class="form-group">
-                <label>Permissions associées au plan</label>
-                <div class="row">
-                    @foreach($permissions as $permission)
-                        <div class="col-md-4">
-                            <div class="form-check">
-                                <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
-                                    class="form-check-input"
-                                    id="perm_{{ $permission->id }}"
-                                    {{ $plan->permissions->pluck('name')->contains($permission->name) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="perm_{{ $permission->id }}">
-                                    {{ $permission->description ?? $permission->name }}
-                                </label>
+                    <div class="row">
+                        @foreach ($permissions as $permission)
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="permissions[]" value="{{ $permission->id }}"
+                                        class="form-check-input permission-checkbox" id="perm_{{ $permission->id }}"
+                                        {{ $plan->permissions->pluck('id')->contains($permission->id) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="perm_{{ $permission->id }}">
+                                        {{ $permission->description ?? $permission->name }}
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group form-check">
-                <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
-                       {{ old('is_active', $plan->is_active) ? 'checked' : '' }}>
-                <label class="form-check-label font-weight-bold text-success" for="is_active">
-                    <i class="fas fa-check-circle"></i> Activer ce plan
-                </label>
-            </div>
 
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Enregistrer les modifications
-            </button>
-        </form>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                        {{ old('is_active', $plan->is_active) ? 'checked' : '' }}>
+                    <label class="form-check-label font-weight-bold text-success" for="is_active">
+                        <i class="fas fa-check-circle"></i> Activer ce plan
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Enregistrer les modifications
+                </button>
+            </form>
+        </div>
     </div>
-</div>
 @endsection
+@push('scripts')
+    <script>
+        document.getElementById('checkAllPermissions').addEventListener('change', function() {
+            document.querySelectorAll('.permission-checkbox').forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+    </script>
+@endpush
