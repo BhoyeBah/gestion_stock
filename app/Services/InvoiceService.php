@@ -21,7 +21,7 @@ class InvoiceService
 
             $invoiceData = $this->getInvoiceData($data);
             $invoiceData['total_invoice'] = $this->getTotalInvoice($data['items']);
-            $invoiceData['balance'] = $invoiceData['total_invoice'];
+            $invoiceData['balance'] = 0;
             $invoiceData['type'] = $data['type'];
 
             $invoice = Invoice::create($invoiceData);
@@ -112,6 +112,7 @@ class InvoiceService
 
     public function validateInvoice(Invoice $invoice)
     {
+
         try {
             DB::beginTransaction();
 
@@ -136,6 +137,7 @@ class InvoiceService
 
             // ✅ Validation de la facture (commun aux deux cas)
             $invoice->status = 'validated';
+            $invoice->balance = $invoice->total_invoice;
             $invoice->generateInvoiceNumber();
             $invoice->save();
 
