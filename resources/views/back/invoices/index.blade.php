@@ -538,47 +538,46 @@
                                         </span>
                                     </td>
                                     <td class="text-center action-buttons">
-                                        <!-- Bouton paiement -->
-                                        <button type="button" class="btn btn-sm btn-primary" title="Payer"
-                                            data-toggle="modal" data-target="#paymentModal{{ $invoice->id }}"
-                                            @if (!in_array($invoice->status, ['validated', 'partial'])) disabled @endif>
-                                            <i class="fas fa-money-bill-wave"></i>
-                                        </button>
-
-                                        <!-- Bouton valider -->
-                                        <form action="{{ route('invoices.validate', [$type, $invoice->id]) }}"
-                                            method="POST" class="d-inline"
-                                            onsubmit="return confirm('Confirmez-vous la validation de cette facture ?')">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="btn btn-sm btn-success" title="Valider"
-                                                @if ($invoice->status != 'draft') disabled @endif>
-                                                <i class="fas fa-check"></i>
+                                        <!-- ✅ Bouton Payer (affiché uniquement si la facture est validée ou partiellement payée) -->
+                                        @if (in_array($invoice->status, ['validated', 'partial']))
+                                            <button type="button" class="btn btn-sm btn-primary" title="Payer"
+                                                data-toggle="modal" data-target="#paymentModal{{ $invoice->id }}">
+                                                <i class="fas fa-money-bill-wave"></i>
                                             </button>
-                                        </form>
+                                        @endif
 
-                                        <!-- Bouton voir -->
+                                        <!-- ✅ Bouton Voir -->
                                         <a href="{{ route('invoices.show', [$type, $invoice->id]) }}"
                                             class="btn btn-sm btn-info" title="Voir">
                                             <i class="fas fa-eye"></i>
                                         </a>
 
-                                        <!-- ✅ Nouveau bouton imprimer -->
-
+                                        <!-- ✅ Bouton Imprimer (toujours visible) -->
                                         <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
-                                            data-target="#printChoiceModal">
+                                            data-target="#printChoiceModal{{ $invoice->id }}">
                                             <i class="fas fa-print"></i>
                                         </button>
 
-
+                                        <!-- ✅ Actions spécifiques au statut "draft" -->
                                         @if ($invoice->status === 'draft')
-                                            <!-- Bouton modifier -->
+                                            <!-- Bouton Valider -->
+                                            <form action="{{ route('invoices.validate', [$type, $invoice->id]) }}"
+                                                method="POST" class="d-inline"
+                                                onsubmit="return confirm('Confirmez-vous la validation de cette facture ?')">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-success" title="Valider">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+
+                                            <!-- Bouton Modifier -->
                                             <a href="{{ route('invoices.edit', [$type, $invoice->id]) }}"
                                                 class="btn btn-sm btn-warning" title="Modifier">
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
-                                            <!-- Bouton supprimer -->
+                                            <!-- Bouton Supprimer -->
                                             <form action="{{ route('invoices.destroy', [$type, $invoice->id]) }}"
                                                 method="POST" class="d-inline"
                                                 onsubmit="return confirm('Confirmer la suppression de cette facture ?')">
@@ -590,6 +589,7 @@
                                             </form>
                                         @endif
                                     </td>
+
                                 </tr>
 
                                 <!-- Modal paiement -->
@@ -764,55 +764,56 @@
         </div>
     </div>
 
-   <div class="modal fade" id="printChoiceModal" tabindex="-1" role="dialog" aria-labelledby="printChoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content shadow">
+    <div class="modal fade" id="printChoiceModal" tabindex="-1" role="dialog" aria-labelledby="printChoiceModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content shadow">
 
-            <!-- En-tête du modal -->
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="printChoiceModalLabel">
-                    <i class="fas fa-print mr-2"></i>Choisir l'orientation d'impression
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fermer">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-
-            <!-- Corps du modal -->
-            <div class="modal-body py-5">
-                <p class="text-muted text-center mb-4">Sélectionnez le format de votre impression :</p>
-
-                <div class="row justify-content-center align-items-stretch">
-
-                    <!-- Portrait -->
-                    <div class="col-6 col-md-5">
-                        <a href="{{ route('invoices.print', [$type, $invoice->id]) }}?orientation=portrait"
-                           target="_blank"
-                           class="btn btn-outline-primary btn-lg btn-block h-100 d-flex flex-column align-items-center justify-content-center py-4">
-                            <i class="fas fa-file-alt mb-3" style="font-size: 3em;"></i>
-                            <span class="font-weight-bold">Portrait</span>
-                        </a>
-                    </div>
-
-                    <!-- Paysage -->
-                    <div class="col-6 col-md-5">
-                        <a href="{{ route('invoices.print', [$type, $invoice->id]) }}?orientation=landscape"
-                           target="_blank"
-                           class="btn btn-outline-secondary btn-lg btn-block h-100 d-flex flex-column align-items-center justify-content-center py-4">
-                            <i class="fas fa-file-alt mb-3" style="font-size: 3em; transform: rotate(90deg);"></i>
-                            <span class="font-weight-bold">Paysage</span>
-                        </a>
-                    </div>
-
+                <!-- En-tête du modal -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="printChoiceModalLabel">
+                        <i class="fas fa-print mr-2"></i>Choisir l'orientation d'impression
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-            </div>
 
-            <!-- Pied du modal -->
-            <div class="modal-footer border-0 bg-light">
-                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Annuler</button>
-            </div>
+                <!-- Corps du modal -->
+                <div class="modal-body py-5">
+                    <p class="text-muted text-center mb-4">Sélectionnez le format de votre impression :</p>
 
+                    <div class="row justify-content-center align-items-stretch">
+
+                        <!-- Portrait -->
+                        <div class="col-6 col-md-5">
+                            <a href="{{ route('invoices.print', [$type, $invoice->id]) }}?orientation=portrait"
+                                target="_blank"
+                                class="btn btn-outline-primary btn-lg btn-block h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="fas fa-file-alt mb-3" style="font-size: 3em;"></i>
+                                <span class="font-weight-bold">Portrait</span>
+                            </a>
+                        </div>
+
+                        <!-- Paysage -->
+                        <div class="col-6 col-md-5">
+                            <a href="{{ route('invoices.print', [$type, $invoice->id]) }}?orientation=landscape"
+                                target="_blank"
+                                class="btn btn-outline-secondary btn-lg btn-block h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="fas fa-file-alt mb-3" style="font-size: 3em; transform: rotate(90deg);"></i>
+                                <span class="font-weight-bold">Paysage</span>
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Pied du modal -->
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Annuler</button>
+                </div>
+
+            </div>
         </div>
     </div>
-</div>
 @endsection
