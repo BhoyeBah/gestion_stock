@@ -173,7 +173,7 @@
                 <tbody>
                     @foreach ($invoice->items as $item)
                         <tr>
-                            <td><strong>{{ $item->name }}</strong></td>
+                            <td><strong>{{ $item->product->name }}</strong></td>
                             <td class="text-center">{{ $item->quantity }}</td>
                             <td class="text-right">{{ number_format($item->unit_price, 0, ',', ' ') }} FCFA</td>
                             <td class="text-center">{{ number_format($item->discount, 0, ',', ' ') }} FCFA</td>
