@@ -1,0 +1,23 @@
+.footer-gradient-custom {
+    /* Le dégradé exact que vous avez demandé */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+
+    /* Le texte par défaut sera blanc semi-transparent */
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Amélioration :
+      Rendre les liens du footer blancs et plus visibles au survol
+    */
+.footer-gradient-custom a {
+    color: rgba(255, 255, 255, 0.7);
+    /* Liens blancs semi-transparents */
+    text-decoration: none;
+    /* Pas de soulignement par défaut */
+}
+
+.footer-gradient-custom a:hover {
+    color: #ffffff;
+    /* Liens blancs pleins au survol */
+    text-decoration: underline;
+}

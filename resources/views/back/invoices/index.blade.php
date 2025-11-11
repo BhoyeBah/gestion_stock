@@ -547,6 +547,7 @@
                                         @endif
 
                                         <!-- ✅ Bouton Voir -->
+
                                         <a href="{{ route('invoices.show', [$type, $invoice->id]) }}"
                                             class="btn btn-sm btn-info" title="Voir">
                                             <i class="fas fa-eye"></i>
@@ -787,7 +788,7 @@
 
                         <!-- Portrait -->
                         <div class="col-6 col-md-5">
-                            <a href="{{ route('invoices.print', [$type, $invoice->id]) }}?orientation=portrait"
+                            <a href="{{ route('invoices.print', [$type, $invoice->id?? "#"]) }}?orientation=portrait"
                                 target="_blank"
                                 class="btn btn-outline-primary btn-lg btn-block h-100 d-flex flex-column align-items-center justify-content-center py-4">
                                 <i class="fas fa-file-alt mb-3" style="font-size: 3em;"></i>
@@ -797,7 +798,7 @@
 
                         <!-- Paysage -->
                         <div class="col-6 col-md-5">
-                            <a href="{{ route('invoices.print', [$type, $invoice->id]) }}?orientation=landscape"
+                            <a href="{{ route('invoices.print', [$type, $invoice->id ?? "#"]) }}?orientation=landscape"
                                 target="_blank"
                                 class="btn btn-outline-secondary btn-lg btn-block h-100 d-flex flex-column align-items-center justify-content-center py-4">
                                 <i class="fas fa-file-alt mb-3" style="font-size: 3em; transform: rotate(90deg);"></i>
