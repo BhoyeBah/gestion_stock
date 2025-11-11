@@ -86,32 +86,45 @@ class Invoice extends Model
      * Utilisable comme $invoice->generateInvoiceNumber();
      */
     public function generateInvoiceNumber(): string
-    {
-        if ($this->invoice_number) {
-            return $this->invoice_number;
-        }
-
-        if (! $this->tenant_id || ! $this->type) {
-            throw new \RuntimeException('tenant_id et type requis pour générer invoice_number');
-        }
-
-        // Assure une date de facture (utile si appelée avant save)
-        $this->invoice_date = $this->invoice_date ?? now();
-        $year = Carbon::parse($this->invoice_date)->format('Y');
-
-        $base = "FAC-{$year}-";
-
-        // Compte les factures non draft du tenant/type pour l'année
-        $count = self::where('tenant_id', $this->tenant_id)
-            ->where('type', $this->type)
-            ->whereYear('invoice_date', $year)
-            ->where('status', '!=', 'draft')
-            ->count();
-
-        $next = $count + 1;
-
-        $this->invoice_number = sprintf('%s%06d', $base, $next);
-
+{
+    if ($this->invoice_number) {
+        // Si l'utilisateur a déjà défini un numéro, on ne le regénère pas.
+        // Mais tu veux ignorer les numéros manuels pour le calcul, pas pour la génération actuelle.
         return $this->invoice_number;
     }
+
+    if (! $this->tenant_id || ! $this->type) {
+        throw new \RuntimeException('tenant_id et type requis pour générer invoice_number');
+    }
+
+    // Date de facture
+    $this->invoice_date = $this->invoice_date ?? now();
+    $year = \Carbon\Carbon::parse($this->invoice_date)->format('Y');
+
+    $base = "FAC-{$year}-";
+
+    // Récupère le dernier numéro généré valide de l’année
+    $lastInvoice = self::where('tenant_id', $this->tenant_id)
+        ->where('type', $this->type)
+        ->whereYear('invoice_date', $year)
+        ->where('status', '!=', 'draft')
+        ->where('invoice_number', 'LIKE', $base . '%') // 🔹 Ignore les numéros manuels
+        ->orderByDesc('invoice_number')
+        ->first();
+
+    // Extrait la partie numérique (ex: "FAC-2025-000009" => 9)
+    $lastNumber = 0;
+    if ($lastInvoice && preg_match('/FAC-' . $year . '-(\d+)/', $lastInvoice->invoice_number, $matches)) {
+        $lastNumber = (int) $matches[1];
+    }
+
+    // Incrémente le numéro
+    $next = $lastNumber + 1;
+
+    // Formate le nouveau numéro
+    $this->invoice_number = sprintf('%s%06d', $base, $next);
+
+    return $this->invoice_number;
+}
+
 }

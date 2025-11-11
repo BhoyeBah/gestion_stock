@@ -62,10 +62,12 @@ class InvoiceController extends Controller
         $invoiceType = $type === 'clients' ? 'Clients' : 'Fournisseurs';
 
         $invoices = $query->paginate(10);
-        $products = Product::all();
-        $contacts = Contact::type(rtrim($type, 's'))->get();
+        $products = Product::orderBy("name", "ASC")->get();
 
-        $warehouses = Warehouse::all();
+        $contacts = Contact::orderBy("fullname")->type(rtrim($type, 's'))->get();
+
+
+        $warehouses = Warehouse::orderBy("name", "ASC");
         $allInvoices = Invoice::where('type', rtrim($type, 's'))->get();
 
         return view('back.invoices.index', compact('invoices', 'invoiceType', 'type', 'products', 'contacts', 'warehouses', 'allInvoices'));

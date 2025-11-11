@@ -28,7 +28,7 @@
         <div class="row mb-3">
 
 
-            <div class="col-md-3" @if (!$isSupplier) style="display: none" @endif>
+            <div class="col-md-3">
                 <label for="invoice_number" class="font-weight-bold">Numéro facture (optionnel)</label>
                 <input type="text" name="invoice_number" id="invoice_number" class="form-control"
                     value="{{ old('invoice_number', $invoice->invoice_number ?? '') }}" placeholder="Ex: FAC-2025-001">
