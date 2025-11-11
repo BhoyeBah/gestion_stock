@@ -45,7 +45,7 @@ class WarehouseController extends Controller
             'manager_id' => $request->manager_id,
         ]);
 
-        return redirect()->route('warehouses.index')->with('success', 'Entrêpot ajouté avec succès.');
+        return back()->with('success', 'Entrêpot ajouté avec succès.');
 
     }
 

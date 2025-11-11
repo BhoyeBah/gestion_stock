@@ -67,9 +67,7 @@ class ProductController extends Controller
         // Création du produit
         $product = Product::create($data);
 
-        return redirect()
-            ->route('products.index')
-            ->with('success', "Le produit « {$product->name} » a été ajouté avec succès !");
+        return back()->with('success', "Le produit « {$product->name} » a été ajouté avec succès !");
     }
 
     /**
