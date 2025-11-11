@@ -115,7 +115,6 @@ Route::prefix('invoices/{type}')->controller(InvoiceController::class)->name('in
     Route::patch('/{invoice}/pay', 'validatePay')->where('invoice', '[0-9a-fA-F\-]{36}')->name('pay');
     Route::post('/{invoice}/return', 'returnProduct')->where('invoice', '[0-9a-fA-F\-]{36}')->name('returnProduct');
     Route::get('/{invoice}/print', 'print')->where('invoice', '[0-9a-fA-F\-]{36}')->name('print');
-
     Route::get('/{invoice}', 'show')->where('invoice', '[0-9a-fA-F\-]{36}')->name('show');
     Route::put('/{invoice}', 'update')->name('update');
     Route::delete('/{invoice}', 'destroy')->name('destroy');

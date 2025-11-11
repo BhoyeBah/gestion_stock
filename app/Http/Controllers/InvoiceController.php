@@ -62,11 +62,11 @@ class InvoiceController extends Controller
         $invoiceType = $type === 'clients' ? 'Clients' : 'Fournisseurs';
 
         $invoices = $query->paginate(10);
-        $products = Product::orderBy("name", "ASC")->get();
+        $products = Product::orderBy('name', 'ASC')->get();
 
-        $contacts = Contact::orderBy("fullname")->type(rtrim($type, 's'))->get();
+        $contacts = Contact::orderBy('fullname')->type(rtrim($type, 's'))->get();
 
-        $warehouses = Warehouse::orderBy("name", "ASC")->get();
+        $warehouses = Warehouse::orderBy('name', 'ASC')->get();
         $allInvoices = Invoice::where('type', rtrim($type, 's'))->get();
 
         return view('back.invoices.index', compact('invoices', 'invoiceType', 'type', 'products', 'contacts', 'warehouses', 'allInvoices'));
@@ -265,7 +265,6 @@ class InvoiceController extends Controller
         $purchasePrice = (int) $invoiceItem->unit_price;
         $balanceToReturn = $quantityToReturn * $purchasePrice;
 
-
         try {
             DB::beginTransaction();
 
@@ -279,7 +278,7 @@ class InvoiceController extends Controller
 
             $invoice->balance -= $balanceToReturn;
             $invoice->total_invoice -= $balanceToReturn;
-// dd($batch->quantity, $batch->remaining);
+            // dd($batch->quantity, $batch->remaining);
             if ($batch->quantity >= $batch->remaining && $batch->remaining >= 0 && $invoice->balance >= 0) {
 
                 $inventoryMovement = InventoryMovement::create([
@@ -322,12 +321,19 @@ class InvoiceController extends Controller
     }
 
     // Printf
-    public function print(string $type, Invoice $invoice)
+    public function print(string $type, Invoice $invoice, Request $request)
     {
-        //  dd($invoice->contact);
+        $orientation = $request->input('orientation', 'landscape');
+        if (! in_array($orientation, ['portrait', 'landscape'])) {
+            $orientation = 'landscape';
+        }
 
         $this->validateType($type);
         $this->checkAuthorization($invoice, $type);
+        if ($orientation == 'portrait') {
+            return view('back.invoices.portrait', compact('invoice'));
+        }
+
         return view('back.invoices.invoice', compact('invoice'));
     }
 

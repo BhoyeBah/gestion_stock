@@ -5,7 +5,7 @@
         // Les calculs sont plus efficaces s'ils sont faits dans le contrôleur,
         // mais pour garder la logique ici comme dans votre exemple :
         $invoices = $contact->invoices()->latest()->paginate(10); // Paginer pour de meilleures performances
-        
+
         // Stats globales (sur toutes les factures, pas seulement la page actuelle)
         $statsInvoices = $contact->invoices(); // Nouvelle requête pour les stats
         $total_invoices = (clone $statsInvoices)->count();
@@ -31,7 +31,7 @@
             margin: 0;
             font-size: 1.75rem;
         }
-        
+
         .contact-show-header h1 .contact-name {
             font-weight: 400;
             opacity: 0.9;
@@ -93,11 +93,11 @@
             padding: 1.25rem 1.5rem;
             border: none;
         }
-        
+
         .section-card .card-header.bg-info { background: linear-gradient(135deg, #36b9cc 0%, #258391 100%); }
 
         .section-card .card-header h6 { margin: 0; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
-        
+
         .contact-info-table { margin: 0; }
         .contact-info-table th { background: #f8f9fc; font-weight: 600; color: #5a5c69; width: 200px; padding: 1rem; border: 1px solid #e3e6f0; }
         .contact-info-table td { padding: 1rem; color: #858796; border: 1px solid #e3e6f0; }
@@ -109,7 +109,7 @@
         .modern-table tbody td { padding: 1rem; border-bottom: 1px solid #e3e6f0; color: #858796; vertical-align: middle; }
         .modern-table tbody tr:last-child td { border-bottom: none; }
         .modern-table tbody tr:hover { background: #f8f9fc; }
-        
+
         .empty-state { padding: 3rem 1rem; text-align: center; }
         </style>
     @endpush
@@ -145,7 +145,7 @@
                 <div class="stat-card border-success">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="stat-label text-success">Total Payé</div>
+                            <div class="stat-label text-success">Total à Payé</div>
                             <div class="stat-value">{{ number_format($total_paid, 0, ',', ' ') }} <small>CFA</small></div>
                         </div>
                         <i class="fas fa-hand-holding-usd stat-icon text-success"></i>
