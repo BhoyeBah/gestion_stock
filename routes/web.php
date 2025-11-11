@@ -97,14 +97,14 @@ Route::prefix('clients')->controller(ContactController::class)->name('clients.')
 });
 
 Route::prefix('suppliers')->controller(ContactController::class)->name('suppliers.')->group(function () {
-    Route::get('/', 'index')->name('index')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:read_suppliers']);;
-    Route::get('/create', 'create')->name('create')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:create_suppliers']);;
-    Route::post('/', 'store')->name('store')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:create_suppliers']);;
-    Route::get('/{contact}', 'show')->name('show')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:read_supplier']);;
-    Route::get('/{contact}/edit', 'edit')->name('edit')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:read_suppliers']);;
+    Route::get('/', 'index')->name('index')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:read_suppliers']);
+    Route::get('/create', 'create')->name('create')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:create_suppliers']);
+    Route::post('/', 'store')->name('store')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:create_suppliers']);
+    Route::get('/{contact}', 'show')->name('show')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:read_supplier']);
+    Route::get('/{contact}/edit', 'edit')->name('edit')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:read_suppliers']);
     Route::put('/{contact}', 'update')->name('update')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:read_suppliers']);;
-    Route::delete('/{contact}', 'destroy')->name('destroy')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:delete_suppliers']);;
-    Route::patch('/{id}', 'toggleActive')->name('toggle')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:toggle_suppliers']);;
+    Route::delete('/{contact}', 'destroy')->name('destroy')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:delete_suppliers']);
+    Route::patch('/{id}', 'toggleActive')->name('toggle')->defaults('type', 'suppliers')->middleware(['auth', 'subscription.permission:toggle_suppliers']);
 });
 
 Route::prefix('invoices/{type}')->controller(InvoiceController::class)->name('invoices.')->group(function () {
