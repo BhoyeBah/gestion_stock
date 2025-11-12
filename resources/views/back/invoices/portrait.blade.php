@@ -23,7 +23,7 @@
     }
 
     // Nombre minimum de lignes pour remplir le tableau
-    $minLines = 15;
+    $minLines = 13;
     $currentLines = count($invoice->items);
     $emptyLines = max(0, $minLines - $currentLines);
 @endphp
