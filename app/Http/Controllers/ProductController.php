@@ -18,8 +18,6 @@ class ProductController extends Controller
     {
         $this->hasPermission('read_products');
 
-        // $query = Product::withSum('batches as stock_total', 'remaining')
-        //     ->with(['category', 'unit']);
         $query = Product::select('products.*')
             ->withSum('batches as stock_total', 'remaining')
             ->with(['category', 'unit']);
@@ -33,7 +31,7 @@ class ProductController extends Controller
         }
 
         if ($status = $request->input('status')) {
-            $query->where('is_active', $status === 'active' ? true : false);
+            $query->where('is_active', $status === 'active');
         }
 
         $products = $query->paginate(10);
