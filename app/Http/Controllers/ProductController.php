@@ -34,7 +34,7 @@ class ProductController extends Controller
             $query->where('is_active', $status === 'active');
         }
 
-        $products = $query::all();
+        $products = $query->paginate(10);
 
         return view('back.products.index', compact('products'));
     }
