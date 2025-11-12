@@ -84,7 +84,7 @@ class Product extends Model
 
     public function batches()
     {
-        return $this->hasMany(Batch::class);
+        return $this->hasMany(Batch::class, 'product_id');
     }
 
     /**

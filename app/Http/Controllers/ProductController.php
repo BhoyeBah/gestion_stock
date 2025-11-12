@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\Units;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +18,10 @@ class ProductController extends Controller
     {
         $this->hasPermission('read_products');
 
-        $query = Product::withSum('batches as stock_total', 'remaining')
+        // $query = Product::withSum('batches as stock_total', 'remaining')
+        //     ->with(['category', 'unit']);
+        $query = Product::select('products.*')
+            ->withSum('batches as stock_total', 'remaining')
             ->with(['category', 'unit']);
 
         if ($search_name = $request->input('search_name')) {
