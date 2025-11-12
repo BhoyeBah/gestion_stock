@@ -34,7 +34,7 @@ class ProductController extends Controller
         }
 
         // $products = $query->paginate(10);
-        $products = $query->orderBy('id', 'asc')->paginate(10);
+        $products = $query->orderBy('name', 'asc')->paginate(10);
 
         return view('back.products.index', compact('products'));
     }
