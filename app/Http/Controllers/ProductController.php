@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Units;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -18,8 +19,13 @@ class ProductController extends Controller
     {
         $this->hasPermission('read_products');
 
+
         $query = Product::select('products.*')
-            ->withSum('batches as stock_total', 'remaining')
+            ->addSelect([
+                'stock_total' => \DB::table('batches')
+                    ->selectRaw('SUM(remaining)')
+                    ->whereColumn('batches.product_id', 'products.id'),
+            ])
             ->with(['category', 'unit']);
 
         if ($search_name = $request->input('search_name')) {
@@ -34,9 +40,7 @@ class ProductController extends Controller
             $query->where('is_active', $status === 'active');
         }
 
-        // $products = $query->paginate(10);
-        $products = $query->groupBy('products.id')->paginate(10);
-
+        $products = $query->paginate(10);
 
         return view('back.products.index', compact('products'));
     }
