@@ -121,7 +121,14 @@ Route::prefix('invoices/{type}')->controller(InvoiceController::class)->name('in
 
 })->where('type', 'client|supplier');
 
-Route::resource('/reports', ReportController::class)->middleware(['auth'])->names('reports');
+// Route::resource('/reports', ReportController::class)->middleware(['auth'])->names('reports');
+Route::middleware(['auth'])->group(function () {
+    // Index des rapports
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+    // Journal des rapports
+    Route::get('/reports/journal', [ReportController::class, 'journal'])->name('reports.journal');
+});
 Route::prefix('payments/{type}')->controller(PaymentController::class)->name('payments.')->group(function () {
     Route::get('/', 'index')->name('index');
     Route::delete('/{payment}', 'destroy')->name('destroy');

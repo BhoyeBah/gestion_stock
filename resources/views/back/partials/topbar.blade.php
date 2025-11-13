@@ -103,14 +103,14 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-layer-group"></i>
                             </a>
-                            
+
                             <!-- Dropdown - Quick Actions -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in p-3" 
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in p-3"
                                 aria-labelledby="quickActionsDropdown" style="width: 350px;">
                                 <h6 class="dropdown-header px-0 mb-3">
                                     Actions Rapides
                                 </h6>
-                                
+
                                 <div class="row">
                                     <!-- Nouvelle Facture Client -->
                                     <div class="col-4 text-center mb-3">
@@ -121,17 +121,7 @@
                                             <div class="small font-weight-bold text-dark">Facture Client</div>
                                         </a>
                                     </div>
-                                    
-                                    <!-- Nouveau Client -->
-                                    <div class="col-4 text-center mb-3">
-                                        <a href="{{ route('clients.index') }}" class="text-decoration-none">
-                                            <div class="icon-circle bg-success mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                                <i class="fas fa-user-plus text-white"></i>
-                                            </div>
-                                            <div class="small font-weight-bold text-dark">Nouveau Client</div>
-                                        </a>
-                                    </div>
-                                    
+
                                     <!-- Facture Fournisseur -->
                                     <div class="col-4 text-center mb-3">
                                         <a href="{{ route('invoices.index', 'suppliers') }}" class="text-decoration-none">
@@ -141,17 +131,7 @@
                                             <div class="small font-weight-bold text-dark">Facture Fournisseur</div>
                                         </a>
                                     </div>
-                                    
-                                    <!-- Nouveau Fournisseur -->
-                                    <div class="col-4 text-center mb-3">
-                                        <a href="{{ route('suppliers.index') }}" class="text-decoration-none">
-                                            <div class="icon-circle bg-info mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                                <i class="fas fa-truck text-white"></i>
-                                            </div>
-                                            <div class="small font-weight-bold text-dark">Fournisseur</div>
-                                        </a>
-                                    </div>
-                                    
+
                                     <!-- Nouveau Produit -->
                                     <div class="col-4 text-center mb-3">
                                         <a href="{{ route('products.index') }}" class="text-decoration-none">
@@ -161,7 +141,7 @@
                                             <div class="small font-weight-bold text-dark">Produit</div>
                                         </a>
                                     </div>
-                                    
+
                                     <!-- Nouvel Entrepôt -->
                                     <div class="col-4 text-center mb-3">
                                         <a href="{{ route('warehouses.index') }}" class="text-decoration-none">
@@ -171,7 +151,7 @@
                                             <div class="small font-weight-bold text-dark">Entrepôt</div>
                                         </a>
                                     </div>
-                                    
+
                                     <!-- Nouvelle Dépense -->
                                     <div class="col-4 text-center mb-3">
                                         <a href="{{ route('expenses.index') }}" class="text-decoration-none">
@@ -181,7 +161,7 @@
                                             <div class="small font-weight-bold text-dark">Dépense</div>
                                         </a>
                                     </div>
-                                    
+
                                     <!-- Rapports -->
                                     <div class="col-4 text-center mb-3">
                                         <a href="{{ route('reports.index') }}" class="text-decoration-none">
@@ -192,11 +172,6 @@
                                         </a>
                                     </div>
                                 </div>
-                                
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-center small text-muted" href="{{ route('home') }}">
-                                    Voir toutes les actions
-                                </a>
                             </div>
                         </li>
 
@@ -217,7 +192,7 @@
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                
+
                                 <a class="dropdown-item" href="{{ route('user.activity.index') }}">
                                     <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Activity Log

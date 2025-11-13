@@ -14,7 +14,7 @@ class ReportController extends Controller
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
         $type = $request->input('type');
-        
+
         // ✅ Base Query optimisée
         $baseQuery = Invoice::query()
             ->when($type, fn ($q) => $q->where('type', $type))
@@ -43,5 +43,9 @@ class ReportController extends Controller
             ->paginate(10);
 
         return view('back.reports.index', compact('stats', 'chartData', 'invoicesList'));
+    }
+
+    public function journal() {
+        return view("back.reports.journal");
     }
 }
