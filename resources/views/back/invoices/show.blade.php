@@ -523,6 +523,8 @@
                                                     {{ number_format($item->discount ?? 0, 0, ',', ' ') }}</td>
                                                 <td class="text-right font-weight-bold">
                                                     {{ number_format($item->total_line, 0, ',', ' ') }}</td>
+                                                
+                                             @if($item->invoice && !in_array($item->invoice->status, ['draft', 'cancelled']))
                                                 <td class="text-center action-buttons">
                                                     <button type="button" class="btn btn-sm btn-secondary"
                                                         data-toggle="modal"
@@ -531,6 +533,7 @@
                                                         <i class="fas fa-undo"></i>
                                                     </button>
                                                 </td>
+                                            @endif
                                             </tr>
 
                                             {{-- Lignes des retours --}}

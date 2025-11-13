@@ -28,8 +28,8 @@ class FrontController extends Controller
                 ->selectRaw("
                 SUM(CASE WHEN type = 'client' AND status NOT IN ('draft', 'cancelled') THEN total_invoice ELSE 0 END) as total_ventes,
                 SUM(CASE WHEN type = 'supplier' AND status NOT IN ('draft', 'cancelled') THEN total_invoice ELSE 0 END) as total_achats,
-                COUNT(CASE WHEN type = 'client' THEN 1 END) as nb_factures_clients,
-                COUNT(CASE WHEN type = 'supplier' THEN 1 END) as nb_factures_fournisseurs
+                COUNT(CASE WHEN type = 'client' AND status NOT IN ('draft', 'cancelled') THEN 1 END) as nb_factures_clients,
+                COUNT(CASE WHEN type = 'supplier' AND status NOT IN ('draft', 'cancelled') THEN 1 END) as nb_factures_fournisseurs
             ")
                 ->where('tenant_id', $tenant->id)
                 ->whereBetween('invoice_date', [$start, $end])
@@ -45,6 +45,10 @@ class FrontController extends Controller
                 ->first();
 
             $nbProduits = DB::table('products')
+                ->where('tenant_id', $tenant->id)
+                ->count();
+
+            $nbEntrepots = DB::table("warehouses")
                 ->where('tenant_id', $tenant->id)
                 ->count();
 
@@ -87,6 +91,7 @@ class FrontController extends Controller
                 'invoices' => $invoiceStats,
                 'counts' => $counts,
                 'nbProduits' => $nbProduits,
+                'nbEntrepots' => $nbEntrepots,
                 'paiements' => $paiements,
                 'balance_clients' => $balance_clients,
                 'balance_fournisseurs' => $balance_fournisseurs,
