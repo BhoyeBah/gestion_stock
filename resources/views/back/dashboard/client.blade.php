@@ -197,53 +197,51 @@
 
                     <!-- Stats rapides -->
                     <div class="card border-0 shadow-sm">
-    <div class="card-body">
-        <h6 class="font-weight-bold mb-3">
-            <i class="fas fa-chart-pie text-primary mr-2"></i>Statistiques
-        </h6>
+                    <div class="card-body">
+                        <h6 class="font-weight-bold mb-3">
+                            <i class="fas fa-chart-pie text-primary mr-2"></i>Statistiques
+                        </h6>
 
-        {{-- Clients --}}
-        <div class="stat-item mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted">
-                    <i class="fas fa-user-friends text-primary mr-2"></i>Clients
-                </span>
-                <span class="font-weight-bold">{{ $stats['counts']->nb_clients }}</span>
-            </div>
-        </div>
+                        {{-- Clients --}}
+                        <div class="stat-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">
+                                    <i class="fas fa-user-friends text-primary mr-2"></i>Clients
+                                </span>
+                                <span class="font-weight-bold">{{ $stats['counts']->nb_clients }}</span>
+                            </div>
+                        </div>
 
-        {{-- Fournisseurs --}}
-        <div class="stat-item mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted">
-                    <i class="fas fa-truck-loading text-warning mr-2"></i>Fournisseurs
-                </span>
-                <span class="font-weight-bold">{{ $stats['counts']->nb_fournisseurs }}</span>
-            </div>
-        </div>
+                        {{-- Fournisseurs --}}
+                        <div class="stat-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">
+                                    <i class="fas fa-truck-loading text-warning mr-2"></i>Fournisseurs
+                                </span>
+                                <span class="font-weight-bold">{{ $stats['counts']->nb_fournisseurs }}</span>
+                            </div>
+                        </div>
 
-        {{-- Produits --}}
-        <div class="stat-item mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted">
-                    <i class="fas fa-cubes text-success mr-2"></i>Produits
-                </span>
-                <span class="font-weight-bold">{{ $stats['nbProduits'] }}</span>
-            </div>
-        </div>
+                        {{-- Produits --}}
+                        <div class="stat-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">
+                                    <i class="fas fa-cubes text-success mr-2"></i>Produits
+                                </span>
+                                <span class="font-weight-bold">{{ $stats['nbProduits'] }}</span>
+                            </div>
+                        </div>
 
-        {{-- Entrepôts --}}
-        <div class="stat-item">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted">
-                    <i class="fas fa-warehouse text-info mr-2"></i>Entrepôts
-                </span>
-                <span class="font-weight-bold">{{ $stats['nbEntrepots'] }}</span>
-            </div>
-        </div>
-    </div>
-</div>
-
+                        {{-- Entrepôts --}}
+                        <div class="stat-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">
+                                    <i class="fas fa-warehouse text-info mr-2"></i>Entrepôts
+                                </span>
+                                <span class="font-weight-bold">{{ $stats['nbEntrepots'] }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
