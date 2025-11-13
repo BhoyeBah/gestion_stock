@@ -152,7 +152,6 @@
     <script src="https://unpkg.com/fuse.js@6.6.2/dist/fuse.min.js"></script>
 
     <script type="module">
-        // IMPORT: assure-toi que public/assets/js/search-index.js existe et exporte `export const SEARCH_INDEX = [ ... ];`
         import {
             SEARCH_INDEX
         } from "{{ asset('assets/js/search-index.js') }}";
@@ -197,15 +196,17 @@
                     activeIndex = -1;
                     return;
                 }
+
                 const html = list.map((r, idx) => {
-                    const it = r.item || r; // support Fuse results or raw entries
+                    const it = r.item || r;
                     const title = it.title || it.name;
                     const subtitle = (it.tags || []).slice(0, 3).join(' · ');
                     return `<li data-idx="${idx}" data-uri="${escapeHtml(it.uri_local || it.uri)}" class="${idx === activeIndex ? 'active' : ''}">
-                  <div class="font-weight-medium">${escapeHtml(title)}</div>
-                  <div class="subtitle">${escapeHtml(subtitle)}</div>
+                    <div class="font-weight-medium">${escapeHtml(title)}</div>
+                    <div class="subtitle">${escapeHtml(subtitle)}</div>
                 </li>`;
                 }).join('');
+
                 resultsEl.innerHTML = html;
                 resultsEl.classList.add('show');
             }
@@ -227,7 +228,7 @@
                 debounceTimer = setTimeout(() => doSearch(e.target.value), 120);
             });
 
-            // keyboard navigation
+            // navigation clavier
             input.addEventListener('keydown', (e) => {
                 const items = resultsEl.querySelectorAll('li');
                 if (!items.length) return;
@@ -249,14 +250,19 @@
                 }
             });
 
-            // click navigation (delegation)
-            resultsEl.addEventListener('click', (e) => {
+            // navigation clic (délégué)
+            resultsEl.addEventListener('mousedown', (e) => {
                 const li = e.target.closest('li');
                 if (!li) return;
-                navigateTo(li.dataset.uri);
+
+                if (e.button === 0) { // clic gauche
+                    navigateTo(li.dataset.uri);
+                } else if (e.button === 1) { // clic milieu → nouvel onglet
+                    window.open(li.dataset.uri, '_blank');
+                }
             });
 
-            // lose focus -> hide results (small delay to allow click)
+            // cacher les résultats quand input perd le focus (petit délai pour permettre clic)
             input.addEventListener('blur', () => setTimeout(() => resultsEl.classList.remove('show'), 150));
 
             function updateActive(items) {
@@ -271,7 +277,6 @@
 
             function navigateTo(uri) {
                 if (!uri) return;
-                // if uri_local is relative, use it directly to stay on same domain
                 location.href = uri;
             }
 
@@ -279,6 +284,7 @@
             console.warn('Search integration: #search-input or #search-results not found.');
         }
     </script>
+
 
 </body>
 
