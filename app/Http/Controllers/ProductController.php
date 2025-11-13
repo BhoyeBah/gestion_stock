@@ -76,25 +76,40 @@ class ProductController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        // Charger le produit avec ses relations utiles
-        $product = Product::with([
-            'batches.warehouse',
-            'invoices.contact',
-            'movement.invoice.contact',
-            'invoiceItems.invoice.contact', // pour stats factures / ventes
-        ])->findOrFail($id);
+        $product = Product::with(['batches.warehouse'])->findOrFail($id);
 
-        // Calcul des stats rapides
-        $totalIn = $product->invoiceItems->where('type', 'in')->sum('quantity');
-        $totalOut = $product->invoiceItems->where('type', 'out')->sum('quantity');
-        $totalValueSold = $product->invoiceItems->where('type', 'out')->sum(fn ($item) => $item->quantity * $item->unit_price - $item->discount);
-        $totalValueIn = $product->invoiceItems->where('type', 'in')->sum(fn ($item) => $item->quantity * $item->unit_price - $item->discount);
-        $averagePriceOut = $product->invoiceItems->where('type', 'out')->avg('unit_price');
-        $averagePriceIn = $product->invoiceItems->where('type', 'in')->avg('unit_price');
-        $expiredQuantity = $product->batches->where('expiration_date', '<', now())->sum('quantity');
-        $totalDiscount = $product->invoiceItems->where('type', 'out')->sum('discount');
+        // Pagination sans surcharge
+        $invoiceItems = $product->invoiceItems()
+            ->with([
+                'invoice:id,invoice_number,invoice_date,type,contact_id,total_invoice',
+                'invoice.contact:id,fullname,type',
+            ])
+            ->orderByDesc('id')
+            ->paginate(10);
 
-        return view('back.products.show', compact('product', 'totalIn', 'totalOut', 'totalValueSold'));
+        // ⚡ Calculs agrégés directement en SQL
+        $stats = $product->invoiceItems()
+            ->selectRaw("
+            SUM(CASE WHEN type = 'in' THEN quantity ELSE 0 END) as total_in,
+            SUM(CASE WHEN type = 'out' THEN quantity ELSE 0 END) as total_out,
+            SUM(CASE WHEN type = 'out' THEN quantity * unit_price - discount ELSE 0 END) as total_value_sold,
+            SUM(CASE WHEN type = 'in' THEN quantity * unit_price - discount ELSE 0 END) as total_value_in,
+            AVG(CASE WHEN type = 'out' THEN unit_price END) as average_price_out,
+            AVG(CASE WHEN type = 'in' THEN unit_price END) as average_price_in,
+            SUM(CASE WHEN type = 'out' THEN discount ELSE 0 END) as total_discount
+        ")
+            ->first();
+
+        $expiredQuantity = $product->batches()
+            ->where('expiration_date', '<', now())
+            ->sum('quantity');
+
+        return view('back.products.show', [
+            'product' => $product,
+            'invoiceItems' => $invoiceItems,
+            'stats' => $stats,
+            'expiredQuantity' => $expiredQuantity,
+        ]);
     }
 
     /**

@@ -12,12 +12,12 @@
             <input id="search-input" type="search" class="form-control bg-light border-1 small"
                 placeholder="Rechercher (ex: produit, factures, fournisseurs)" aria-label="Rechercher"
                 autocomplete="off">
-            <div class="input-group-append">
+            {{-- <div class="input-group-append">
                 <button class="btn btn-primary" type="button"
                     onclick="document.getElementById('search-input').focus();">
                     <i class="fas fa-search fa-sm"></i>
                 </button>
-            </div>
+            </div> --}}
         </div>
         <ul id="search-results" class="list-unstyled mt-1"></ul>
     </div>
@@ -50,7 +50,7 @@
         </li>
 
         <!-- Nav Item - Alerts -->
-        <li class="nav-item dropdown no-arrow mx-1">
+        {{-- <li class="nav-item dropdown no-arrow mx-1">
             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-bell fa-fw"></i>
@@ -65,10 +65,10 @@
                 </h6>
 
             </div>
-        </li>
+        </li> --}}
 
         <!-- Nav Item - Messages -->
-        <li class="nav-item dropdown no-arrow mx-1">
+        {{-- <li class="nav-item dropdown no-arrow mx-1">
             <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-envelope fa-fw"></i>
@@ -128,7 +128,7 @@
                 </a>
                 <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
             </div>
-        </li>
+        </li> --}}
 
         <!-- Nav Item - Quick Actions -->
         <li class="nav-item dropdown no-arrow mx-1">
