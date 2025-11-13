@@ -244,6 +244,7 @@
                     </div>
                 </div>
             </div>
+            </div>
 
             <!-- Tableaux des transactions -->
             <div class="row">
