@@ -1,4 +1,4 @@
-<footer class="sticky-footer footer-gradient-custom py-3">
+<footer class="sticky-footer footer-gradient-custom py-3 mt-3">
     <div class="container">
         <div class="d-flex align-items-center justify-content-between small">
 
