@@ -26,8 +26,8 @@ class FrontController extends Controller
             // Statistiques globales sur factures
             $invoiceStats = DB::table('invoices')
                 ->selectRaw("
-                SUM(CASE WHEN type = 'client' AND status != 'cancelled' THEN total_invoice ELSE 0 END) as total_ventes,
-                SUM(CASE WHEN type = 'supplier' AND status != 'cancelled' THEN total_invoice ELSE 0 END) as total_achats,
+                SUM(CASE WHEN type = 'client' AND status NOT IN ('draft', 'cancelled') THEN total_invoice ELSE 0 END) as total_ventes,
+                SUM(CASE WHEN type = 'supplier' AND status NOT IN ('draft', 'cancelled') THEN total_invoice ELSE 0 END) as total_achats,
                 COUNT(CASE WHEN type = 'client' THEN 1 END) as nb_factures_clients,
                 COUNT(CASE WHEN type = 'supplier' THEN 1 END) as nb_factures_fournisseurs
             ")
@@ -62,12 +62,14 @@ class FrontController extends Controller
             $balance_clients = DB::table('invoices')
                 ->where('tenant_id', $tenant->id)
                 ->where('type', 'client')
+                ->whereNotIn('status', ['draft', 'cancelled'])
                 ->whereBetween('invoice_date', [$start, $end])
                 ->sum('balance');
 
             $balance_fournisseurs = DB::table('invoices')
                 ->where('tenant_id', $tenant->id)
                 ->where('type', 'supplier')
+                ->whereNotIn('status', ['draft', 'cancelled'])
                 ->whereBetween('invoice_date', [$start, $end])
                 ->sum('balance');
 
