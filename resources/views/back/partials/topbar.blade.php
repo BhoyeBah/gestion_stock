@@ -97,108 +97,108 @@
                             </div>
                         </li>
 
-<!-- Nav Item - Quick Actions -->
-<li class="nav-item dropdown no-arrow mx-1">
-    <a class="nav-link dropdown-toggle" href="#" id="quickActionsDropdown" role="button"
-        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <i class="fas fa-layer-group"></i>
-    </a>
-    
-    <!-- Dropdown - Quick Actions -->
-    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in p-3" 
-         aria-labelledby="quickActionsDropdown" style="width: 350px;">
-        <h6 class="dropdown-header px-0 mb-3">
-            Actions Rapides
-        </h6>
-        
-        <div class="row">
-            <!-- Nouvelle Facture Client -->
-            <div class="col-4 text-center mb-3">
-                <a href="{{ route('invoices.store', 'clients') }}" class="text-decoration-none">
-                    <div class="icon-circle bg-primary mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-file-invoice text-white"></i>
-                    </div>
-                    <div class="small font-weight-bold text-dark">Facture Client</div>
-                </a>
-            </div>
-            
-            <!-- Nouveau Client -->
-            <div class="col-4 text-center mb-3">
-                <a href="{{ route('clients.index') }}" class="text-decoration-none">
-                    <div class="icon-circle bg-success mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-user-plus text-white"></i>
-                    </div>
-                    <div class="small font-weight-bold text-dark">Nouveau Client</div>
-                </a>
-            </div>
-            
-            <!-- Facture Fournisseur -->
-            <div class="col-4 text-center mb-3">
-                <a href="{{ route('invoices.index', 'suppliers') }}" class="text-decoration-none">
-                    <div class="icon-circle bg-warning mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-receipt text-white"></i>
-                    </div>
-                    <div class="small font-weight-bold text-dark">Facture Fournisseur</div>
-                </a>
-            </div>
-            
-            <!-- Nouveau Fournisseur -->
-            <div class="col-4 text-center mb-3">
-                <a href="{{ route('suppliers.index') }}" class="text-decoration-none">
-                    <div class="icon-circle bg-info mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-truck text-white"></i>
-                    </div>
-                    <div class="small font-weight-bold text-dark">Fournisseur</div>
-                </a>
-            </div>
-            
-            <!-- Nouveau Produit -->
-            <div class="col-4 text-center mb-3">
-                <a href="{{ route('products.index') }}" class="text-decoration-none">
-                    <div class="icon-circle bg-success mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-box text-white"></i>
-                    </div>
-                    <div class="small font-weight-bold text-dark">Produit</div>
-                </a>
-            </div>
-            
-            <!-- Nouvel Entrepôt -->
-            <div class="col-4 text-center mb-3">
-                <a href="{{ route('warehouses.index') }}" class="text-decoration-none">
-                    <div class="icon-circle bg-primary mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-warehouse text-white"></i>
-                    </div>
-                    <div class="small font-weight-bold text-dark">Entrepôt</div>
-                </a>
-            </div>
-            
-            <!-- Nouvelle Dépense -->
-            <div class="col-4 text-center mb-3">
-                <a href="{{ route('expenses.index') }}" class="text-decoration-none">
-                    <div class="icon-circle bg-danger mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-money-bill-wave text-white"></i>
-                    </div>
-                    <div class="small font-weight-bold text-dark">Dépense</div>
-                </a>
-            </div>
-            
-            <!-- Rapports -->
-            <div class="col-4 text-center mb-3">
-                <a href="{{ route('reports.index') }}" class="text-decoration-none">
-                    <div class="icon-circle bg-info mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-chart-line text-white"></i>
-                    </div>
-                    <div class="small font-weight-bold text-dark">Rapports</div>
-                </a>
-            </div>
-        </div>
-        
-        <div class="dropdown-divider"></div>
-        <a class="dropdown-item text-center small text-muted" href="{{ route('home') }}">
-            Voir toutes les actions
-        </a>
-    </div>
-</li>
+                        <!-- Nav Item - Quick Actions -->
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="quickActionsDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-layer-group"></i>
+                            </a>
+                            
+                            <!-- Dropdown - Quick Actions -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in p-3" 
+                                aria-labelledby="quickActionsDropdown" style="width: 350px;">
+                                <h6 class="dropdown-header px-0 mb-3">
+                                    Actions Rapides
+                                </h6>
+                                
+                                <div class="row">
+                                    <!-- Nouvelle Facture Client -->
+                                    <div class="col-4 text-center mb-3">
+                                        <a href="{{ route('invoices.store', 'clients') }}" class="text-decoration-none">
+                                            <div class="icon-circle bg-primary mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-file-invoice text-white"></i>
+                                            </div>
+                                            <div class="small font-weight-bold text-dark">Facture Client</div>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Nouveau Client -->
+                                    <div class="col-4 text-center mb-3">
+                                        <a href="{{ route('clients.index') }}" class="text-decoration-none">
+                                            <div class="icon-circle bg-success mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-user-plus text-white"></i>
+                                            </div>
+                                            <div class="small font-weight-bold text-dark">Nouveau Client</div>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Facture Fournisseur -->
+                                    <div class="col-4 text-center mb-3">
+                                        <a href="{{ route('invoices.index', 'suppliers') }}" class="text-decoration-none">
+                                            <div class="icon-circle bg-warning mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-receipt text-white"></i>
+                                            </div>
+                                            <div class="small font-weight-bold text-dark">Facture Fournisseur</div>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Nouveau Fournisseur -->
+                                    <div class="col-4 text-center mb-3">
+                                        <a href="{{ route('suppliers.index') }}" class="text-decoration-none">
+                                            <div class="icon-circle bg-info mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-truck text-white"></i>
+                                            </div>
+                                            <div class="small font-weight-bold text-dark">Fournisseur</div>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Nouveau Produit -->
+                                    <div class="col-4 text-center mb-3">
+                                        <a href="{{ route('products.index') }}" class="text-decoration-none">
+                                            <div class="icon-circle bg-success mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-box text-white"></i>
+                                            </div>
+                                            <div class="small font-weight-bold text-dark">Produit</div>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Nouvel Entrepôt -->
+                                    <div class="col-4 text-center mb-3">
+                                        <a href="{{ route('warehouses.index') }}" class="text-decoration-none">
+                                            <div class="icon-circle bg-primary mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-warehouse text-white"></i>
+                                            </div>
+                                            <div class="small font-weight-bold text-dark">Entrepôt</div>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Nouvelle Dépense -->
+                                    <div class="col-4 text-center mb-3">
+                                        <a href="{{ route('expenses.index') }}" class="text-decoration-none">
+                                            <div class="icon-circle bg-danger mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-money-bill-wave text-white"></i>
+                                            </div>
+                                            <div class="small font-weight-bold text-dark">Dépense</div>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Rapports -->
+                                    <div class="col-4 text-center mb-3">
+                                        <a href="{{ route('reports.index') }}" class="text-decoration-none">
+                                            <div class="icon-circle bg-info mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-chart-line text-white"></i>
+                                            </div>
+                                            <div class="small font-weight-bold text-dark">Rapports</div>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-center small text-muted" href="{{ route('home') }}">
+                                    Voir toutes les actions
+                                </a>
+                            </div>
+                        </li>
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
