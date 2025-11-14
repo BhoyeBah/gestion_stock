@@ -108,7 +108,7 @@ class ProductController extends Controller
         $invoices = $product->invoices()
             ->with('contact')
             ->latest()
-            ->paginate(1, ['*'], 'invoice_page');
+            ->paginate(10, ['*'], 'invoice_page');
 
         return view('back.products.show', compact(
             'product',
