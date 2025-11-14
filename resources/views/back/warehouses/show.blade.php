@@ -135,7 +135,7 @@
                                         <td class="text-center">{{ $movement->quantity }}</td>
                                         <td>
                                             <a
-                                                href="{{ route('invoices.show', [$movement->invoice->type.'s', $movement->invoice?->id ?? '#']) }}">
+                                                href="#">
                                                 {{ $movement->invoice?->invoice_number ?? '-' }}
                                             </a>
                                         </td>
