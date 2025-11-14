@@ -656,7 +656,7 @@
                 <div>
                     <h6>
                         <i class="fas fa-file-invoice"></i>
-                        Factures ({{ $product->invoices->count() }})
+                        Factures ({{ $invoices->total() }})
                     </h6>
                     <small>Factures contenant ce produit</small>
                 </div>
@@ -676,7 +676,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($product->invoices as $invoice)
+                            @forelse ($invoices as $invoice)
                                 <tr>
                                     <td>
                                         <a
@@ -685,17 +685,14 @@
                                         </a>
                                     </td>
                                     <td>
-                                        {{-- {{ $invoice->contact->info() ?? '-' }} --}}
-
                                         <a href="{{ route($invoice->type . 's.show', $invoice->contact->id) }}">
                                             <strong>{{ $invoice->contact->info() ?? '—' }}</strong>
-
                                         </a>
                                     </td>
                                     <td><span class="text-capitalize">{{ $invoice->type ?? '-' }}</span></td>
-                                    <td>{{ $invoice->invoice_date ? Carbon::parse($invoice->invoice_date)->format('d/m/Y') : '-' }}
+                                    <td>{{ $invoice->invoice_date ? \Carbon\Carbon::parse($invoice->invoice_date)->format('d/m/Y') : '-' }}
                                     </td>
-                                    <td>{{ $invoice->due_date ? Carbon::parse($invoice->due_date)->format('d/m/Y') : '-' }}
+                                    <td>{{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') : '-' }}
                                     </td>
                                     <td><strong>{{ number_format($invoice->total_invoice ?? 0, 0, ',', ' ') }} CFA</strong>
                                     </td>
@@ -711,6 +708,11 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-3">
+                    {{ $invoices->links() }}
                 </div>
             </div>
         </div>

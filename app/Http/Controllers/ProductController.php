@@ -76,29 +76,53 @@ class ProductController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        // Charger le produit avec ses relations utiles
+        // Charger le produit avec ses relations utiles (évite N+1)
         $product = Product::with([
             'batches.warehouse',
-            'invoices.contact',
+            'invoiceItems.invoice.contact',
+            'movement.batch.warehouse',
             'movement.invoice.contact',
-            'invoiceItems.invoice.contact', // pour stats factures / ventes
         ])->findOrFail($id);
 
-        // Calcul des stats rapides
-        $totalIn = $product->invoiceItems->where('type', 'in')->sum('quantity');
-        $totalOut = $product->invoiceItems->where('type', 'out')->sum('quantity');
-        $totalValueSold = $product->invoiceItems->where('type', 'out')->sum(fn ($item) => $item->quantity * $item->unit_price - $item->discount);
-        $totalValueIn = $product->invoiceItems->where('type', 'in')->sum(fn ($item) => $item->quantity * $item->unit_price - $item->discount);
-        $averagePriceOut = $product->invoiceItems->where('type', 'out')->avg('unit_price');
-        $averagePriceIn = $product->invoiceItems->where('type', 'in')->avg('unit_price');
-        $expiredQuantity = $product->batches->where('expiration_date', '<', now())->sum('quantity');
-        $totalDiscount = $product->invoiceItems->where('type', 'out')->sum('discount');
-        $movements = $product->movement()
-            ->with(['batch.warehouse', 'invoice'])
-            ->latest()
-            ->paginate(10);
+        // Calcul des stats rapides à partir des invoiceItems
+        $invoiceItems = $product->invoiceItems;
 
-        return view('back.products.show', compact('product', 'totalIn', 'totalOut', 'totalValueSold','movements'));
+        $totalIn = $invoiceItems->where('type', 'in')->sum('quantity');
+        $totalOut = $invoiceItems->where('type', 'out')->sum('quantity');
+        $totalValueSold = $invoiceItems->where('type', 'out')->sum(fn ($item) => $item->quantity * $item->unit_price - $item->discount);
+        $totalValueIn = $invoiceItems->where('type', 'in')->sum(fn ($item) => $item->quantity * $item->unit_price - $item->discount);
+        $averagePriceOut = $invoiceItems->where('type', 'out')->avg('unit_price');
+        $averagePriceIn = $invoiceItems->where('type', 'in')->avg('unit_price');
+        $totalDiscount = $invoiceItems->where('type', 'out')->sum('discount');
+
+        // Quantité expirée dans les lots
+        $expiredQuantity = $product->batches->where('expiration_date', '<', now())->sum('quantity');
+
+        // Pagination des mouvements
+        $movements = $product->movement()
+            ->with(['batch.warehouse', 'invoice.contact'])
+            ->latest()
+            ->paginate(10, ['*'], 'movement_page');
+
+        // Pagination des factures contenant ce produit
+        $invoices = $product->invoices()
+            ->with('contact')
+            ->latest()
+            ->paginate(1, ['*'], 'invoice_page');
+
+        return view('back.products.show', compact(
+            'product',
+            'totalIn',
+            'totalOut',
+            'totalValueSold',
+            'totalValueIn',
+            'averagePriceOut',
+            'averagePriceIn',
+            'expiredQuantity',
+            'totalDiscount',
+            'movements',
+            'invoices'
+        ));
     }
 
     /**
