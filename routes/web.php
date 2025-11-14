@@ -18,6 +18,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\Tenant\SubscriptionController as TenantSubscriptionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
@@ -109,6 +110,7 @@ Route::prefix('suppliers')->controller(ContactController::class)->name('supplier
 
 Route::prefix('invoices/{type}')->controller(InvoiceController::class)->name('invoices.')->group(function () {
     Route::get('/', 'index')->name('index');
+    Route::get('/unpaid', 'unpaid')->name("unpaid");
     Route::post('/', 'store')->name('store');
     Route::get('/{invoice}/edit', 'edit')->name('edit');
     Route::patch('/{invoice}/validate', 'validateInvoice')->where('invoice', '[0-9a-fA-F\-]{36}')->name('validate');
@@ -129,6 +131,7 @@ Route::middleware(['auth'])->group(function () {
     // Journal des rapports
     Route::get('/reports/journal', [ReportController::class, 'journal'])->name('reports.journal');
 });
+
 Route::prefix('payments/{type}')->controller(PaymentController::class)->name('payments.')->group(function () {
     Route::get('/', 'index')->name('index');
     Route::delete('/{payment}', 'destroy')->name('destroy');
@@ -136,5 +139,5 @@ Route::prefix('payments/{type}')->controller(PaymentController::class)->name('pa
 })->where('type', 'client|supplier');
 
 Route::resource('expenses', ExpenseController::class)->middleware(['auth'])->names('expenses');
-
+Route::resource('stock/out', StockOutController::class)->middleware(['auth'])->names('stockout');
 require __DIR__.'/auth.php';

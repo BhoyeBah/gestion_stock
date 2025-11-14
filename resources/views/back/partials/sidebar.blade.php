@@ -194,15 +194,7 @@
             </li>
         @endcan
 
-        @can('manage_inventory')
-            <li class="nav-item {{ $isActive(['inventory.*']) ? 'active' : '' }}">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-boxes"></i>
-                    <span>Inventaires</span>
-                </a>
-            </li>
-        @endcan
-        <hr class="sidebar-divider">
+
     @endcanAny
 
     <!-- Transactions -->
@@ -220,16 +212,27 @@
                 data-parent="#accordionSidebar">
                 <div class="bg-white py-2 collapse-inner rounded">
                     @can('manage_invoices')
-                        <a class="collapse-item {{ $isActive(['invoices.*']) && request('type') == 'clients' ? 'active' : '' }}"
-                            href="{{ route('invoices.index', ['type' => 'clients']) }}">Factures Clients</a>
+                        <a class="collapse-item {{ request()->routeIs('invoices.index') && request('type') === 'clients' && !request()->has('status') ? 'active' : '' }}"
+                            href="{{ route('invoices.index', ['type' => 'clients']) }}">
+                            Factures Clients
+                        </a>
                     @endcan
                     @can('read_payments')
-                        <a class="collapse-item {{ $isActive(['payments.*']) && request('type') == 'clients' ? 'active' : '' }}"
-                            href="{{ route('payments.index', ['type' => 'clients']) }}">Paiements Clients</a>
+                        <a class="collapse-item {{ request()->routeIs('invoices.unpaid') && request('type') === 'clients' && !request()->has('status') ? 'active' : '' }}"
+                            href="{{ route('invoices.unpaid', ['type' => 'clients']) }}">
+                            Facture non payées
+                        </a>
+                    @endcan
+                    @can('read_payments')
+                        <a class="collapse-item {{ request()->routeIs('payments.index') && request('type') === 'clients' ? 'active' : '' }}"
+                            href="{{ route('payments.index', ['type' => 'clients']) }}">
+                            Paiements Clients
+                        </a>
                     @endcan
                 </div>
             </div>
         </li>
+
 
         <li class="nav-item {{ $isAchatsActive ? 'active' : '' }}">
             <a class="nav-link {{ $isAchatsActive ? '' : 'collapsed' }}" href="#" data-toggle="collapse"
@@ -276,37 +279,80 @@
     @endcan
 
     {{-- @can('manage_user') --}}
-        <hr class="sidebar-divider">
+    <hr class="sidebar-divider">
 
-        <!-- Gestion du Système -->
-        <div class="sidebar-heading">Gestion du Système</div>
+    <!-- Gestion du Système -->
+    <div class="sidebar-heading">Gestion du Système</div>
 
-        <li class="nav-item {{ $isGestionActive ? 'active' : '' }}">
-            <a class="nav-link {{ $isGestionActive ? '' : 'collapsed' }}" href="#" data-toggle="collapse"
-                data-target="#collapseGestion" aria-expanded="{{ $isGestionActive ? 'true' : 'false' }}"
-                aria-controls="collapseGestion">
-                <i class="fas fa-users-cog"></i>
-                <span>Utilisateurs & Accès</span>
-            </a>
-            <div id="collapseGestion" class="collapse {{ $isGestionOpen }}" aria-labelledby="headingGestion"
-                data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    @can('manage_roles')
-                        <a class="collapse-item {{ $isActive(['roles.*']) ? 'active' : '' }}"
-                            href="{{ route('roles.index') }}">Rôles</a>
-                    @endcan
-                    @can('manage_users')
-                        <a class="collapse-item {{ $isActive(['users.*']) ? 'active' : '' }}"
-                            href="{{ route('users.index') }}">Utilisateurs</a>
-                    @endcan
-                    @can('manage_invoices')
-                        <a class="collapse-item {{ $isActive(['tenant.subscriptions.*']) ? 'active' : '' }}"
-                            href="{{ route('tenant.subscriptions.index') }}">Mes Souscriptions</a>
-                    @endcan
-                </div>
+    <li class="nav-item {{ $isGestionActive ? 'active' : '' }}">
+        <a class="nav-link {{ $isGestionActive ? '' : 'collapsed' }}" href="#" data-toggle="collapse"
+            data-target="#collapseGestion" aria-expanded="{{ $isGestionActive ? 'true' : 'false' }}"
+            aria-controls="collapseGestion">
+            <i class="fas fa-users-cog"></i>
+            <span>Utilisateurs & Accès</span>
+        </a>
+        <div id="collapseGestion" class="collapse {{ $isGestionOpen }}" aria-labelledby="headingGestion"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                @can('manage_roles')
+                    <a class="collapse-item {{ $isActive(['roles.*']) ? 'active' : '' }}"
+                        href="{{ route('roles.index') }}">Rôles</a>
+                @endcan
+                @can('manage_users')
+                    <a class="collapse-item {{ $isActive(['users.*']) ? 'active' : '' }}"
+                        href="{{ route('users.index') }}">Utilisateurs</a>
+                @endcan
+                @can('manage_invoices')
+                    <a class="collapse-item {{ $isActive(['tenant.subscriptions.*']) ? 'active' : '' }}"
+                        href="{{ route('tenant.subscriptions.index') }}">Mes Souscriptions</a>
+                @endcan
             </div>
-        </li>
+        </div>
+    </li>
     {{-- @endcan --}}
+
+
+    <!-- Sidebar Stock -->
+    <div class="sidebar-heading">Stock</div>
+
+
+    <li class="nav-item {{ $isStockActive ?? false ? 'active' : '' }}">
+        <a class="nav-link {{ $isStockActive ?? false ? '' : 'collapsed' }}" href="#" data-toggle="collapse"
+            data-target="#collapseStock" aria-expanded="{{ $isStockActive ?? false ? 'true' : 'false' }}"
+            aria-controls="collapseStock">
+            <i class="fas fa-boxes"></i>
+            <span>Stock</span>
+        </a>
+
+        <div id="collapseStock" class="collapse {{ $isStockOpen ?? '' }}" aria-labelledby="headingStock"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+
+                <!-- Inventaires -->
+                <a class="collapse-item" href="#">
+                    <i class="fas fa-clipboard-list mr-1"></i>
+                    Inventaires
+                </a>
+
+                <!-- Mouvement général -->
+                <a class="collapse-item {{ request()->routeIs('inventory.movements') ? 'active' : '' }}"
+                    href="#">
+                    <i class="fas fa-exchange-alt mr-1"></i>
+                    Mouvement de stock
+                </a>
+
+                <!-- Liste des sorties -->
+                <a class="collapse-item {{ request()->routeIs('stockouts.index') ? 'active' : '' }}"
+                    href="{{ route('stockout.index') }}">
+                    <i class="fas fa-truck-loading mr-1"></i>
+                    Sorties de stock
+                </a>
+                <hr class="sidebar-divider">
+            </div>
+        </div>
+    </li>
+
+
 
     <!-- Administration Plateforme -->
     @if ($current_user->is_platform_user())

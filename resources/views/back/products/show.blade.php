@@ -358,6 +358,59 @@
                     justify-content: center;
                 }
             }
+
+            /* Styles personnalisés pour le modal */
+            .modal-content {
+                border-radius: 15px;
+                overflow: hidden;
+            }
+
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .border-left-info {
+                border-left: 4px solid #17a2b8 !important;
+            }
+
+            .alert-info {
+                background-color: #f8f9fa;
+                border: 1px solid #e9ecef;
+            }
+
+            .input-group-text {
+                border: 1px solid #ced4da;
+            }
+
+            .form-control:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            }
+
+            .modal-header .close {
+                opacity: 1;
+            }
+
+            .modal-header .close:hover {
+                opacity: 0.8;
+            }
+
+            .badge-pill {
+                font-size: 0.9rem;
+            }
+
+            .shadow-lg {
+                box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important;
+            }
+
+            .bg-opacity-25 {
+                opacity: 0.25;
+                background-color: white !important;
+            }
+
+            .modal-header small {
+                font-size: 0.85rem;
+            }
         </style>
     @endpush
 
@@ -615,6 +668,10 @@
                                 <th><i class="fas fa-box mr-1"></i>Restante</th>
                                 <th><i class="fas fa-calendar-times mr-1"></i>Expiration</th>
                                 <th><i class="fas fa-clock mr-1"></i>Ajouté le</th>
+                                <th class="text-center">
+                                    <i class="fas fa-truck-loading mr-1"></i>
+                                    Sortie
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -635,10 +692,134 @@
                                     <td>{{ $lot->expiration_date ? Carbon::parse($lot->expiration_date)->format('d/m/Y') : '-' }}
                                     </td>
                                     <td>{{ Carbon::parse($lot->created_at)->format('d/m/Y H:i') }}</td>
+                                    <td class="text-center">
+                                        <!-- Bouton pour créer une sortie de stock -->
+                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
+                                            data-target="#stockOutModal-{{ $lot->id }}">
+                                              <i class="fas fa-truck-loading mr-1"></i>
+                                        </button>
+
+                                        <!-- Modal sortie de stock pour ce lot -->
+                                        <div class="modal fade" id="stockOutModal-{{ $lot->id }}" tabindex="-1"
+                                            role="dialog" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                <div class="modal-content shadow-lg border-0">
+                                                    <form action="{{ route('stockout.store') }}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="batch_id"
+                                                            value="{{ $lot->id }}">
+
+                                                        <!-- Modal Header -->
+                                                        <div class="modal-header bg-gradient-primary text-white border-0">
+                                                            <h5 class="modal-title d-flex align-items-center">
+                                                                <span class="bg-white bg-opacity-25 rounded p-2 mr-3">
+                                                                    <i class="fas fa-truck-loading"></i>
+                                                                </span>
+                                                                <div>
+                                                                    <div class="font-weight-bold">Sortie de stock</div>
+                                                                    <small class="font-weight-normal opacity-90">
+                                                                        {{ $lot->name ?? 'Lot de ' . $lot->product->name }} -
+                                                                        {{ $lot->warehouse->name ?? '' }}
+                                                                    </small>
+                                                                </div>
+                                                            </h5>
+                                                            <button type="button" class="close text-white"
+                                                                data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+
+                                                        <!-- Modal Body -->
+                                                        <div class="modal-body p-4">
+                                                            <!-- Info Card -->
+                                                            <div class="alert alert-info border-left-info mb-4">
+                                                                <div
+                                                                    class="d-flex justify-content-between align-items-center mb-2">
+                                                                    <span class="text-muted">
+                                                                        <i class="fas fa-box mr-2"></i>Stock disponible
+                                                                    </span>
+                                                                    <span class="badge badge-success badge-pill px-3 py-2">
+                                                                        {{ $lot->remaining }} unités
+                                                                    </span>
+                                                                </div>
+                                                                <div
+                                                                    class="d-flex justify-content-between align-items-center">
+                                                                    <span class="text-muted">
+                                                                        <i class="fas fa-calendar-alt mr-2"></i>Date
+                                                                        d'expiration
+                                                                    </span>
+                                                                    <span class="font-weight-bold">
+                                                                        {{ $lot->expiration_date ? Carbon::parse($lot->expiration_date)->format('d/m/Y') : 'Non définie' }}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Quantité -->
+                                                            <div class="form-group">
+                                                                <label for="quantity-{{ $lot->id }}"
+                                                                    class="font-weight-bold text-dark">
+                                                                    Quantité à sortir <span class="text-danger">*</span>
+                                                                </label>
+                                                                <div class="input-group">
+                                                                    <div class="input-group-prepend">
+                                                                        <span
+                                                                            class="input-group-text bg-light border-right-0">
+                                                                            <i class="fas fa-boxes text-primary"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                    <input type="number" name="quantity"
+                                                                        id="quantity-{{ $lot->id }}"
+                                                                        class="form-control border-left-0" min="1"
+                                                                        max="{{ $lot->remaining }}"
+                                                                        placeholder="Entrez la quantité" required>
+                                                                </div>
+                                                                <small class="form-text text-muted">
+                                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                                    Maximum: {{ $lot->remaining }} unités disponibles
+                                                                </small>
+                                                            </div>
+
+                                                            <!-- Motif -->
+                                                            <div class="form-group mb-0">
+                                                                <label for="reason-{{ $lot->id }}"
+                                                                    class="font-weight-bold text-dark">
+                                                                    Motif de sortie
+                                                                </label>
+                                                                <div class="input-group">
+                                                                    <div class="input-group-prepend">
+                                                                        <span
+                                                                            class="input-group-text bg-light border-right-0">
+                                                                            <i class="fas fa-comment-alt text-primary"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                    <input type="text" name="reason"
+                                                                        id="reason-{{ $lot->id }}"
+                                                                        class="form-control border-left-0"
+                                                                        placeholder="Décrivez le motif de cette sortie (optionnel)">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Modal Footer -->
+                                                        <div class="modal-footer bg-light border-0">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                data-dismiss="modal">
+                                                                <i class="fas fa-times mr-1"></i> Annuler
+                                                            </button>
+                                                            <button type="submit" class="btn btn-primary">
+                                                                <i class="fas fa-check mr-1"></i> Enregistrer la sortie
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Fin modal -->
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">
+                                    <td colspan="6" class="text-center text-muted py-4">
                                         <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
                                         Aucun lot trouvé.
                                     </td>
@@ -649,6 +830,8 @@
                 </div>
             </div>
         </div>
+
+
 
         <!-- Section Factures -->
         <div class="section-card">

@@ -308,9 +308,9 @@ class InvoiceController extends Controller
 
                 return back()->with('success', 'Rétour enrégistrée avec success');
             }
-            // dd($invoice, $batch,$quantityToReturn,$balanceToReturn);
 
             return back()->with('error', 'Impossible de faire un rétour sur ce produit');
+            
         } catch (\Exception $e) {
             throw $e;
 
@@ -335,6 +335,15 @@ class InvoiceController extends Controller
         }
 
         return view('back.invoices.invoice', compact('invoice'));
+    }
+
+    public function unpaid(string $type)
+    {
+        $invoices = Invoice::whereIn('status', ['partial', 'validated'])->paginate(10);
+
+        $invoiceType = $type;
+
+        return view('back.invoices.unpaid', compact('invoices', 'invoiceType', 'type'));
     }
 
     protected function validateType(string $type): void
