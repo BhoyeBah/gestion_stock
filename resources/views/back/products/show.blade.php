@@ -745,35 +745,37 @@
                                 <tr>
                                     <td><strong>{{ $movement->quantity }}</strong></td>
                                     <td>{{ $movement->reason ?? '-' }}</td>
-
                                     <td>
                                         <a href="{{ route('warehouses.show', $movement->batch->warehouse->id) }}">
                                             <i class="fas fa-warehouse mr-1"></i>
                                             {{ $movement->batch->warehouse->name ?? '-' }}
                                         </a>
                                     </td>
-
                                     <td>
-                                        <a
-                                            href="#">
+                                        <a href="#">
                                             {{ $movement->invoice->invoice_number ?? '-' }}
                                         </a>
                                     </td>
-
                                     <td>{{ $movement->created_at->format('d/m/Y H:i') }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">
+                                    <td colspan="5" class="text-center text-muted py-4">
                                         <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
                                         Aucun mouvement trouvé.
                                     </td>
                                 </tr>
                             @endforelse
-                            {{ $movements->links() }}
+                        </tbody>
+                    </table>
+                </div>
 
+                <!-- Pagination : en dehors de la table -->
+                <div class="mt-3">
+                    {{ $movements->links() }}
                 </div>
             </div>
         </div>
+
     </div>
 @endsection
