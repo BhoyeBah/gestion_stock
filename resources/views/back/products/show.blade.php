@@ -34,310 +34,330 @@
 
     @push('styles')
         <style>
-        /* Header moderne */
-        .product-show-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
+            /* Header moderne */
+            .product-show-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 15px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            }
 
-        .product-show-header h1 {
-            color: #fff;
-            font-weight: 700;
-            margin: 0;
-            font-size: 1.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .product-show-header .btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            font-weight: 600;
-            padding: 0.6rem 1.5rem;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .product-show-header .btn:hover {
-            background: #fff;
-            color: #764ba2;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Cards statistiques */
-        .stat-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 0.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-            border-left: 4px solid;
-            transition: all 0.3s ease;
-            height: calc(100% - 0.5rem);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card.border-info { border-left-color: #36b9cc; }
-        .stat-card.border-primary { border-left-color: #4e73df; }
-        .stat-card.border-dark { border-left-color: #5a5c69; }
-        .stat-card.border-success { border-left-color: #1cc88a; }
-        .stat-card.border-secondary { border-left-color: #858796; }
-        .stat-card.border-danger { border-left-color: #e74a3b; }
-        .stat-card.border-warning { border-left-color: #f6c23e; }
-
-        .stat-card .stat-icon {
-            font-size: 2.5rem;
-            opacity: 0.8;
-        }
-
-        .stat-card .stat-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-card .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #5a5c69;
-        }
-
-        /* Section cards */
-        .section-card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-
-        .section-card .card-header {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            color: #fff;
-            padding: 1.25rem 1.5rem;
-            border: none;
-        }
-
-        .section-card .card-header.bg-info {
-            background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
-        }
-
-        .section-card .card-header.bg-secondary {
-            background: linear-gradient(135deg, #858796 0%, #60616f 100%);
-        }
-
-        .section-card .card-header.bg-success {
-            background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
-        }
-
-        .section-card .card-header h6 {
-            margin: 0;
-            font-weight: 700;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .section-card .card-header small {
-            opacity: 0.9;
-            font-size: 0.85rem;
-        }
-
-        .section-card .card-body {
-            padding: 1.5rem;
-        }
-
-        /* Image produit */
-        .product-image-box {
-            text-align: center;
-            padding: 1rem;
-        }
-
-        .product-image-box img {
-            max-height: 300px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border: 3px solid #e3e6f0;
-        }
-
-        /* Table produit */
-        .product-info-table {
-            margin: 0;
-        }
-
-        .product-info-table th {
-            background: #f8f9fc;
-            font-weight: 600;
-            color: #5a5c69;
-            width: 200px;
-            padding: 1rem;
-            border: 1px solid #e3e6f0;
-        }
-
-        .product-info-table td {
-            padding: 1rem;
-            color: #858796;
-            border: 1px solid #e3e6f0;
-        }
-
-        .product-info-table td a {
-            color: #4e73df;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .product-info-table td a:hover {
-            text-decoration: underline;
-        }
-
-        /* Badges */
-        .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .badge-success {
-            background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
-            color: #fff;
-        }
-
-        .badge-danger {
-            background: linear-gradient(135deg, #e74a3b 0%, #c92a2a 100%);
-            color: #fff;
-        }
-
-        /* Boutons d'action */
-        .action-buttons {
-            display: flex;
-            gap: 0.75rem;
-            justify-content: flex-end;
-        }
-
-        .btn {
-            border-radius: 10px;
-            padding: 0.65rem 1.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
-            color: #fff;
-        }
-
-        .btn-warning:hover {
-            background: linear-gradient(135deg, #f4b619 0%, #c9930a 100%);
-            color: #fff;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #e74a3b 0%, #c92a2a 100%);
-            color: #fff;
-        }
-
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #d63026 0%, #b52424 100%);
-            color: #fff;
-        }
-
-        /* Tables */
-        .modern-table {
-            margin: 0;
-        }
-
-        .modern-table thead th {
-            background: #f8f9fc;
-            color: #5a5c69;
-            font-weight: 600;
-            border: 1px solid #e3e6f0;
-            padding: 0.875rem;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .modern-table tbody td {
-            padding: 0.875rem;
-            border: 1px solid #e3e6f0;
-            color: #858796;
-            font-size: 0.9rem;
-        }
-
-        .modern-table tbody tr:hover {
-            background: #f8f9fc;
-        }
-
-        .modern-table tbody td a {
-            color: #4e73df;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .modern-table tbody td a:hover {
-            text-decoration: underline;
-        }
-
-        .table-badge {
-            padding: 0.35rem 0.75rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        /* Pagination */
-        .pagination {
-            margin-top: 1.5rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
             .product-show-header h1 {
-                font-size: 1.4rem;
+                color: #fff;
+                font-weight: 700;
+                margin: 0;
+                font-size: 1.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .product-show-header .btn {
+                background: rgba(255, 255, 255, 0.2);
+                color: #fff;
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                font-weight: 600;
+                padding: 0.6rem 1.5rem;
+                border-radius: 10px;
+                transition: all 0.3s ease;
+            }
+
+            .product-show-header .btn:hover {
+                background: #fff;
+                color: #764ba2;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            /* Cards statistiques */
+            .stat-card {
+                background: #fff;
+                border-radius: 12px;
+                padding: 1.25rem;
+                margin-bottom: 0.5rem;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+                border-left: 4px solid;
+                transition: all 0.3s ease;
+                height: calc(100% - 0.5rem);
+            }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            }
+
+            .stat-card.border-info {
+                border-left-color: #36b9cc;
+            }
+
+            .stat-card.border-primary {
+                border-left-color: #4e73df;
+            }
+
+            .stat-card.border-dark {
+                border-left-color: #5a5c69;
+            }
+
+            .stat-card.border-success {
+                border-left-color: #1cc88a;
+            }
+
+            .stat-card.border-secondary {
+                border-left-color: #858796;
+            }
+
+            .stat-card.border-danger {
+                border-left-color: #e74a3b;
+            }
+
+            .stat-card.border-warning {
+                border-left-color: #f6c23e;
+            }
+
+            .stat-card .stat-icon {
+                font-size: 2.5rem;
+                opacity: 0.8;
+            }
+
+            .stat-card .stat-label {
+                font-size: 0.75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 0.5rem;
             }
 
             .stat-card .stat-value {
-                font-size: 1.25rem;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #5a5c69;
+            }
+
+            /* Section cards */
+            .section-card {
+                background: #fff;
+                border-radius: 12px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+                margin-bottom: 2rem;
+                overflow: hidden;
+            }
+
+            .section-card .card-header {
+                background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+                color: #fff;
+                padding: 1.25rem 1.5rem;
+                border: none;
+            }
+
+            .section-card .card-header.bg-info {
+                background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+            }
+
+            .section-card .card-header.bg-secondary {
+                background: linear-gradient(135deg, #858796 0%, #60616f 100%);
+            }
+
+            .section-card .card-header.bg-success {
+                background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+            }
+
+            .section-card .card-header h6 {
+                margin: 0;
+                font-weight: 700;
+                font-size: 1.1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .section-card .card-header small {
+                opacity: 0.9;
+                font-size: 0.85rem;
+            }
+
+            .section-card .card-body {
+                padding: 1.5rem;
+            }
+
+            /* Image produit */
+            .product-image-box {
+                text-align: center;
+                padding: 1rem;
+            }
+
+            .product-image-box img {
+                max-height: 300px;
+                border-radius: 12px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 3px solid #e3e6f0;
+            }
+
+            /* Table produit */
+            .product-info-table {
+                margin: 0;
             }
 
             .product-info-table th {
-                width: auto;
+                background: #f8f9fc;
+                font-weight: 600;
+                color: #5a5c69;
+                width: 200px;
+                padding: 1rem;
+                border: 1px solid #e3e6f0;
             }
 
+            .product-info-table td {
+                padding: 1rem;
+                color: #858796;
+                border: 1px solid #e3e6f0;
+            }
+
+            .product-info-table td a {
+                color: #4e73df;
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+            .product-info-table td a:hover {
+                text-decoration: underline;
+            }
+
+            /* Badges */
+            .status-badge {
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-weight: 600;
+                font-size: 0.85rem;
+            }
+
+            .badge-success {
+                background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+                color: #fff;
+            }
+
+            .badge-danger {
+                background: linear-gradient(135deg, #e74a3b 0%, #c92a2a 100%);
+                color: #fff;
+            }
+
+            /* Boutons d'action */
             .action-buttons {
-                flex-direction: column;
+                display: flex;
+                gap: 0.75rem;
+                justify-content: flex-end;
             }
 
             .btn {
-                width: 100%;
-                justify-content: center;
+                border-radius: 10px;
+                padding: 0.65rem 1.5rem;
+                font-weight: 600;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             }
-        }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            .btn-warning {
+                background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+                color: #fff;
+            }
+
+            .btn-warning:hover {
+                background: linear-gradient(135deg, #f4b619 0%, #c9930a 100%);
+                color: #fff;
+            }
+
+            .btn-danger {
+                background: linear-gradient(135deg, #e74a3b 0%, #c92a2a 100%);
+                color: #fff;
+            }
+
+            .btn-danger:hover {
+                background: linear-gradient(135deg, #d63026 0%, #b52424 100%);
+                color: #fff;
+            }
+
+            /* Tables */
+            .modern-table {
+                margin: 0;
+            }
+
+            .modern-table thead th {
+                background: #f8f9fc;
+                color: #5a5c69;
+                font-weight: 600;
+                border: 1px solid #e3e6f0;
+                padding: 0.875rem;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+
+            .modern-table tbody td {
+                padding: 0.875rem;
+                border: 1px solid #e3e6f0;
+                color: #858796;
+                font-size: 0.9rem;
+            }
+
+            .modern-table tbody tr:hover {
+                background: #f8f9fc;
+            }
+
+            .modern-table tbody td a {
+                color: #4e73df;
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+            .modern-table tbody td a:hover {
+                text-decoration: underline;
+            }
+
+            .table-badge {
+                padding: 0.35rem 0.75rem;
+                border-radius: 15px;
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+
+            /* Pagination */
+            .pagination {
+                margin-top: 1.5rem;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .product-show-header h1 {
+                    font-size: 1.4rem;
+                }
+
+                .stat-card .stat-value {
+                    font-size: 1.25rem;
+                }
+
+                .product-info-table th {
+                    width: auto;
+                }
+
+                .action-buttons {
+                    flex-direction: column;
+                }
+
+                .btn {
+                    width: 100%;
+                    justify-content: center;
+                }
+            }
         </style>
     @endpush
 
@@ -355,7 +375,7 @@
             </div>
         </div>
 
-        
+
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-3">
                 <div class="stat-card border-info">
@@ -508,7 +528,8 @@
                         @if ($product->image)
                             <img src="{{ asset('storage/' . $product->image) }}" alt="Image du produit" class="img-fluid">
                         @else
-                            <img src="https://via.placeholder.com/400x300.png?text=Aucune+Image" alt="Image par défaut" class="img-fluid">
+                            <img src="https://via.placeholder.com/400x300.png?text=Aucune+Image" alt="Image par défaut"
+                                class="img-fluid">
                         @endif
                     </div>
 
@@ -606,11 +627,13 @@
                                     </td>
                                     <td><strong>{{ $lot->quantity }}</strong></td>
                                     <td>
-                                        <span class="table-badge {{ $lot->remaining > 0 ? 'badge-success' : 'badge-danger' }}">
+                                        <span
+                                            class="table-badge {{ $lot->remaining > 0 ? 'badge-success' : 'badge-danger' }}">
                                             {{ $lot->remaining }}
                                         </span>
                                     </td>
-                                    <td>{{ $lot->expiration_date ? Carbon::parse($lot->expiration_date)->format('d/m/Y') : '-' }}</td>
+                                    <td>{{ $lot->expiration_date ? Carbon::parse($lot->expiration_date)->format('d/m/Y') : '-' }}
+                                    </td>
                                     <td>{{ Carbon::parse($lot->created_at)->format('d/m/Y H:i') }}</td>
                                 </tr>
                             @empty
@@ -656,22 +679,26 @@
                             @forelse ($product->invoices as $invoice)
                                 <tr>
                                     <td>
-                                        <a href="{{ route('invoices.show', [$invoice->type . 's', $invoice->id ?? '#']) }}">
+                                        <a
+                                            href="{{ route('invoices.show', [$invoice->type . 's', $invoice->id ?? '#']) }}">
                                             <strong>{{ $invoice->invoice_number ?? '—' }}</strong>
                                         </a>
                                     </td>
                                     <td>
                                         {{-- {{ $invoice->contact->info() ?? '-' }} --}}
 
-                                        <a href="{{ route($invoice->type.'s.show', $invoice->contact->id) }}">
+                                        <a href="{{ route($invoice->type . 's.show', $invoice->contact->id) }}">
                                             <strong>{{ $invoice->contact->info() ?? '—' }}</strong>
-                                            
+
                                         </a>
                                     </td>
                                     <td><span class="text-capitalize">{{ $invoice->type ?? '-' }}</span></td>
-                                    <td>{{ $invoice->invoice_date ? Carbon::parse($invoice->invoice_date)->format('d/m/Y') : '-' }}</td>
-                                    <td>{{ $invoice->due_date ? Carbon::parse($invoice->due_date)->format('d/m/Y') : '-' }}</td>
-                                    <td><strong>{{ number_format($invoice->total_invoice ?? 0, 0, ',', ' ') }} CFA</strong></td>
+                                    <td>{{ $invoice->invoice_date ? Carbon::parse($invoice->invoice_date)->format('d/m/Y') : '-' }}
+                                    </td>
+                                    <td>{{ $invoice->due_date ? Carbon::parse($invoice->due_date)->format('d/m/Y') : '-' }}
+                                    </td>
+                                    <td><strong>{{ number_format($invoice->total_invoice ?? 0, 0, ',', ' ') }} CFA</strong>
+                                    </td>
                                     <td>{{ number_format($invoice->balance ?? 0, 0, ',', ' ') }} CFA</td>
                                 </tr>
                             @empty
@@ -712,21 +739,26 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($product->movement()->latest()->paginate(10) as $movement)
+                            @forelse ($movements as $movement)
                                 <tr>
                                     <td><strong>{{ $movement->quantity }}</strong></td>
                                     <td>{{ $movement->reason ?? '-' }}</td>
+
                                     <td>
                                         <a href="{{ route('warehouses.show', $movement->batch->warehouse->id) }}">
-                                            <i class="fas fa-warehouse mr-1"></i>{{ $movement->batch->warehouse->name ?? '-' }}
+                                            <i class="fas fa-warehouse mr-1"></i>
+                                            {{ $movement->batch->warehouse->name ?? '-' }}
                                         </a>
                                     </td>
+
                                     <td>
-                                        <a href="{{ route('invoices.show', [$movement->invoice->type . 's', $movement->invoice->id ?? '#']) }}">
+                                        <a
+                                            href="{{ route('invoices.show', [$movement->invoice->type . 's', $movement->invoice->id]) }}">
                                             {{ $movement->invoice->invoice_number ?? '-' }}
                                         </a>
                                     </td>
-                                    <td>{{ Carbon::parse($movement->created_at)->format('d/m/Y H:i') }}</td>
+
+                                    <td>{{ $movement->created_at->format('d/m/Y H:i') }}</td>
                                 </tr>
                             @empty
                                 <tr>
@@ -736,10 +768,8 @@
                                     </td>
                                 </tr>
                             @endforelse
-                        </tbody>
-                    </table>
+                            {{ $movements->links() }}
 
-                    {{ $product->movement()->latest()->paginate(10)->links() }}
                 </div>
             </div>
         </div>
