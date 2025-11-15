@@ -543,75 +543,85 @@
     <!-- Zone imprimable -->
     <div id="print-area" class="main-table-card">
         <h4 class="table-title">
-            <span>📋</span>
-            Liste des factures impayées (Recouvrements) du 01/01/2025 au 30/01/2025
-        </h4>
 
-        <div class="table-responsive">
-            <table class="custom-table table">
-                <thead>
-                    <tr>
-                        <th>N° Facture</th>
-                        <th>Client</th>
-                        <th>Téléphone</th>
-                        <th>Adresse</th>
-                        <th>Montant Total</th>
-                        <th>Montant Payé</th>
-                        <th>Reste à Payer</th>
-                        <th>Date Échéance</th>
-                        <th>Jours de Retard</th>
-                        <th class="recovery-column">Recouvré</th>
-                    </tr>
-                </thead>
+            <h4 class="table-title">
+                <span>📋</span>
+                Liste des factures impayées (Recouvrements)
+                @if (request('start_date') && request('end_date'))
+                    du {{ \Carbon\Carbon::parse(request('start_date'))->format('d/m/Y') }}
+                    au {{ \Carbon\Carbon::parse(request('end_date'))->format('d/m/Y') }}
+                @elseif(request('start_date'))
+                    à partir du {{ \Carbon\Carbon::parse(request('start_date'))->format('d/m/Y') }}
+                @elseif(request('end_date'))
+                    jusqu'au {{ \Carbon\Carbon::parse(request('end_date'))->format('d/m/Y') }}
+                @endif
+            </h4>
 
-                <tbody>
-
-                    @foreach ($invoices as $invoice)
-                     @php
-                        $dueDate = Carbon::parse($invoice->due_date);
-                        $daysOverdue = $today->diffInDays($dueDate, false);
-                    @endphp
+            <div class="table-responsive">
+                <table class="custom-table table">
+                    <thead>
                         <tr>
-                            <td>
-                                <span class="invoice-number">{{ $invoice->invoice_number }}</span>
-                            </td>
-                            <td>
-                                <span class="client-name">{{ $invoice->contact->fullname }}</span>
-                            </td>
-                            <td>
-                                <span class="phone-badge">📞 {{ $invoice->contact->phone_number }}</span>
-                            </td>
-                            <td>
-                                <span class="address-text">📍 {{ $invoice->contact->address }}</span>
-                            </td>
-                            <td>
-                                <strong>{{ number_format($invoice->total_invoice, 0, ',', ' ') }} FCFA</strong>
-                            </td>
-                            <td>
-                                <span class="amount-paid">
-                                    {{ number_format($invoice->total_invoice - $invoice->balance, 0, ',', ' ') }} FCFA
-                                </span>
-                            </td>
-
-                            <td>
-                                <span class="amount-balance">
-                                    {{ number_format($invoice->balance, 0, ',', ' ') }} FCFA
-                                </span>
-                            </td>
-                            <td><span class="due-date">{{ $dueDate->format('d/m/Y') }}</span></td>
-                            <td>
-                                <span class="days-badge {{ $daysOverdue > 15 ? 'critical' : '' }}">{{ $daysOverdue }}
-                                    jours</span>
-                            </td>
-
-                            <td class="text-center recovery-column">
-                                <input type="checkbox" class="recovery-checkbox">
-                            </td>
+                            <th>N° Facture</th>
+                            <th>Client</th>
+                            <th>Téléphone</th>
+                            <th>Adresse</th>
+                            <th>Montant Total</th>
+                            <th>Montant Payé</th>
+                            <th>Reste à Payer</th>
+                            <th>Date Échéance</th>
+                            <th>Jours de Retard</th>
+                            <th class="recovery-column">Recouvré</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach ($invoices as $invoice)
+                            @php
+                                $dueDate = Carbon::parse($invoice->due_date);
+                                $daysOverdue = $today->diffInDays($dueDate, false);
+                            @endphp
+                            <tr>
+                                <td>
+                                    <span class="invoice-number">{{ $invoice->invoice_number }}</span>
+                                </td>
+                                <td>
+                                    <span class="client-name">{{ $invoice->contact->fullname }}</span>
+                                </td>
+                                <td>
+                                    <span class="phone-badge">📞 {{ $invoice->contact->phone_number }}</span>
+                                </td>
+                                <td>
+                                    <span class="address-text">📍 {{ $invoice->contact->address }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ number_format($invoice->total_invoice, 0, ',', ' ') }} FCFA</strong>
+                                </td>
+                                <td>
+                                    <span class="amount-paid">
+                                        {{ number_format($invoice->total_invoice - $invoice->balance, 0, ',', ' ') }} FCFA
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="amount-balance">
+                                        {{ number_format($invoice->balance, 0, ',', ' ') }} FCFA
+                                    </span>
+                                </td>
+                                <td><span class="due-date">{{ $dueDate->format('d/m/Y') }}</span></td>
+                                <td>
+                                    <span class="days-badge {{ $daysOverdue > 15 ? 'critical' : '' }}">{{ $daysOverdue }}
+                                        jours</span>
+                                </td>
+
+                                <td class="text-center recovery-column">
+                                    <input type="checkbox" class="recovery-checkbox">
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
     </div>
 
     <script>
