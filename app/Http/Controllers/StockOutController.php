@@ -16,8 +16,12 @@ class StockOutController extends Controller
     {
         //
         $stockOuts = StockOut::paginate(10);
+        $batches = Batch::with([
+            'product:id,name',
+            'warehouse:id,name',
+        ])->get(['id', 'product_id', 'warehouse_id','remaining'])->where('remaining', '>', 0);
 
-        return view('back.stockOut.index', compact('stockOuts'));
+        return view('back.stockOut.index', compact('stockOuts', 'batches'));
     }
 
     /**

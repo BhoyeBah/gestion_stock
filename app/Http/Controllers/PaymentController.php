@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PaymentRequest;
+use App\Models\Invoice;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,9 +19,17 @@ class PaymentController extends Controller
 
         $this->validateType($type);
 
-        $payments = Payment::where('payment_source', rtrim($type, 's'))->paginate(10);
+        $payments = Payment::with(['invoice', 'contact'])
+            ->where('payment_source', rtrim($type, 's'))
+            ->paginate(10);
 
-        return view('back.payments.index', compact('payments', 'type'));
+        // Charger les factures du même type (client ou supplier)
+        $invoices = Invoice::where('type', rtrim($type, 's'))
+            ->orderBy('invoice_number', 'desc')
+            ->where('balance', '>', 0)
+            ->get();
+
+        return view('back.payments.index', compact('payments', 'type', 'invoices'));
     }
 
     /**
@@ -33,15 +43,50 @@ class PaymentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(PaymentRequest $request)
     {
         //
+        $invoice = Invoice::findOrFail($request->invoice_id);
+        $amountPaid = (int) $request->input('amount_paid');
+
+        if ($amountPaid > $invoice->balance) {
+            return back()->with('error', "Montant trop élevé. Solde restant : {$invoice->balance} FCFA");
+        }
+
+        try {
+            DB::beginTransaction();
+            $invoice->balance -= $amountPaid;
+            if ($invoice->balance > 0) {
+                $invoice->status = 'partial';
+
+            } elseif ($invoice->balance == 0) {
+                $invoice->status = 'paid';
+            }
+            $invoice->save();
+            Payment::create([
+                'invoice_id' => $invoice->id,
+                'tenant_id' => $invoice->tenant_id,
+                'contact_id' => $invoice->contact_id,
+                'amount_paid' => $amountPaid,
+                'remaining_amount' => $invoice->balance,
+                'payment_date' => now(),
+                'payment_type' => $request->input('payment_type'),
+                'payment_source' => $invoice->type,
+            ]);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Erreur lors du paiement : '.$e->getMessage());
+        }
+
+        return back()->with('success', "Paiement de $amountPaid FCFA de la facture numéro $invoice->invoice_number enregistré avec succès !");
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $type,Payment $payment)
+    public function show(string $type, Payment $payment)
     {
         //
     }

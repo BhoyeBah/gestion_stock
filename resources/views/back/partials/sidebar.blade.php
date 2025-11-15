@@ -217,18 +217,21 @@
                             Factures Clients
                         </a>
                     @endcan
-                    @can('read_payments')
-                        <a class="collapse-item {{ request()->routeIs('invoices.unpaid') && request('type') === 'clients' && !request()->has('status') ? 'active' : '' }}"
-                            href="{{ route('invoices.unpaid', ['type' => 'clients']) }}">
-                            Facture non payées
-                        </a>
-                    @endcan
+
                     @can('read_payments')
                         <a class="collapse-item {{ request()->routeIs('payments.index') && request('type') === 'clients' ? 'active' : '' }}"
                             href="{{ route('payments.index', ['type' => 'clients']) }}">
                             Paiements Clients
                         </a>
                     @endcan
+
+                    @can('read_payments')
+                        <a class="collapse-item {{ request()->routeIs('invoices.unpaid') && request('type') === 'clients' && !request()->has('status') ? 'active' : '' }}"
+                            href="{{ route('invoices.unpaid', ['type' => 'clients']) }}">
+                            Récouvrements
+                        </a>
+                    @endcan
+
                 </div>
             </div>
         </li>

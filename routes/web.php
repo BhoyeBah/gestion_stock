@@ -134,6 +134,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::prefix('payments/{type}')->controller(PaymentController::class)->name('payments.')->group(function () {
     Route::get('/', 'index')->name('index');
+    Route::post('/', 'store')->name('store');
     Route::delete('/{payment}', 'destroy')->name('destroy');
     Route::get('/{payment}', 'show')->where('payment', '[0-9a-fA-F\-]{36}')->name('show');
 })->where('type', 'client|supplier');

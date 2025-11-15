@@ -246,6 +246,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -256,10 +257,21 @@
             animation: fadeInUp 0.5s ease-out;
         }
 
-        .stats-card:nth-child(1) { animation-delay: 0.1s; }
-        .stats-card:nth-child(2) { animation-delay: 0.2s; }
-        .stats-card:nth-child(3) { animation-delay: 0.3s; }
-        .stats-card:nth-child(4) { animation-delay: 0.4s; }
+        .stats-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .stats-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .stats-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .stats-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
 
         /* Input groups */
         .input-group-text {
@@ -289,9 +301,16 @@
     <div class="page-header">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <h1>
-                <i class="fas fa-money-bill-wave mr-2"></i> Liste des paiements ({{ $type === 'clients' ? 'Clients' : 'Fournisseurs' }})
+                <i class="fas fa-money-bill-wave mr-2"></i> Liste des paiements
+                ({{ $type === 'clients' ? 'Clients' : 'Fournisseurs' }})
             </h1>
             <!-- Pas de bouton "Nouveau" car les paiements se font depuis les factures -->
+            {{-- <button class="btn btn-primary" data-toggle="modal" data-target="#addStockOutModal">
+                <i class="fas fa-plus-circle mr-1"></i> Nouvelle payment
+            </button> --}}
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addPaymentModal">
+                <i class="fas fa-plus mr-1"></i> Nouveau paiement
+            </button>
         </div>
     </div>
 
@@ -334,7 +353,8 @@
                                 Payé Aujourd'hui
                             </div>
                             <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                {{ number_format($payments->where('payment_date', '>=', now()->startOfDay())->sum('amount_paid'), 0, ',', ' ') }} FCFA
+                                {{ number_format($payments->where('payment_date', '>=', now()->startOfDay())->sum('amount_paid'), 0, ',', ' ') }}
+                                FCFA
                             </div>
                         </div>
                         <div class="col-auto">
@@ -357,7 +377,8 @@
                                 Payé cette semaine
                             </div>
                             <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                {{ number_format($payments->where('payment_date', '>=', now()->startOfWeek())->sum('amount_paid'), 0, ',', ' ') }} FCFA
+                                {{ number_format($payments->where('payment_date', '>=', now()->startOfWeek())->sum('amount_paid'), 0, ',', ' ') }}
+                                FCFA
                             </div>
                         </div>
                         <div class="col-auto">
@@ -380,7 +401,8 @@
                                 Payé ce mois
                             </div>
                             <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                {{ number_format($payments->where('payment_date', '>=', now()->startOfMonth())->sum('amount_paid'), 0, ',', ' ') }} FCFA
+                                {{ number_format($payments->where('payment_date', '>=', now()->startOfMonth())->sum('amount_paid'), 0, ',', ' ') }}
+                                FCFA
                             </div>
                         </div>
                         <div class="col-auto">
@@ -488,13 +510,13 @@
                                         </td>
                                         <td>
                                             <a href="{{ route('invoices.show', [$type, $payment->invoice_id]) }}"
-                                               class="contact-link" title="Voir la facture">
+                                                class="contact-link" title="Voir la facture">
                                                 {{ $payment->invoice->invoice_number ?? '-' }}
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="{{ route("$type.show", $payment->contact_id) }}" class="contact-link"
-                                               title="Voir le contact">
+                                            <a href="{{ route("$type.show", $payment->contact_id) }}"
+                                                class="contact-link" title="Voir le contact">
                                                 <i class="fas fa-user-circle mr-1"></i>
                                                 {{ $payment->contact->fullname ?? '-' }}
                                             </a>
@@ -514,7 +536,8 @@
                                             {{ number_format($payment->amount_paid, 0, ',', ' ') }} FCFA
                                         </td>
                                         <td class="text-right">
-                                            <span class="badge badge-{{ $payment->remaining_amount > 0 ? 'warning' : 'success' }}">
+                                            <span
+                                                class="badge badge-{{ $payment->remaining_amount > 0 ? 'warning' : 'success' }}">
                                                 {{ number_format($payment->remaining_amount, 0, ',', ' ') }} FCFA
                                             </span>
                                         </td>
@@ -528,49 +551,49 @@
                                         </td>
                                         <td class="text-center action-buttons">
                                             {{-- Remplacement du formulaire onsubmit par une modale --}}
-                                            <button type="button"
-                                                class="btn btn-sm btn-danger confirm-action-btn"
-                                                title="Supprimer"
-                                                data-toggle="modal" data-target="#confirmModal"
+                                            <button type="button" class="btn btn-sm btn-danger confirm-action-btn"
+                                                title="Supprimer" data-toggle="modal" data-target="#confirmModal"
                                                 data-action="{{ route('payments.destroy', [$type, $payment->id]) }}"
                                                 data-method="DELETE"
                                                 data-message="Confirmez-vous la suppression de ce paiement ? Cette action est irréversible et réajustera le solde de la facture."
                                                 data-btn-class="btn-danger"
                                                 data-title="<i class='fas fa-exclamation-triangle'></i> Supprimer le paiement"
-                                                @if ($payment->amount_paid == 0) disabled @endif>
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="d-flex justify-content-between align-items-center p-4 border-top">
-                        <div class="text-muted small">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Affichage de <strong>{{ $payments->firstItem() }}</strong> à
-                            <strong>{{ $payments->lastItem() }}</strong> sur
-                            <strong>{{ $payments->total() }}</strong> paiements
-                        </div>
-                        <div>
-                            {{ $payments->appends(request()->query())->links() }}
-                        </div>
-                    </div>
-                @else
-                    <div class="p-5 text-center">
-                        <div class="mb-4">
-                            <i class="fas fa-inbox fa-4x text-muted"></i>
-                        </div>
-                        <h5 class="text-muted">Aucun paiement trouvé</h5>
-                        <p class="text-muted mb-0">
-                            Essayez de modifier vos filtres ou enregistrez un paiement depuis une facture.
-                        </p>
-                    </div>
-                @endif
+                                                @if ($payment->amount_paid == 0)
+                                                disabled
+                                @endif>
+                                <i class="fas fa-trash-alt"></i>
+                                </button>
+                                </td>
+                                </tr>
+                @endforeach
+                </tbody>
+                </table>
             </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-between align-items-center p-4 border-top">
+                <div class="text-muted small">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Affichage de <strong>{{ $payments->firstItem() }}</strong> à
+                    <strong>{{ $payments->lastItem() }}</strong> sur
+                    <strong>{{ $payments->total() }}</strong> paiements
+                </div>
+                <div>
+                    {{ $payments->appends(request()->query())->links() }}
+                </div>
+            </div>
+        @else
+            <div class="p-5 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-inbox fa-4x text-muted"></i>
+                </div>
+                <h5 class="text-muted">Aucun paiement trouvé</h5>
+                <p class="text-muted mb-0">
+                    Essayez de modifier vos filtres ou enregistrez un paiement depuis une facture.
+                </p>
+            </div>
+            @endif
+        </div>
         </div>
     </section>
 
@@ -599,6 +622,112 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Ajouter un paiement -->
+    <div class="modal fade" id="addPaymentModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg"
+                style="border-radius: 15px; overflow:hidden; box-shadow:0 10px 30px rgba(102,126,234,0.3);">
+
+                <form action="{{ route('payments.store', $type) }}" method="POST">
+                    @csrf
+
+                    <!-- HEADER -->
+                    <div class="modal-header text-white"
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: none;">
+                        <h5 class="modal-title font-weight-bold">
+                            <i class="fas fa-money-bill-wave mr-2"></i>Nouveau paiement
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <!-- BODY -->
+                    <div class="modal-body p-4">
+
+                        <!-- Facture -->
+                        <div class="form-group">
+                            <label for="invoice_id" class="font-weight-semibold" style="color:#4a5568;">
+                                <i class="fas fa-file-invoice mr-1"></i>Facture
+                            </label>
+
+                            <select name="invoice_id" id="invoice_id" class="form-control form-control-lg shadow-sm"
+                                style="border-radius:10px;" required>
+                                <option value="">Sélectionnez une facture</option>
+
+                                @foreach ($invoices as $invoice)
+                                    <option value="{{ $invoice->id }}">
+                                        {{ $invoice->invoice_number }}
+                                        — {{ $invoice->contact->fullname ?? '-' }}
+                                        ({{ number_format($invoice->balance, 0, ',', ' ') }} FCFA restant)
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <small class="form-text text-muted">Choisissez la facture à régler</small>
+                        </div>
+
+                        <!-- Montant payé -->
+                        <div class="form-group">
+                            <label for="amount_paid" class="font-weight-semibold" style="color:#4a5568;">
+                                <i class="fas fa-coins mr-1"></i>Montant payé
+                            </label>
+
+                            <input type="number" name="amount_paid" id="amount_paid"
+                                class="form-control form-control-lg shadow-sm" style="border-radius:10px;" min="1"
+                                step="0.01" placeholder="Ex: 50000" required>
+
+                            <small class="form-text text-muted">Montant en FCFA</small>
+                        </div>
+
+                        <!-- Date du paiement -->
+                        <div class="form-group">
+                            <label for="payment_date" class="font-weight-semibold" style="color:#4a5568;">
+                                <i class="fas fa-calendar-alt mr-1"></i>Date de paiement
+                            </label>
+
+                            <input type="date" name="payment_date" id="payment_date"
+                                class="form-control form-control-lg shadow-sm" style="border-radius:10px;"
+                                value="{{ date('Y-m-d') }}" required>
+
+                            <small class="form-text text-muted">Date d'encaissement</small>
+                        </div>
+
+                        <!-- Méthode de paiement -->
+                        <div class="form-group">
+                            <label for="payment_type" class="font-weight-semibold" style="color:#4a5568;">
+                                <i class="fas fa-credit-card mr-1"></i>Méthode de paiement
+                            </label>
+
+                            <input type="text" name="payment_type" id="payment_type"
+                                class="form-control form-control-lg shadow-sm" style="border-radius:10px;"
+                                placeholder="Ex: Espèces, Wave, Chèque..." required>
+
+                            <small class="form-text text-muted">Tapez la méthode utilisée</small>
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="modal-footer" style="background:#f7f9fc; border-top:none;">
+                        <button type="button" class="btn btn-light px-4" data-dismiss="modal"
+                            style="border-radius:10px; font-weight:600;">
+                            <i class="fas fa-times mr-1"></i>Annuler
+                        </button>
+
+                        <button type="submit" class="btn text-white px-4"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                   border-radius:10px; box-shadow:0 5px 15px rgba(102,126,234,0.4); font-weight:600;">
+                            <i class="fas fa-check mr-1"></i>Enregistrer
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 
@@ -630,8 +759,10 @@
                 $modal.find('#confirmModalLabel').html(title || 'Confirmation'); // Titre avec icône
 
                 // Appliquer la bonne couleur au bouton et à l'en-tête
-                $confirmBtn.removeClass('btn-primary btn-success btn-danger btn-warning').addClass(btnClass);
-                $header.removeClass('bg-primary bg-success bg-danger bg-warning text-white').addClass('text-white');
+                $confirmBtn.removeClass('btn-primary btn-success btn-danger btn-warning').addClass(
+                    btnClass);
+                $header.removeClass('bg-primary bg-success bg-danger bg-warning text-white').addClass(
+                    'text-white');
 
                 if (btnClass.includes('danger')) {
                     $header.addClass('bg-danger');

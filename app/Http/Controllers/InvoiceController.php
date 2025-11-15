@@ -15,6 +15,7 @@ use App\Models\Product;
 use App\Models\ReturnProduct;
 use App\Models\Warehouse;
 use App\Services\InvoiceService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -310,7 +311,7 @@ class InvoiceController extends Controller
             }
 
             return back()->with('error', 'Impossible de faire un rétour sur ce produit');
-            
+
         } catch (\Exception $e) {
             throw $e;
 
@@ -337,13 +338,27 @@ class InvoiceController extends Controller
         return view('back.invoices.invoice', compact('invoice'));
     }
 
-    public function unpaid(string $type)
+    public function unpaid(Request $request)
     {
-        $invoices = Invoice::whereIn('status', ['partial', 'validated'])->paginate(10);
+        // Récupération des dates filtrées
+        $start = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : null;
+        $end = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : null;
+        $invoices = Invoice::with('contact')
+            ->where('balance', '>', 0)
+            ->where('type', 'client')
+            ->when($start && $end, function ($query) use ($start, $end) {
+                $query->whereBetween('invoice_date', [$start, $end]);
+            })
+            ->get();
 
-        $invoiceType = $type;
+        // $invoices->each(function ($invoice) {
+        //     $invoice->balance = $invoice->total_amount - $invoice->total_paid;
+        //     $invoice->days_overdue = Carbon::now()->diffInDays(Carbon::parse($invoice->due_date), false);
+        // });
 
-        return view('back.invoices.unpaid', compact('invoices', 'invoiceType', 'type'));
+        // dd($invoices);
+
+        return view('back.invoices.unpaid', compact('invoices'));
     }
 
     protected function validateType(string $type): void
